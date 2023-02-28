@@ -1,0 +1,4 @@
+name: Adaptive Interactive Tutorial
+description: > 
+  Interactive tutorial containing figures, videos, R exercises and quiz questions (derived from learnr).
+create_dir: true

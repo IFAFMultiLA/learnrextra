@@ -1,0 +1,17 @@
+#doc-metadata {
+    font-size: 0.8em;
+}
+
+.with_sidebar {
+    display: flex;
+}
+
+.with_sidebar > .main {
+    width: 75%
+}
+
+.with_sidebar > .side {
+  font-size: 0.8em;
+  width: 25%;
+  padding-left: 2em;
+}
