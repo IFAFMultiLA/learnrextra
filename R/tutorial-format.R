@@ -10,6 +10,17 @@ tutorial <- function(...) {
     args$extra_dependencies <- append(
         list(
             htmltools::htmlDependency(
+                name = "js-cookie",
+                version = "3.0.1",
+                src = system.file("rmarkdown/templates/tutorial/resources", package = "adaptivelearnr"),
+                script = "js.cookie.min.js"
+            )
+        ),
+        args$extra_dependencies
+    )
+    args$extra_dependencies <- append(
+        list(
+            htmltools::htmlDependency(
                 name = "tutorial-adaptivelearnr",
                 version = utils::packageVersion("adaptivelearnr"),
                 src = system.file("rmarkdown/templates/tutorial/resources", package = "adaptivelearnr"),
