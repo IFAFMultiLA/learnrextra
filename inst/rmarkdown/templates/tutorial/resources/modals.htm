@@ -5,6 +5,10 @@
         <h5 class="modal-title" id="authmodal_label">Login required</h5>
       </div>
       <div class="modal-body">
+          <div id="login-failed-alert" class="alert alert-danger" role="alert" style="width:100%;display:none">
+              Login failed.
+          </div>
+
           <p>Please provide your credentials:</p>
 
          <div class="form-group">
@@ -19,8 +23,8 @@
           <p>If you don't have an account yet, please choose "register" below.</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary">Login</button>
-        <button type="button" class="btn btn-primary">Register</button>
+        <button id="login-btn" type="button" class="btn btn-primary">Login</button>
+        <button id="register-btn" type="button" class="btn btn-primary">Register</button>
       </div>
     </div>
   </div>
