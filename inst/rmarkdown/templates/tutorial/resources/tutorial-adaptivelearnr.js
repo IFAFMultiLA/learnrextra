@@ -55,7 +55,8 @@ function sessionSetup(sess_config) {
         sessdata.app_config = sess_config.config;
         console.log("received user code", sessdata.user_code);
     } else {
-        console.log("this auth mode is not supported so far");  // TODO
+        // show modal
+        $("authmodal").modal();
     }
 }
 
