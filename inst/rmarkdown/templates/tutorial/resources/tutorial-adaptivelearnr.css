@@ -1,5 +1,19 @@
 #doc-metadata {
     font-size: 0.8em;
+    display: none;
+}
+
+#messages-container {
+    font-size: 0.8em;
+}
+
+#messages-container .alert {
+    border-radius: 0px;
+}
+
+.alert-fullwidth-hidden {
+    width: 100% !important;
+    display: none;
 }
 
 .with_sidebar {

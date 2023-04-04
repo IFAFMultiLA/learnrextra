@@ -1,0 +1,35 @@
+<div class="modal fade" id="authmodal" tabindex="-1" data-keyboard="false" role="dialog" aria-labelledby="authmodal_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="authmodal_label">Login required</h5>
+      </div>
+      <div class="modal-body">
+          <div id="login-failed-alert" class="alert alert-danger alert-fullwidth-hidden" role="alert">
+              Login failed.
+          </div>
+
+          <p>Please provide your credentials:</p>
+
+         <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" class="form-control" id="email" placeholder="Enter email">
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Password">
+          </div>
+
+          <p>If you don't have an account yet, please choose "register" below.</p>
+      </div>
+      <div class="modal-footer">
+        <button id="login-btn" type="button" class="btn btn-primary">Login</button>
+        <button id="register-btn" type="button" class="btn btn-primary">Register</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="messages-container">
+    <div class="alert alert-info alert-fullwidth-hidden" role="alert"></div>
+</div>

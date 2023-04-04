@@ -9,7 +9,8 @@ $.holdReady(true);
 
 var sess = null;   // session ID
 var apiserver = 'http://localhost:8000/';   // TODO: make this configurable
-var sessdata = {};      // session data
+var fullsessdata = {};    // session data for all sessions saved to cookies
+var sessdata = {};        // session data for this specific session
 var tracking_session_id = null;
 
 
@@ -53,9 +54,51 @@ function sessionSetup(sess_config) {
     if (sess_config.auth_mode == "none") {
         sessdata.user_code = sess_config.user_code;
         sessdata.app_config = sess_config.config;
+        sessdata.user_email = null;
         console.log("received user code", sessdata.user_code);
+        return true;
     } else {
-        console.log("this auth mode is not supported so far");  // TODO
+        // set up authentication modal dialog
+        $("#login-btn").on("click", function() {
+            console.log("logging in...");
+
+            var email = $("#email").val();
+            var password = $("#password").val();
+
+            fetch(apiserver + 'session_login/', {
+                method: "POST",
+                body: JSON.stringify({
+                    sess: sess,
+                    email: email,
+                    password: password
+                }),
+                headers: {
+                    "Content-type": "application/json; charset=UTF-8",
+                    "X-CSRFToken": Cookies.get("csrftoken")
+                }
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        $('#login-failed-alert').show();
+                        throw new Error("login failed");
+                    } else {
+                        return response.json();
+                    }
+                })
+                .then(function (response) {
+                    $('#login-failed-alert').hide();
+                    $('#authmodal').modal('hide');
+                    sessdata.user_code = response.user_code;
+                    sessdata.app_config = response.config;
+                    sessdata.user_email = email;
+                    console.log("received user code", sessdata.user_code);
+                    appSetup();
+                });
+        });
+
+        // show modal
+        $("#authmodal").modal('show');
+        return false;
     }
 }
 
@@ -63,9 +106,17 @@ function sessionSetup(sess_config) {
 /**
  * Set up the application.
  */
-function appSetup(fullsessdata) {
+function appSetup() {
     fullsessdata[sess] = sessdata;
     Cookies.set('sessdata', btoa(JSON.stringify(fullsessdata)));
+
+    if (sessdata.user_email !== null) {
+        $('#messages-container .alert-info').text("Logged in as " + sessdata.user_email + ".").show();
+    } else {
+        $('#messages-container .alert-info').text("").hide();
+    }
+
+    $('#doc-metadata').show();
 
     var config = sessdata.app_config;
 
@@ -121,7 +172,10 @@ function appSetup(fullsessdata) {
         }
     })
         .then((response) => response.json())
-        .then(function (response) { tracking_session_id = response.tracking_session_id; });
+        .then(function (response) {
+            tracking_session_id = response.tracking_session_id;
+            console.log("received tracking session ID", tracking_session_id);
+        });
 
     // set a handler for stopping the tracking session
     $(window).on('beforeunload', function() {
@@ -184,7 +238,6 @@ $(window).on("load", function() {
     if (sess !== undefined) {
         console.log("using session ID", sess);
 
-        var fullsessdata = {};
         if (Cookies.get('sessdata') !== undefined) {
             fullsessdata = $.parseJSON(atob(Cookies.get('sessdata')));
         }
@@ -194,6 +247,7 @@ $(window).on("load", function() {
         } else {
             sessdata = {
                 user_code: null,
+                user_email: null,
                 app_config: null
             }
         }
@@ -202,12 +256,11 @@ $(window).on("load", function() {
             // start an application session
             fetch(apiserver + 'session/?sess=' + sess)
                 .then((response) => response.json())
-                .then((config) => sessionSetup(config))
-                .then(() => appSetup(fullsessdata));
+                .then((config) => sessionSetup(config) && appSetup());
         } else {
             console.log('loaded user code from cookies:', sessdata.user_code);
             console.log('loaded app config from cookies');
-            appSetup(fullsessdata);
+            appSetup();
         }
     }
 });

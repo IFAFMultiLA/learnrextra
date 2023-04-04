@@ -6,6 +6,13 @@
 #' @export
 tutorial <- function(...) {
     args <- list(...)
+
+    args$includes <- append(
+        list(before_body = system.file("rmarkdown/templates/tutorial/resources/before_body_includes.htm",
+                                       package = "adaptivelearnr")),
+        args$includes
+    )
+
     # prepend JS and CSS as extra dependencies
     args$extra_dependencies <- append(
         list(
