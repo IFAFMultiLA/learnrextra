@@ -8,7 +8,7 @@ tutorial <- function(...) {
     args <- list(...)
 
     args$includes <- append(
-        list(before_body = system.file("rmarkdown/templates/tutorial/resources/modals.htm",
+        list(before_body = system.file("rmarkdown/templates/tutorial/resources/before_body_includes.htm",
                                        package = "adaptivelearnr")),
         args$includes
     )

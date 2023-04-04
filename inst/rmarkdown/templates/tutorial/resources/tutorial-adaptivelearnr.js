@@ -54,6 +54,7 @@ function sessionSetup(sess_config) {
     if (sess_config.auth_mode == "none") {
         sessdata.user_code = sess_config.user_code;
         sessdata.app_config = sess_config.config;
+        sessdata.user_email = null;
         console.log("received user code", sessdata.user_code);
         return true;
     } else {
@@ -86,9 +87,10 @@ function sessionSetup(sess_config) {
                 })
                 .then(function (response) {
                     $('#login-failed-alert').hide();
-                    $("#authmodal").modal('hide');
+                    $('#authmodal').modal('hide');
                     sessdata.user_code = response.user_code;
                     sessdata.app_config = response.config;
+                    sessdata.user_email = email;
                     console.log("received user code", sessdata.user_code);
                     appSetup();
                 });
@@ -107,6 +109,14 @@ function sessionSetup(sess_config) {
 function appSetup() {
     fullsessdata[sess] = sessdata;
     Cookies.set('sessdata', btoa(JSON.stringify(fullsessdata)));
+
+    if (sessdata.user_email !== null) {
+        $('#messages-container .alert-info').text("Logged in as " + sessdata.user_email + ".").show();
+    } else {
+        $('#messages-container .alert-info').text("").hide();
+    }
+
+    $('#doc-metadata').show();
 
     var config = sessdata.app_config;
 
@@ -237,6 +247,7 @@ $(window).on("load", function() {
         } else {
             sessdata = {
                 user_code: null,
+                user_email: null,
                 app_config: null
             }
         }
