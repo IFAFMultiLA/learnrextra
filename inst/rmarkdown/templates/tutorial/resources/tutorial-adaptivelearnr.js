@@ -44,6 +44,41 @@ function getXPathForElement(element) {
     return segs(element).join('/');
 }
 
+
+/**
+ * Perform a user login.
+ */
+function userLogin(sess, email, password) {
+    fetch(apiserver + 'session_login/', {
+        method: "POST",
+        body: JSON.stringify({
+            sess: sess,
+            email: email,
+            password: password
+        }),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8",
+            "X-CSRFToken": Cookies.get("csrftoken")
+        }
+    }).then((response) => {
+        if (!response.ok) {
+            $('#register-login-fail-alert').text("Login failed.").show();
+            throw new Error("login failed");
+        } else {
+            return response.json();
+        }
+    }).then(function (response) {
+        $('#register-login-fail-alert').text("").hide();
+        $('#authmodal').modal('hide');
+        sessdata.user_code = response.user_code;
+        sessdata.app_config = response.config;
+        sessdata.user_email = email;
+        console.log("received user code", sessdata.user_code);
+        appSetup();
+    });
+}
+
+
 /**
  * Set up a session.
  */
@@ -65,7 +100,16 @@ function sessionSetup(sess_config) {
             var email = $("#email").val();
             var password = $("#password").val();
 
-            fetch(apiserver + 'session_login/', {
+            userLogin(sess, email, password);
+        });
+
+        $("#register-btn").on("click", function() {
+            console.log("registering ...");
+
+            let email = $("#email").val();
+            let password = $("#password").val();
+
+            fetch(apiserver + 'register_user/', {
                 method: "POST",
                 body: JSON.stringify({
                     sess: sess,
@@ -77,23 +121,33 @@ function sessionSetup(sess_config) {
                     "X-CSRFToken": Cookies.get("csrftoken")
                 }
             })
-                .then((response) => {
-                    if (!response.ok) {
-                        $('#login-failed-alert').show();
-                        throw new Error("login failed");
+            .then(response => {
+                if (Number(response.headers.get("content-length")) > 0) {
+                    return response.json();
+                } else {
+                    return {};
+                }
+            })
+            .then(resp_data => {
+                if (resp_data.hasOwnProperty('error')) {    // failure
+                    let alert_box = $('#register-login-fail-alert');
+                    let error_type = 'unknown';
+
+                    if (resp_data.hasOwnProperty('error')) {
+                        error_type = resp_data.error;
+                        alert_box.text(resp_data.message);
                     } else {
-                        return response.json();
+                        alert_box.text("Failed to register.");
                     }
-                })
-                .then(function (response) {
-                    $('#login-failed-alert').hide();
+
+                    alert_box.show();
+                } else {    // success
+                    $('#register-login-fail-alert').text("").hide();
                     $('#authmodal').modal('hide');
-                    sessdata.user_code = response.user_code;
-                    sessdata.app_config = response.config;
-                    sessdata.user_email = email;
-                    console.log("received user code", sessdata.user_code);
-                    appSetup();
-                });
+
+                    userLogin(sess, email, password);
+                }
+            });
         });
 
         // show modal
