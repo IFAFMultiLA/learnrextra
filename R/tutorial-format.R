@@ -31,7 +31,7 @@ tutorial <- function(...) {
                 name = "tutorial-adaptivelearnr",
                 version = utils::packageVersion("adaptivelearnr"),
                 src = system.file("rmarkdown/templates/tutorial/resources", package = "adaptivelearnr"),
-                script = "tutorial-adaptivelearnr.js",
+                script = c("tutorial-adaptivelearnr-utils.js", "tutorial-adaptivelearnr.js"),
                 stylesheet = "tutorial-adaptivelearnr.css"
             )
         ),
