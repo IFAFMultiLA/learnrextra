@@ -1,3 +1,7 @@
+// Main adaptivelearnr javascript code.
+// Requires tutorial-adaptivelearnr-utils.js to be included before.
+
+
 // disable "$(document).ready()" for all scripts to make sure that the
 // setup function below is always executed first
 $.holdReady(true);
@@ -11,72 +15,27 @@ var sess = null;   // session ID
 var apiserver = 'http://localhost:8000/';   // TODO: make this configurable
 var fullsessdata = {};    // session data for all sessions saved to cookies
 var sessdata = {};        // session data for this specific session
-var tracking_session_id = null;
-
-
-/**
- * Extend JQuery with a function to get URL parameters.
- */
-$.urlParam = function(name, url) {
-    if (!url) {
-     url = window.location.href;
-    }
-    var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(url);
-    if (!results) {
-        return undefined;
-    }
-    return results[1] || undefined;
-}
-
-
-/**
- * Helper function to turn an element into a XPath string.
- */
-function getXPathForElement(element) {
-    const idx = (sib, name) => sib
-        ? idx(sib.previousElementSibling, name||sib.localName) + (sib.localName == name)
-        : 1;
-    const segs = elm => !elm || elm.nodeType !== 1
-        ? ['']
-        : elm.id && document.getElementById(elm.id) === elm
-            ? [`id("${elm.id}")`]
-            : [...segs(elm.parentNode), `${elm.localName.toLowerCase()}[${idx(elm)}]`];
-    return segs(element).join('/');
-}
-
-
-/**
- * Current time in ISO format, corrected for local timezone.
- */
-function nowISO() {
-    const now = new Date();
-    return new Date(now.getTime() - now.getTimezoneOffset()*60000);
-}
+var tracking_session_id = null;     // tracking session ID for the current session
 
 
 /**
  * Perform a user login.
  */
 function userLogin(sess, email, password) {
-    fetch(apiserver + 'session_login/', {
-        method: "POST",
-        body: JSON.stringify({
+    postJSON('session_login/', {
             sess: sess,
             email: email,
             password: password
-        }),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8",
-            "X-CSRFToken": Cookies.get("csrftoken")
-        }
-    }).then((response) => {
+    })
+    .then((response) => {
         if (!response.ok) {
             $('#register-login-fail-alert').text("Login failed.").show();
             throw new Error("login failed");
         } else {
             return response.json();
         }
-    }).then(function (response) {
+    })
+    .then(function (response) {
         $('#register-login-fail-alert').text("").hide();
         $('#authmodal').modal('hide');
         sessdata.user_code = response.user_code;
@@ -93,7 +52,7 @@ function userLogin(sess, email, password) {
  */
 function userLogout() {
     Cookies.remove('sessdata');
-    window.location.reload();
+    window.location.reload();   // should automatically close the tracking session
 }
 
 
@@ -127,17 +86,10 @@ function sessionSetup(sess_config) {
             let email = $("#email").val();
             let password = $("#password").val();
 
-            fetch(apiserver + 'register_user/', {
-                method: "POST",
-                body: JSON.stringify({
-                    sess: sess,
-                    email: email,
-                    password: password
-                }),
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8",
-                    "X-CSRFToken": Cookies.get("csrftoken")
-                }
+            postJSON('register_user/', {
+                sess: sess,
+                email: email,
+                password: password
             })
             .then(response => {
                 if (Number(response.headers.get("content-length")) > 0) {
@@ -176,6 +128,18 @@ function sessionSetup(sess_config) {
 
 
 /**
+ * Continues to render the page and shows all initially hidden elements.
+ */
+function showPage() {
+    $('#doc-metadata').show();
+
+    // re-enable $(document).ready() for all scripts so that the
+    // usual initialization takes place
+    $.holdReady(false);
+}
+
+
+/**
  * Set up the application.
  */
 function appSetup() {
@@ -189,8 +153,6 @@ function appSetup() {
     } else {
         $('#messages-container .alert-info').text("").hide();
     }
-
-    $('#doc-metadata').show();
 
     var config = sessdata.app_config;
 
@@ -228,23 +190,11 @@ function appSetup() {
         });
     }
 
-    // re-enable $(document).ready() for all scripts so that the
-    // usual initialization takes place
-    $.holdReady(false);
+    // continue rendering normally
+    showPage();
 
     // start a tracking session
-    fetch(apiserver + 'start_tracking/', {
-        method: "POST",
-        body: JSON.stringify({
-            sess: sess,
-            start_time: nowISO()
-        }),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8",
-            "X-CSRFToken": Cookies.get("csrftoken"),
-            "Authorization": "Token " + sessdata.user_code
-        }
-    })
+    postJSON('start_tracking/', {sess: sess, start_time: nowISO()}, sessdata.user_code)
     .then((response) => response.json())
     .then(function (response) {
         tracking_session_id = response.tracking_session_id;
@@ -253,20 +203,11 @@ function appSetup() {
 
     // set a handler for stopping the tracking session
     $(window).on('beforeunload', function() {
-        fetch(apiserver + 'stop_tracking/', {
-            method: "POST",
-            body: JSON.stringify({
-                sess: sess,
-                tracking_session_id: tracking_session_id,
-                end_time: nowISO()
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8",
-                "X-CSRFToken": Cookies.get("csrftoken"),
-                "Authorization": "Token " + sessdata.user_code
-            },
-            keepalive: true
-        });
+        postJSON('stop_tracking/', {
+            sess: sess,
+            tracking_session_id: tracking_session_id,
+            end_time: nowISO()
+        }, sessdata.user_code, {keepalive: true});
 
         return null;
     });
@@ -274,24 +215,15 @@ function appSetup() {
     // set a handler for tracking click events
     $(document).on('click', function(event) {
         var target = getXPathForElement(event.target);
-        fetch(apiserver + 'track_event/', {
-            method: "POST",
-            body: JSON.stringify({
-                sess: sess,
-                tracking_session_id: tracking_session_id,
-                event: {
-                    time: nowISO(),
-                    type: "click",
-                    value: target
-                }
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8",
-                "X-CSRFToken": Cookies.get("csrftoken"),
-                "Authorization": "Token " + sessdata.user_code
-            },
-            credentials: 'same-origin'
-        });
+        postJSON('track_event/', {
+            sess: sess,
+            tracking_session_id: tracking_session_id,
+            event: {
+                time: nowISO(),
+                type: "click",
+                value: target
+            }}, sessdata.user_code
+        );
     });
 }
 
@@ -309,7 +241,10 @@ $(window).on("load", function() {
         sess = Cookies.get('sess');
     }
 
-    if (sess !== undefined) {
+    if (sess === undefined) {
+        console.error("no session ID passed as URL parameter");
+        showPage();
+    } else {
         console.log("using session ID", sess);
 
         if (Cookies.get('sessdata') !== undefined) {
