@@ -46,6 +46,15 @@ function getXPathForElement(element) {
 
 
 /**
+ * Current time in ISO format, corrected for local timezone.
+ */
+function nowISO() {
+    const now = new Date();
+    return new Date(now.getTime() - now.getTimezoneOffset()*60000);
+}
+
+
+/**
  * Perform a user login.
  */
 function userLogin(sess, email, password) {
@@ -228,7 +237,7 @@ function appSetup() {
         method: "POST",
         body: JSON.stringify({
             sess: sess,
-            start_time: new Date().toISOString()
+            start_time: nowISO()
         }),
         headers: {
             "Content-type": "application/json; charset=UTF-8",
@@ -236,11 +245,11 @@ function appSetup() {
             "Authorization": "Token " + sessdata.user_code
         }
     })
-        .then((response) => response.json())
-        .then(function (response) {
-            tracking_session_id = response.tracking_session_id;
-            console.log("received tracking session ID", tracking_session_id);
-        });
+    .then((response) => response.json())
+    .then(function (response) {
+        tracking_session_id = response.tracking_session_id;
+        console.log("received tracking session ID", tracking_session_id);
+    });
 
     // set a handler for stopping the tracking session
     $(window).on('beforeunload', function() {
@@ -249,7 +258,7 @@ function appSetup() {
             body: JSON.stringify({
                 sess: sess,
                 tracking_session_id: tracking_session_id,
-                end_time: new Date().toISOString()
+                end_time: nowISO()
             }),
             headers: {
                 "Content-type": "application/json; charset=UTF-8",
@@ -271,7 +280,7 @@ function appSetup() {
                 sess: sess,
                 tracking_session_id: tracking_session_id,
                 event: {
-                    time: new Date().toISOString(),
+                    time: nowISO(),
                     type: "click",
                     value: target
                 }
