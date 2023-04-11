@@ -80,6 +80,15 @@ function userLogin(sess, email, password) {
 
 
 /**
+ * Perform a user logout.
+ */
+function userLogout() {
+    Cookies.remove('sessdata');
+    window.location.reload();
+}
+
+
+/**
  * Set up a session.
  */
 function sessionSetup(sess_config) {
@@ -165,7 +174,9 @@ function appSetup() {
     Cookies.set('sessdata', btoa(JSON.stringify(fullsessdata)));
 
     if (sessdata.user_email !== null) {
-        $('#messages-container .alert-info').text("Logged in as " + sessdata.user_email + ".").show();
+        $('#messages-container .alert-info').html("Logged in as " + sessdata.user_email +
+            " – <a href='#' id='logout-link'>Logout</a>").show();
+        $('#logout-link').on('click', userLogout);
     } else {
         $('#messages-container .alert-info').text("").hide();
     }
