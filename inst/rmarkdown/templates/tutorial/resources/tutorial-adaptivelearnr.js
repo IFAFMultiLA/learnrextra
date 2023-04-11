@@ -15,7 +15,7 @@ var sess = null;   // session ID
 var apiserver = 'http://localhost:8000/';   // TODO: make this configurable
 var fullsessdata = {};    // session data for all sessions saved to cookies
 var sessdata = {};        // session data for this specific session
-var tracking_session_id = null;
+var tracking_session_id = null;     // tracking session ID for the current session
 
 
 /**
@@ -128,6 +128,18 @@ function sessionSetup(sess_config) {
 
 
 /**
+ * Continues to render the page and shows all initially hidden elements.
+ */
+function showPage() {
+    $('#doc-metadata').show();
+
+    // re-enable $(document).ready() for all scripts so that the
+    // usual initialization takes place
+    $.holdReady(false);
+}
+
+
+/**
  * Set up the application.
  */
 function appSetup() {
@@ -141,8 +153,6 @@ function appSetup() {
     } else {
         $('#messages-container .alert-info').text("").hide();
     }
-
-    $('#doc-metadata').show();
 
     var config = sessdata.app_config;
 
@@ -180,9 +190,8 @@ function appSetup() {
         });
     }
 
-    // re-enable $(document).ready() for all scripts so that the
-    // usual initialization takes place
-    $.holdReady(false);
+    // continue rendering normally
+    showPage();
 
     // start a tracking session
     postJSON('start_tracking/', {sess: sess, start_time: nowISO()}, sessdata.user_code)
@@ -232,7 +241,10 @@ $(window).on("load", function() {
         sess = Cookies.get('sess');
     }
 
-    if (sess !== undefined) {
+    if (sess === undefined) {
+        console.error("no session ID passed as URL parameter");
+        showPage();
+    } else {
         console.log("using session ID", sess);
 
         if (Cookies.get('sessdata') !== undefined) {
