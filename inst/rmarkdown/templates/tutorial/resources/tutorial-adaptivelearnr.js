@@ -11,8 +11,10 @@ $.holdReady(true);
  * Global variables
  */
 
+var config = null;  // will be set when it is loaded
+
 var sess = null;   // session ID
-var apiserver = 'http://localhost:8000/';   // TODO: make this configurable
+var apiserver = null;     // base URL to API server; will be loaded from config
 var fullsessdata = {};    // session data for all sessions saved to cookies
 var sessdata = {};        // session data for this specific session
 var tracking_session_id = null;     // tracking session ID for the current session
@@ -233,6 +235,12 @@ function appSetup() {
  * (images, scripts, etc) was fully loaded.
  */
 $(window).on("load", function() {
+    // load configuration
+    config = JSON.parse(document.getElementById('adaptivelearnr-config').textContent);
+    apiserver = config.apiserver;
+
+    console.log("API server set to", apiserver);
+
     // get session ID
     if ($.urlParam('sess') !== undefined) {
         sess = $.urlParam('sess');
