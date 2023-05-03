@@ -36,8 +36,7 @@ function getXPathForElement(element) {
  * Current time in ISO format, corrected for local timezone.
  */
 function nowISO() {
-    const now = new Date();
-    return new Date(now.getTime() - now.getTimezoneOffset()*60000);
+    return new Date().toISOString();
 }
 
 

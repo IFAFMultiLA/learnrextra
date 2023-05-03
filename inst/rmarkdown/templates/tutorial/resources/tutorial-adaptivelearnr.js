@@ -142,6 +142,46 @@ function showPage() {
 
 
 /**
+ * Prepare application session with obtained application session code `obtained_sess_code`.
+ */
+function prepareSession(obtained_sess_code) {
+    sess = obtained_sess_code;
+
+    if (sess === undefined) {
+        console.warn("no session ID passed as URL parameter");
+        showPage();
+    } else {
+        console.log("using session ID", sess);
+
+        if (Cookies.get('sessdata') !== undefined) {
+            fullsessdata = $.parseJSON(atob(Cookies.get('sessdata')));
+        }
+
+        if (fullsessdata.hasOwnProperty(sess)) {
+            sessdata = fullsessdata[sess];
+        } else {
+            sessdata = {
+                user_code: null,
+                user_email: null,
+                app_config: null
+            }
+        }
+
+        if (sessdata.user_code === undefined || sessdata.app_config === null) {
+            // start an application session
+            fetch(apiserver + 'session/?sess=' + sess)
+                .then((response) => response.json())
+                .then((config) => sessionSetup(config) && appSetup());
+        } else {
+            console.log('loaded user code from cookies:', sessdata.user_code);
+            console.log('loaded app config from cookies');
+            appSetup();
+        }
+    }
+}
+
+
+/**
  * Set up the application.
  */
 function appSetup() {
@@ -250,35 +290,16 @@ $(window).on("load", function() {
     }
 
     if (sess === undefined) {
-        console.error("no session ID passed as URL parameter");
-        showPage();
-    } else {
-        console.log("using session ID", sess);
-
-        if (Cookies.get('sessdata') !== undefined) {
-            fullsessdata = $.parseJSON(atob(Cookies.get('sessdata')));
-        }
-
-        if (fullsessdata.hasOwnProperty(sess)) {
-            sessdata = fullsessdata[sess];
-        } else {
-            sessdata = {
-                user_code: null,
-                user_email: null,
-                app_config: null
-            }
-        }
-
-        if (sessdata.user_code === undefined || sessdata.app_config === null) {
-            // start an application session
-            fetch(apiserver + 'session/?sess=' + sess)
+        console.log("trying to obtain session code via default application session");
+        try {
+            fetch(apiserver + 'session/')
                 .then((response) => response.json())
-                .then((config) => sessionSetup(config) && appSetup());
-        } else {
-            console.log('loaded user code from cookies:', sessdata.user_code);
-            console.log('loaded app config from cookies');
-            appSetup();
+                .then((response) => prepareSession(response.sess_code));
+        } catch (err) {
+            prepareSession();   // prepare without session code
         }
+    } else {
+        prepareSession(sess);
     }
 });
 
