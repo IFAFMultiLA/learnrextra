@@ -302,8 +302,11 @@ function setupTracking() {
     if (tracking_config.mouse && MOUSE_TRACK_UPDATE_INTERVAL > 0) {
         mus = new Mus();
         mus.setTimePoint(true);  // records time elapsed for each point for a precise data recording
+        mus.setRecordCurrentElem(true);
+        mus.setRecordInputs(false);
         mus.record();  // start recording
-        mouse_track_interval = setInterval(mouseTrackingUpdate, MOUSE_TRACK_UPDATE_INTERVAL, mus, sess, tracking_session_id, sessdata.user_code);
+        mouse_track_interval = setInterval(mouseTrackingUpdate, MOUSE_TRACK_UPDATE_INTERVAL, mus, sess,
+           tracking_session_id, sessdata.user_code);
     }
 }
 
