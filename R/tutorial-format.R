@@ -32,6 +32,12 @@ tutorial <- function(...) {
                 version = "4.17.15",
                 src = system.file("rmarkdown/templates/tutorial/resources", package = "adaptivelearnr"),
                 script = "lodash.min.js"
+            ),
+            htmltools::htmlDependency(
+                name = "mus",
+                version = "1.1.0",
+                src = system.file("rmarkdown/templates/tutorial/resources", package = "adaptivelearnr"),
+                script = "mus.min.js"
             )
         ),
         args$extra_dependencies

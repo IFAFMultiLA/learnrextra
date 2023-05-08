@@ -68,6 +68,24 @@ function postJSON(endpoint, data, authtoken, extras) {
 
 
 /**
+ * Shortcut for posting event data to the API.
+ */
+function postEvent(sess, tracking_session_id, authtoken, eventtype, eventval) {
+    return postJSON('track_event/', {
+            sess: sess,
+            tracking_session_id: tracking_session_id,
+            event: {
+                time: nowISO(),
+                type: eventtype,
+                value: eventval
+            }
+        },
+        authtoken
+    );
+}
+
+
+/**
  * Detect device form factor (tablet, phone or desktop).
  *
  * Taken and adapted from https://abdessalam.dev/blog/detect-device-type-javascript/.
@@ -95,4 +113,24 @@ function detectFormFactor() {
  */
 function getWindowSize() {
     return [$(window).width(), $(window).height()];
+}
+
+
+/**
+ * Send collected mouse tracking data to the API.
+ */
+function mouseTrackingUpdate(mus, sess, tracking_session_id, authtoken) {
+    // temporarily stop and get data
+    mus.stop();
+    let data = mus.getData();
+
+    // reset data and restart recording
+    mus.release();
+    mus.record();
+
+    if (data.frames.length > 1) {
+        // only post when we have recorded data; there's always one "start" item in the data array so we expect at least
+        // two items for actual data
+        postEvent(sess, tracking_session_id, authtoken, "mouse", data);
+    }
 }
