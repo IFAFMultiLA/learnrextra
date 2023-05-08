@@ -65,3 +65,34 @@ function postJSON(endpoint, data, authtoken, extras) {
 
     return fetch(apiserver + endpoint, options);
 }
+
+
+/**
+ * Detect device form factor (tablet, phone or desktop).
+ *
+ * Taken and adapted from https://abdessalam.dev/blog/detect-device-type-javascript/.
+ */
+function detectFormFactor() {
+  const ua = navigator.userAgent;
+  if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+    return "tablet";
+  }
+  if (
+    /Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(
+      ua
+    )
+  ) {
+    return "phone";
+  }
+  return "desktop";
+};
+
+
+/**
+ * Get the current view port size (window size) as array [width, height].
+ *
+ * Requires jQuery.
+ */
+function getWindowSize() {
+    return [$(window).width(), $(window).height()];
+}
