@@ -236,7 +236,17 @@ function appSetup() {
     showPage();
 
     // start a tracking session
-    postJSON('start_tracking/', {sess: sess, start_time: nowISO()}, sessdata.user_code)
+    let start_data = {
+        sess: sess,
+        start_time: nowISO(),
+        device_info: {
+            form_factor: detectFormFactor(),
+            window_size: getWindowSize(),
+            user_agent: navigator.userAgent
+        }
+    }
+
+    postJSON('start_tracking/', start_data, sessdata.user_code)
     .then((response) => response.json())
     .then(function (response) {
         tracking_session_id = response.tracking_session_id;
@@ -253,6 +263,19 @@ function appSetup() {
 
         return null;
     });
+
+    // set a handler for tracking window resize events
+    $(window).on('resize', _.debounce(function(event) {
+        postJSON('track_event/', {
+            sess: sess,
+            tracking_session_id: tracking_session_id,
+            event: {
+                time: nowISO(),
+                type: "device_info_update",
+                value: {window_size: getWindowSize()}
+            }}, sessdata.user_code
+        );
+    }, 500));
 
     // set a handler for tracking click events
     $(document).on('click', function(event) {

@@ -26,6 +26,12 @@ tutorial <- function(...) {
                 version = "3.0.1",
                 src = system.file("rmarkdown/templates/tutorial/resources", package = "adaptivelearnr"),
                 script = "js.cookie.min.js"
+            ),
+            htmltools::htmlDependency(
+                name = "lodash",
+                version = "4.17.15",
+                src = system.file("rmarkdown/templates/tutorial/resources", package = "adaptivelearnr"),
+                script = "lodash.min.js"
             )
         ),
         args$extra_dependencies
