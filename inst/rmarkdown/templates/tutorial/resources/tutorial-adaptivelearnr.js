@@ -8,8 +8,13 @@ $.holdReady(true);
 
 
 /**
- * Global variables
+ * Global variables and constants
  */
+
+// mouse tracking update interval in ms (if enabled by app config); set to 0 to disable generally
+const MOUSE_TRACK_UPDATE_INTERVAL = 1000;
+// debounce time in ms for window resize tracking
+const WINDOW_RESIZE_TRACKING_DEBOUNCE = 500;
 
 var config = null;  // will be set when it is loaded
 
@@ -18,6 +23,7 @@ var apiserver = null;     // base URL to API server; will be loaded from config
 var fullsessdata = {};    // session data for all sessions saved to cookies
 var sessdata = {};        // session data for this specific session
 var tracking_session_id = null;     // tracking session ID for the current session
+var mouse_track_interval = null;    // mouse tracking interval timer ID
 
 
 /**
@@ -196,7 +202,7 @@ function appSetup() {
         $('#messages-container .alert-info').text("").hide();
     }
 
-    var config = sessdata.app_config;
+    let config = sessdata.app_config;
 
     // handling excluding elements by selector
     if (config.hasOwnProperty('exclude')) {
@@ -251,45 +257,57 @@ function appSetup() {
     .then(function (response) {
         tracking_session_id = response.tracking_session_id;
         console.log("received tracking session ID", tracking_session_id);
+
+        setupTracking();
     });
 
     // set a handler for stopping the tracking session
     $(window).on('beforeunload', function() {
+        clearInterval(mouse_track_interval);
+        mouse_track_interval = null;
+        mouseTrackingUpdate();
+
         postJSON('stop_tracking/', {
-            sess: sess,
-            tracking_session_id: tracking_session_id,
-            end_time: nowISO()
-        }, sessdata.user_code, {keepalive: true});
+                sess: sess,
+                tracking_session_id: tracking_session_id,
+                end_time: nowISO()
+            },
+            sessdata.user_code,
+            {keepalive: true}
+        );
 
         return null;
     });
+}
 
+/**
+ * Set up tracking.
+ */
+function setupTracking() {
     // set a handler for tracking window resize events
-    $(window).on('resize', _.debounce(function(event) {
-        postJSON('track_event/', {
-            sess: sess,
-            tracking_session_id: tracking_session_id,
-            event: {
-                time: nowISO(),
-                type: "device_info_update",
-                value: {window_size: getWindowSize()}
-            }}, sessdata.user_code
-        );
-    }, 500));
+    $(window).on('resize', _.debounce(function(event) {  // use "debounce" to prevent sending too much information
+        postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {window_size: getWindowSize()});
+    }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
 
     // set a handler for tracking click events
     $(document).on('click', function(event) {
         var target = getXPathForElement(event.target);
-        postJSON('track_event/', {
-            sess: sess,
-            tracking_session_id: tracking_session_id,
-            event: {
-                time: nowISO(),
-                type: "click",
-                value: target
-            }}, sessdata.user_code
-        );
+        postEvent(sess, tracking_session_id, sessdata.user_code, "click", target);
     });
+
+    // handling tracking configuration
+    let tracking_config = _.defaults(config.tracking, {'mouse': true});
+
+    // mouse tracking
+    if (tracking_config.mouse && MOUSE_TRACK_UPDATE_INTERVAL > 0) {
+        mus = new Mus();
+        mus.setTimePoint(true);  // records time elapsed for each point for a precise data recording
+        mus.setRecordCurrentElem(true);
+        mus.setRecordInputs(false);
+        mus.record();  // start recording
+        mouse_track_interval = setInterval(mouseTrackingUpdate, MOUSE_TRACK_UPDATE_INTERVAL, mus, sess,
+           tracking_session_id, sessdata.user_code);
+    }
 }
 
 
