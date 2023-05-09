@@ -119,18 +119,15 @@ function getWindowSize() {
 /**
  * Send collected mouse tracking data to the API.
  */
-function mouseTrackingUpdate(mus, sess, tracking_session_id, authtoken) {
-    // temporarily stop and get data
-    mus.stop();
+function mouseTrackingUpdate() {
+    // get the data so far and reset it so we will continue with a fresh batch on the next update
+    mus.finishedAt = new Date().getTime() / 1000;
     let data = mus.getData();
+    mus.frames = [];
+    mus.finishedAt = 0;
 
-    // reset data and restart recording
-    mus.release();
-    mus.record();
-
-    if (data.frames.length > 1) {
-        // only post when we have recorded data; there's always one "start" item in the data array so we expect at least
-        // two items for actual data
-        postEvent(sess, tracking_session_id, authtoken, "mouse", data);
+    if (data.frames.length > 0) {
+        // only post when we have recorded data
+        postEvent(sess, tracking_session_id, sessdata.user_code, "mouse", data);
     }
 }

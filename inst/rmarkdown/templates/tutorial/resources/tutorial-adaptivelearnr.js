@@ -12,7 +12,7 @@ $.holdReady(true);
  */
 
 // mouse tracking update interval in ms (if enabled by app config); set to 0 to disable generally
-const MOUSE_TRACK_UPDATE_INTERVAL = 1000;
+const MOUSE_TRACK_UPDATE_INTERVAL = 10000;
 // debounce time in ms for window resize tracking
 const WINDOW_RESIZE_TRACKING_DEBOUNCE = 500;
 
@@ -23,6 +23,7 @@ var apiserver = null;     // base URL to API server; will be loaded from config
 var fullsessdata = {};    // session data for all sessions saved to cookies
 var sessdata = {};        // session data for this specific session
 var tracking_session_id = null;     // tracking session ID for the current session
+var mus = null;                     // mus.js mouse tracking instance
 var mouse_track_interval = null;    // mouse tracking interval timer ID
 
 
@@ -266,6 +267,7 @@ function appSetup() {
         clearInterval(mouse_track_interval);
         mouse_track_interval = null;
         mouseTrackingUpdate();
+        mus.stop();
 
         postJSON('stop_tracking/', {
                 sess: sess,
@@ -289,12 +291,6 @@ function setupTracking() {
         postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {window_size: getWindowSize()});
     }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
 
-    // set a handler for tracking click events
-    $(document).on('click', function(event) {
-        var target = getXPathForElement(event.target);
-        postEvent(sess, tracking_session_id, sessdata.user_code, "click", target);
-    });
-
     // handling tracking configuration
     let tracking_config = _.defaults(config.tracking, {'mouse': true});
 
@@ -303,10 +299,9 @@ function setupTracking() {
         mus = new Mus();
         mus.setTimePoint(true);  // records time elapsed for each point for a precise data recording
         mus.setRecordCurrentElem(true);
-        mus.setRecordInputs(false);
+        //mus.setRecordInputs(false);
         mus.record();  // start recording
-        mouse_track_interval = setInterval(mouseTrackingUpdate, MOUSE_TRACK_UPDATE_INTERVAL, mus, sess,
-           tracking_session_id, sessdata.user_code);
+        mouse_track_interval = setInterval(mouseTrackingUpdate, MOUSE_TRACK_UPDATE_INTERVAL);
     }
 }
 
