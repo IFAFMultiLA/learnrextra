@@ -151,7 +151,7 @@ function showPage() {
 /**
  * Prepare application session with obtained application session code `obtained_sess_code`.
  */
-function prepareSession(obtained_sess_code) {
+async function prepareSession(obtained_sess_code) {
     sess = obtained_sess_code;
 
     if (sess === undefined) {
@@ -176,9 +176,22 @@ function prepareSession(obtained_sess_code) {
 
         if (sessdata.user_code === undefined || sessdata.app_config === null) {
             // start an application session
-            fetch(apiserver + 'session/?sess=' + sess)
-                .then((response) => response.json())
-                .then((config) => sessionSetup(config) && appSetup());
+            try {
+                await fetch(apiserver + 'session/?sess=' + sess)
+                    .then((response) => response.json())
+                    .then((config) => sessionSetup(config) && appSetup());
+            } catch (err) {
+                console.error("fetch failed:", err);
+                console.log("setting up app without session code")
+                config = {
+                    sess_code: sess,
+                    user_code: null,
+                    auth_mode: "none",
+                    config: {}
+                }
+                sessionSetup(config);
+                appSetup();
+            }
         } else {
             console.log('loaded user code from cookies:', sessdata.user_code);
             console.log('loaded app config from cookies');
@@ -192,8 +205,11 @@ function prepareSession(obtained_sess_code) {
  * Set up the application.
  */
 function appSetup() {
-    fullsessdata[sess] = sessdata;
-    Cookies.set('sessdata', btoa(JSON.stringify(fullsessdata)));
+    // retain session data via cookie
+    if (sessdata.user_code !== null) {
+        fullsessdata[sess] = sessdata;
+        Cookies.set('sessdata', btoa(JSON.stringify(fullsessdata)));
+    }
 
     if (sessdata.user_email !== null) {
         $('#messages-container .alert-info').html("Logged in as " + sessdata.user_email +
@@ -243,43 +259,47 @@ function appSetup() {
     showPage();
 
     // start a tracking session
-    let start_data = {
-        sess: sess,
-        start_time: nowISO(),
-        device_info: {
-            form_factor: detectFormFactor(),
-            window_size: getWindowSize(),
-            user_agent: navigator.userAgent
+    if (sessdata.user_code === null) {
+        console.log("skipping tracking")
+    } else {
+        let start_data = {
+            sess: sess,
+            start_time: nowISO(),
+            device_info: {
+                form_factor: detectFormFactor(),
+                window_size: getWindowSize(),
+                user_agent: navigator.userAgent
+            }
         }
+
+        postJSON('start_tracking/', start_data, sessdata.user_code)
+        .then((response) => response.json())
+        .then(function (response) {
+            tracking_session_id = response.tracking_session_id;
+            console.log("received tracking session ID", tracking_session_id);
+
+            setupTracking();
+        });
+
+        // set a handler for stopping the tracking session
+        $(window).on('beforeunload', function() {
+            clearInterval(mouse_track_interval);
+            mouse_track_interval = null;
+            mouseTrackingUpdate();
+            mus.stop();
+
+            postJSON('stop_tracking/', {
+                    sess: sess,
+                    tracking_session_id: tracking_session_id,
+                    end_time: nowISO()
+                },
+                sessdata.user_code,
+                {keepalive: true}
+            );
+
+            return null;
+        });
     }
-
-    postJSON('start_tracking/', start_data, sessdata.user_code)
-    .then((response) => response.json())
-    .then(function (response) {
-        tracking_session_id = response.tracking_session_id;
-        console.log("received tracking session ID", tracking_session_id);
-
-        setupTracking();
-    });
-
-    // set a handler for stopping the tracking session
-    $(window).on('beforeunload', function() {
-        clearInterval(mouse_track_interval);
-        mouse_track_interval = null;
-        mouseTrackingUpdate();
-        mus.stop();
-
-        postJSON('stop_tracking/', {
-                sess: sess,
-                tracking_session_id: tracking_session_id,
-                end_time: nowISO()
-            },
-            sessdata.user_code,
-            {keepalive: true}
-        );
-
-        return null;
-    });
 }
 
 /**
@@ -310,7 +330,7 @@ function setupTracking() {
  * Initialize the application when the HTML document along with all remote elements
  * (images, scripts, etc) was fully loaded.
  */
-$(window).on("load", function() {
+$(window).on("load", async function() {
     // load configuration
     config = JSON.parse(document.getElementById('adaptivelearnr-config').textContent);
     apiserver = config.apiserver;
@@ -328,10 +348,12 @@ $(window).on("load", function() {
     if (sess === undefined) {
         console.log("trying to obtain session code via default application session");
         try {
-            fetch(apiserver + 'session/')
+            await fetch(apiserver + 'session/')
                 .then((response) => response.json())
                 .then((response) => prepareSession(response.sess_code));
         } catch (err) {
+            console.error("fetch failed:", err);
+            console.log("preparing session without session code")
             prepareSession();   // prepare without session code
         }
     } else {
