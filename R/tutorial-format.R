@@ -60,6 +60,29 @@ tutorial <- function(...) {
         args$extra_dependencies
     )
 
+    # register event handler for events triggered by users while interacting with the app
+    learnr_events <- c(
+        "exercise_hint",
+        "exercise_submitted",
+        "exercise_result",
+        "question_submission",
+        "video_progress",
+        "section_skipped",
+        "section_viewed"    # ,
+#        "session_start",   # already covered via tracking session start
+#        "session_stop"     # already covered via tracking session end
+    )
+
+    for (e in learnr_events) {
+        learnr::event_register_handler(e, function(session, event, data) {
+            # send this event along with the collected data to the JavaScript side which in turn sends it to the
+            # web API
+            #message("received event ", event, " with data ", names(data))
+            data$event_type <- event
+            session$sendCustomMessage("learnr_event", data)
+        })
+    }
+
     # call the original learnr tutorial format function
     do.call(learnr::tutorial, args)
 }
