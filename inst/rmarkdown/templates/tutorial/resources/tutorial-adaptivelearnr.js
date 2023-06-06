@@ -23,7 +23,8 @@ const WINDOW_RESIZE_TRACKING_DEBOUNCE = 500;
 
 var config = null;  // will be set when it is loaded
 
-var sess = null;   // session ID
+var replay = false;  // replay mode
+var sess = null;     // session ID
 var apiserver = null;     // base URL to API server; will be loaded from config
 var fullsessdata = {};    // session data for all sessions saved to cookies
 var sessdata = {};        // session data for this specific session
@@ -162,9 +163,7 @@ function showPage() {
 async function prepareSession(obtained_sess_code) {
     sess = obtained_sess_code;
 
-    if (sess === undefined) {
-        // no session ID was passed
-        console.warn("no session ID passed as URL parameter");
+    if (sess === undefined || replay) {
         // we continue showing the page – tracking will be disabled
         showPage();
     } else {
@@ -360,12 +359,25 @@ $(window).on("load", async function() {
 
     console.log("API server set to", apiserver);
 
-    // get session ID
-    if ($.urlParam('sess') !== undefined) {
+    // check if we're in replay mode
+    if ($.urlParam('replay') !== undefined) {
+        console.log("replay mode enabled");
+        replay = true;
+
         sess = $.urlParam('sess');
-        Cookies.set('sess', sess);
+        if (sess === undefined) {
+            console.warn("session code not passed");
+        }
+
+        window.parent.postMessage("hi!", apiserver);
     } else {
-        sess = Cookies.get('sess');
+        // get session ID
+        if ($.urlParam('sess') !== undefined) {
+            sess = $.urlParam('sess');
+            Cookies.set('sess', sess);
+        } else {
+            sess = Cookies.get('sess');
+        }
     }
 
     if (sess === undefined) {
