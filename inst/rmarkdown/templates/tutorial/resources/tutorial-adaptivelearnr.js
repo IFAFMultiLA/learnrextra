@@ -1,5 +1,10 @@
 // Main adaptivelearnr javascript code.
 // Requires tutorial-adaptivelearnr-utils.js to be included before.
+//
+// Additionally, an adapted version of the "mus.js" JavaScript library is used (see
+// https://github.com/IFAFMultiLA/musjs).
+//
+//
 
 
 // disable "$(document).ready()" for all scripts to make sure that the
@@ -81,7 +86,8 @@ function sessionSetup(sess_config) {
     } else {
         // set up authentication modal dialog
         $("#login-btn").on("click", function() {
-            console.log("logging in...");
+            // log in an already registered user
+            console.log("logging in ...");
 
             var email = $("#email").val();
             var password = $("#password").val();
@@ -90,6 +96,7 @@ function sessionSetup(sess_config) {
         });
 
         $("#register-btn").on("click", function() {
+            // register a new user and log in that user
             console.log("registering ...");
 
             let email = $("#email").val();
@@ -102,13 +109,13 @@ function sessionSetup(sess_config) {
             })
             .then(response => {
                 if (Number(response.headers.get("content-length")) > 0) {
-                    return response.json();
+                    return response.json();  // got valid answer
                 } else {
                     return {};
                 }
             })
             .then(resp_data => {
-                if (resp_data.hasOwnProperty('error')) {    // failure
+                if (resp_data.hasOwnProperty('error')) {    // failure registering user
                     let alert_box = $('#register-login-fail-alert');
                     let error_type = 'unknown';
 
@@ -120,10 +127,11 @@ function sessionSetup(sess_config) {
                     }
 
                     alert_box.show();
-                } else {    // success
+                } else {    // success registering user
                     $('#register-login-fail-alert').text("").hide();
                     $('#authmodal').modal('hide');
 
+                    // log in the new user
                     userLogin(sess, email, password);
                 }
             });
@@ -155,18 +163,25 @@ async function prepareSession(obtained_sess_code) {
     sess = obtained_sess_code;
 
     if (sess === undefined) {
+        // no session ID was passed
         console.warn("no session ID passed as URL parameter");
+        // we continue showing the page – tracking will be disabled
         showPage();
     } else {
+        // a session ID was passed
         console.log("using session ID", sess);
 
+        // get existing sessions from cookie storage
         if (Cookies.get('sessdata') !== undefined) {
             fullsessdata = $.parseJSON(atob(Cookies.get('sessdata')));
         }
 
+        // check if data for this session ID exists in the cookie
         if (fullsessdata.hasOwnProperty(sess)) {
+            // use the session data from the cookie
             sessdata = fullsessdata[sess];
         } else {
+            // create new, empty session data
             sessdata = {
                 user_code: null,
                 user_email: null,
@@ -175,14 +190,15 @@ async function prepareSession(obtained_sess_code) {
         }
 
         if (sessdata.user_code === undefined || sessdata.app_config === null) {
-            // start an application session
+            // no user auth. token and/or application configuration –  start an application session to fetch this
+            // information
             try {
                 await fetch(apiserver + 'session/?sess=' + sess)
                     .then((response) => response.json())
                     .then((config) => sessionSetup(config) && appSetup());
             } catch (err) {
                 console.error("fetch failed:", err);
-                console.log("setting up app without session code")
+                console.log("setting up app without user token code")
                 config = {
                     sess_code: sess,
                     user_code: null,
@@ -193,6 +209,7 @@ async function prepareSession(obtained_sess_code) {
                 appSetup();
             }
         } else {
+            // user auth token and application configuration already present (from cookie)
             console.log('loaded user code from cookies:', sessdata.user_code);
             console.log('loaded app config from cookies');
             appSetup();
@@ -211,6 +228,7 @@ function appSetup() {
         Cookies.set('sessdata', btoa(JSON.stringify(fullsessdata)));
     }
 
+    // show "logged in as ..." message in page header
     if (sessdata.user_email !== null) {
         $('#messages-container .alert-info').html("Logged in as " + sessdata.user_email +
             " – <a href='#' id='logout-link'>Logout</a>").show();
@@ -219,6 +237,7 @@ function appSetup() {
         $('#messages-container .alert-info').text("").hide();
     }
 
+    // set up the app according to the app configuration
     let config = sessdata.app_config;
 
     // handling excluding elements by selector
@@ -262,6 +281,7 @@ function appSetup() {
     if (sessdata.user_code === null) {
         console.log("skipping tracking")
     } else {
+        // send "tracking session started" information and obtain a tracking session ID
         let start_data = {
             sess: sess,
             start_time: nowISO(),
@@ -273,21 +293,24 @@ function appSetup() {
         }
 
         postJSON('start_tracking/', start_data, sessdata.user_code)
-        .then((response) => response.json())
-        .then(function (response) {
-            tracking_session_id = response.tracking_session_id;
-            console.log("received tracking session ID", tracking_session_id);
+            .then((response) => response.json())
+            .then(function (response) {
+                tracking_session_id = response.tracking_session_id;
+                console.log("received tracking session ID", tracking_session_id);
 
-            setupTracking();
-        });
+                // set up the tracking with the obtained tracking session ID
+                setupTracking();
+            });
 
-        // set a handler for stopping the tracking session
+        // set a handler for stopping the tracking session when the page is closed
         $(window).on('beforeunload', function() {
+            // stop the mouse tracking
             clearInterval(mouse_track_interval);
             mouse_track_interval = null;
             mouseTrackingUpdate();
             mus.stop();
 
+            // send "tracking session ended" information
             postJSON('stop_tracking/', {
                     sess: sess,
                     tracking_session_id: tracking_session_id,
@@ -312,7 +335,7 @@ function setupTracking() {
     }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
 
     // handling tracking configuration
-    let tracking_config = _.defaults(config.tracking, {'mouse': true});
+    let tracking_config = _.defaults(sessdata.app_config.tracking, {'mouse': true});
 
     // mouse tracking
     if (tracking_config.mouse && MOUSE_TRACK_UPDATE_INTERVAL > 0) {
