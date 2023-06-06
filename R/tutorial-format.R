@@ -12,6 +12,7 @@ tutorial <- function(...) {
         apiserver = args$apiserver
     )
 
+    # additional HTML to include at the start of the body tag
     args$includes <- append(
         list(before_body = system.file("rmarkdown/templates/tutorial/resources/before_body_includes.htm",
                                        package = "adaptivelearnr")),

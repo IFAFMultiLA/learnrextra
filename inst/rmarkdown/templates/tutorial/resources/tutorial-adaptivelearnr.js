@@ -1,5 +1,10 @@
 // Main adaptivelearnr javascript code.
 // Requires tutorial-adaptivelearnr-utils.js to be included before.
+//
+// Additionally, an adapted version of the "mus.js" JavaScript library is used (see
+// https://github.com/IFAFMultiLA/musjs).
+//
+//
 
 
 // disable "$(document).ready()" for all scripts to make sure that the
