@@ -312,7 +312,7 @@ function setupTracking() {
     }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
 
     // handling tracking configuration
-    let tracking_config = _.defaults(config.tracking, {'mouse': true});
+    let tracking_config = _.defaults(sessdata.app_config.tracking, {'mouse': true});
 
     // mouse tracking
     if (tracking_config.mouse && MOUSE_TRACK_UPDATE_INTERVAL > 0) {
