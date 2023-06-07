@@ -131,3 +131,14 @@ function mouseTrackingUpdate() {
         postEvent(sess, tracking_session_id, sessdata.user_code, "mouse", data);
     }
 }
+
+
+/**
+ * Send a message of type `msgtype` to the parent window.
+ *
+ * This is used when the app is embedded as iframe (e.g. in "replay mode").
+ */
+function messageToParentWindow(msgtype) {
+    window.parent.postMessage({"msgtype": msgtype}, apiserver_url.origin);
+}
+

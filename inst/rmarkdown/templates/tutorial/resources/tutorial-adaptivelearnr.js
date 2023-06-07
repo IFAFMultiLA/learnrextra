@@ -25,7 +25,8 @@ var config = null;  // will be set when it is loaded
 
 var replay = false;  // replay mode
 var sess = null;     // session ID
-var apiserver = null;     // base URL to API server; will be loaded from config
+var apiserver = null;       // base URL to API server; will be loaded from document config
+var apiserver_url = null;   // base URL to API server as URL object
 var fullsessdata = {};    // session data for all sessions saved to cookies
 var sessdata = {};        // session data for this specific session
 var tracking_session_id = null;     // tracking session ID for the current session
@@ -160,12 +161,34 @@ function showPage() {
 /**
  * Prepare application session with obtained application session code `obtained_sess_code`.
  */
-async function prepareSession(obtained_sess_code) {
+async function prepareSession(obtained_sess_code, app_config_for_replay) {
     sess = obtained_sess_code;
 
     if (sess === undefined || replay) {
         // we continue showing the page – tracking will be disabled
-        showPage();
+        console.log("tracking disabled");
+
+        if (replay) {
+            console.log("preparing session in replay mode");
+
+            if (app_config_for_replay === undefined) {
+                console.error("replay mode but app_config_for_replay is undefined")
+            }
+            if (sess === undefined) {
+                console.error("replay mode but sess is undefined")
+            }
+
+            config = {
+                sess_code: sess,
+                user_code: null,
+                auth_mode: "none",
+                config: app_config_for_replay
+            }
+            sessionSetup(config);
+            appSetup();
+        } else {
+            showPage();
+        }
     } else {
         // a session ID was passed
         console.log("using session ID", sess);
@@ -356,6 +379,7 @@ $(window).on("load", async function() {
     // load configuration
     config = JSON.parse(document.getElementById('adaptivelearnr-config').textContent);
     apiserver = config.apiserver;
+    apiserver_url = new URL(config.apiserver);
 
     console.log("API server set to", apiserver);
 
@@ -369,7 +393,20 @@ $(window).on("load", async function() {
             console.warn("session code not passed");
         }
 
-        window.parent.postMessage("hi!", apiserver);
+        window.addEventListener('message', event => {
+            if (event.isTrusted && event.origin === apiserver_url.origin) {
+                console.log("received message in app", event);
+                if (event.data.msgtype === "app_config") {
+                    prepareSession(sess, event.data.data);
+                } else if (event.data.msgtype === "replaydata") {
+                    // TODO
+                } else {
+                    console.error("event message type not understood:", event.data.msgtype);
+                }
+            }
+        });
+
+        messageToParentWindow("init");
     } else {
         // get session ID
         if ($.urlParam('sess') !== undefined) {
@@ -378,21 +415,21 @@ $(window).on("load", async function() {
         } else {
             sess = Cookies.get('sess');
         }
-    }
 
-    if (sess === undefined) {
-        console.log("trying to obtain session code via default application session");
-        try {
-            await fetch(apiserver + 'session/')
-                .then((response) => response.json())
-                .then((response) => prepareSession(response.sess_code));
-        } catch (err) {
-            console.error("fetch failed:", err);
-            console.log("preparing session without session code")
-            prepareSession();   // prepare without session code
+        if (sess === undefined) {
+            console.log("trying to obtain session code via default application session");
+            try {
+                await fetch(apiserver + 'session/')
+                    .then((response) => response.json())
+                    .then((response) => prepareSession(response.sess_code));
+            } catch (err) {
+                console.error("fetch failed:", err);
+                console.log("preparing session without session code")
+                prepareSession();   // prepare without session code
+            }
+        } else {
+            prepareSession(sess);
         }
-    } else {
-        prepareSession(sess);
     }
 });
 
