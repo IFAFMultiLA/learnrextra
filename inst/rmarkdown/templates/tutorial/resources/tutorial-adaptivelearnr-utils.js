@@ -71,6 +71,10 @@ function postJSON(endpoint, data, authtoken, extras) {
  * Shortcut for posting event data to the API.
  */
 function postEvent(sess, tracking_session_id, authtoken, eventtype, eventval) {
+    if (replay) {
+        return null;
+    }
+
     return postJSON('track_event/', {
             sess: sess,
             tracking_session_id: tracking_session_id,

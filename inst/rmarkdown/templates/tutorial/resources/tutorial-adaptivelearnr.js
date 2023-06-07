@@ -404,9 +404,11 @@ $(window).on("load", async function() {
                 } else if (event.data.msgtype === "replaydata") {
                     let replay_i = event.data.data.i;
                     let replaydata = event.data.data.replaydata;
+
+                    //window.resizeTo(replaydata.window.width, replaydata.window.height);
                     mus.setFrames(replaydata.frames);
                     mus.setWindowSize(replaydata.window.width, replaydata.window.height);
-                    mus.play();
+                    //mus.play();
                 } else {
                     console.error("event message type not understood:", event.data.msgtype);
                 }
