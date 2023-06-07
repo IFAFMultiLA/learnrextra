@@ -138,7 +138,7 @@ function mouseTrackingUpdate() {
  *
  * This is used when the app is embedded as iframe (e.g. in "replay mode").
  */
-function messageToParentWindow(msgtype) {
-    window.parent.postMessage({"msgtype": msgtype}, apiserver_url.origin);
+function messageToParentWindow(msgtype, data) {
+    window.parent.postMessage({"msgtype": msgtype, "data": data}, apiserver_url.origin);
 }
 

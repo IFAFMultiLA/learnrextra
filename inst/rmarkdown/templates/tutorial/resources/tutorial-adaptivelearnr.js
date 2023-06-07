@@ -186,6 +186,8 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
             }
             sessionSetup(config);
             appSetup();
+
+            messageToParentWindow("pulldata", {i: 0});
         } else {
             showPage();
         }
@@ -398,8 +400,13 @@ $(window).on("load", async function() {
                 console.log("received message in app", event);
                 if (event.data.msgtype === "app_config") {
                     prepareSession(sess, event.data.data);
+                    mus = new Mus();
                 } else if (event.data.msgtype === "replaydata") {
-                    // TODO
+                    let replay_i = event.data.data.i;
+                    let replaydata = event.data.data.replaydata;
+                    mus.setFrames(replaydata.frames);
+                    mus.setWindowSize(replaydata.window.width, replaydata.window.height);
+                    mus.play();
                 } else {
                     console.error("event message type not understood:", event.data.msgtype);
                 }
