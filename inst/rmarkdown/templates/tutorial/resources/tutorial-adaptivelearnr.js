@@ -388,16 +388,31 @@ $(window).on("load", async function() {
 
     // check if we're in replay mode
     if ($.urlParam('replay') !== undefined) {
-        console.log("replay mode enabled");
+        let replay_state = Number($.urlParam('replay'));
+        console.log("replay mode enabled with replay state ", replay_state);
         replay = true;
+        mus = new Mus();
 
         sess = $.urlParam('sess');
         if (sess === undefined) {
             console.warn("session code not passed");
         }
 
-        window.addEventListener('message', replayMessageReceived);
-        messageToParentWindow("init");
+        if (replay_state === 1) {
+            showPage();
+
+            setTimeout(function() {
+                tutorial.$removeState(function () {
+                    tutorial.$serverRequest('remove_state', null, function () {
+                        let url_params = window.location.search.replace("replay=1", "replay=2");
+                        window.location.replace(window.location.origin + window.location.pathname + url_params);
+                    })
+                });
+            }, 1000);
+        } else if (replay_state === 2) {
+            window.addEventListener('message', replayMessageReceived);
+            messageToParentWindow("init");
+        }
     } else {
         // get session ID
         if ($.urlParam('sess') !== undefined) {

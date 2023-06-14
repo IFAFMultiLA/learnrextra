@@ -8,7 +8,6 @@ var replay_chunk_i = 0;  // current replay chunk index
 var replay_n_chunks = null;  // index of the last replay chunk
 var replay_chunks = {};  // object that maps replay chunk indices to chunk data for all chunks
                          // that were not completely played, yet
-var replay_start_on_first_chunk = false;   // if true, start playback when first chunk is received
 
 
 /**
@@ -70,7 +69,6 @@ function replayMessageReceived(event) {
 
     if (event.data.msgtype === "app_config") {
         prepareSession(sess, event.data.data);
-        mus = new Mus();
     } else if (event.data.msgtype === "replaydata") {
         let replay_i = event.data.data.i;
         let replaydata = event.data.data.replaydata;
@@ -87,23 +85,13 @@ function replayMessageReceived(event) {
             mus.setFrames(replaydata.frames);
             mus.setWindowSize(replaydata.window.width, replaydata.window.height);
 
-            if (replay_start_on_first_chunk) {
-                mus.play();
-                replay_start_on_first_chunk = false;
-            }
-
             if (replay_n_chunks > 1) {
                 console.log("requesting replay chunk data with index ", 1);
                 messageToParentWindow("pulldata", {"i": 1});
             }
         }
     } else if (event.data.msgtype === "replay_ctrl_play") {
-        if ($.isEmptyObject(replay_chunks)) {
-            messageToParentWindow("pulldata", {"i": 0});
-            replay_start_on_first_chunk = true;
-        } else {
-            mus.play(replayChunkEnd);
-        }
+        mus.play(replayChunkEnd);
     } else if (event.data.msgtype === "replay_ctrl_pause") {
         mus.pause(replayChunkEnd);
     } else if (event.data.msgtype === "replay_ctrl_stop") {
