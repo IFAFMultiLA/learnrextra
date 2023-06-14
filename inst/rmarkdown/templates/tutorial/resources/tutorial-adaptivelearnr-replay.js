@@ -64,8 +64,9 @@ function replayStop() {
  * Event handler for receiving events from the parent frame in session replay mode.
  */
 function replayMessageReceived(event) {
+    console.log("message from parent frame:", event);
+
     if (!event.isTrusted || event.origin !== apiserver_url.origin) return
-    console.log("received message in app", event);
 
     if (event.data.msgtype === "app_config") {
         prepareSession(sess, event.data.data);
