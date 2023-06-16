@@ -152,6 +152,27 @@ function showPage() {
  * Prepare application session with obtained application session code `obtained_sess_code`.
  */
 async function prepareSession(obtained_sess_code) {
+
+    /**
+     * Lusias Slider code
+     */
+
+     console.log("Slider detection started");
+     var tim = Date.now();
+     let sliders = $('.js-range-slider');
+
+    $(".js-range-slider").ionRangeSlider({
+
+        onFinish: function (data) {
+            var $input = data.input;
+    		var id = $input.prop('id');
+    		console.log("Zeitstempel "+ tim + " ;;;;;; ID ist " + id);
+        }
+    });
+    /**
+     * Ende Lusias code
+     */
+
     sess = obtained_sess_code;
 
     if (sess === undefined) {
@@ -306,6 +327,7 @@ function appSetup() {
  * Set up tracking.
  */
 function setupTracking() {
+    console.log("hello setup tracking");
     // set a handler for tracking window resize events
     $(window).on('resize', _.debounce(function(event) {  // use "debounce" to prevent sending too much information
         postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {window_size: getWindowSize()});
