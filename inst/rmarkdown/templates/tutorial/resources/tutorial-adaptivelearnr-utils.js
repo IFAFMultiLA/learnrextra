@@ -71,6 +71,10 @@ function postJSON(endpoint, data, authtoken, extras) {
  * Shortcut for posting event data to the API.
  */
 function postEvent(sess, tracking_session_id, authtoken, eventtype, eventval) {
+    if (replay) {
+        return null;
+    }
+
     return postJSON('track_event/', {
             sess: sess,
             tracking_session_id: tracking_session_id,
@@ -131,3 +135,14 @@ function mouseTrackingUpdate() {
         postEvent(sess, tracking_session_id, sessdata.user_code, "mouse", data);
     }
 }
+
+
+/**
+ * Send a message of type `msgtype` to the parent window.
+ *
+ * This is used when the app is embedded as iframe (e.g. in "replay mode").
+ */
+function messageToParentWindow(msgtype, data) {
+    window.parent.postMessage({"msgtype": msgtype, "data": data}, apiserver_url.origin);
+}
+

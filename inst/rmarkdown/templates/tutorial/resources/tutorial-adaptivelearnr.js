@@ -23,8 +23,10 @@ const WINDOW_RESIZE_TRACKING_DEBOUNCE = 500;
 
 var config = null;  // will be set when it is loaded
 
-var sess = null;   // session ID
-var apiserver = null;     // base URL to API server; will be loaded from config
+var replay = false;  // replay mode
+var sess = null;     // session ID
+var apiserver = null;       // base URL to API server; will be loaded from document config
+var apiserver_url = null;   // base URL to API server as URL object
 var fullsessdata = {};    // session data for all sessions saved to cookies
 var sessdata = {};        // session data for this specific session
 var tracking_session_id = null;     // tracking session ID for the current session
@@ -159,14 +161,37 @@ function showPage() {
 /**
  * Prepare application session with obtained application session code `obtained_sess_code`.
  */
-async function prepareSession(obtained_sess_code) {
+async function prepareSession(obtained_sess_code, app_config_for_replay) {
     sess = obtained_sess_code;
 
-    if (sess === undefined) {
-        // no session ID was passed
-        console.warn("no session ID passed as URL parameter");
+    if (sess === undefined || replay) {
         // we continue showing the page – tracking will be disabled
-        showPage();
+        console.log("tracking disabled");
+
+        if (replay) {
+            console.log("preparing session in replay mode");
+
+            if (app_config_for_replay === undefined) {
+                console.error("replay mode but app_config_for_replay is undefined")
+            }
+            if (sess === undefined) {
+                console.error("replay mode but sess is undefined")
+            }
+
+            config = {
+                sess_code: sess,
+                user_code: null,
+                auth_mode: "none",
+                config: app_config_for_replay
+            }
+            sessionSetup(config);
+            appSetup();
+
+            // initial data pull
+            messageToParentWindow("pulldata", {i: 0});
+        } else {
+            showPage();
+        }
     } else {
         // a session ID was passed
         console.log("using session ID", sess);
@@ -357,30 +382,60 @@ $(window).on("load", async function() {
     // load configuration
     config = JSON.parse(document.getElementById('adaptivelearnr-config').textContent);
     apiserver = config.apiserver;
+    apiserver_url = new URL(config.apiserver);
 
     console.log("API server set to", apiserver);
 
-    // get session ID
-    if ($.urlParam('sess') !== undefined) {
-        sess = $.urlParam('sess');
-        Cookies.set('sess', sess);
-    } else {
-        sess = Cookies.get('sess');
-    }
+    // check if we're in replay mode
+    if ($.urlParam('replay') !== undefined) {
+        let replay_state = Number($.urlParam('replay'));
+        console.log("replay mode enabled with replay state ", replay_state);
+        replay = true;
+        mus = new Mus();
 
-    if (sess === undefined) {
-        console.log("trying to obtain session code via default application session");
-        try {
-            await fetch(apiserver + 'session/')
-                .then((response) => response.json())
-                .then((response) => prepareSession(response.sess_code));
-        } catch (err) {
-            console.error("fetch failed:", err);
-            console.log("preparing session without session code")
-            prepareSession();   // prepare without session code
+        sess = $.urlParam('sess');
+        if (sess === undefined) {
+            console.warn("session code not passed");
+        }
+
+        if (replay_state === 1) {
+            showPage();
+
+            setTimeout(function() {
+                tutorial.$removeState(function () {
+                    tutorial.$serverRequest('remove_state', null, function () {
+                        let url_params = window.location.search.replace("replay=1", "replay=2");
+                        window.location.replace(window.location.origin + window.location.pathname + url_params);
+                    })
+                });
+            }, 1000);
+        } else if (replay_state === 2) {
+            window.addEventListener('message', replayMessageReceived);
+            messageToParentWindow("init");
         }
     } else {
-        prepareSession(sess);
+        // get session ID
+        if ($.urlParam('sess') !== undefined) {
+            sess = $.urlParam('sess');
+            Cookies.set('sess', sess);
+        } else {
+            sess = Cookies.get('sess');
+        }
+
+        if (sess === undefined) {
+            console.log("trying to obtain session code via default application session");
+            try {
+                await fetch(apiserver + 'session/')
+                    .then((response) => response.json())
+                    .then((response) => prepareSession(response.sess_code));
+            } catch (err) {
+                console.error("fetch failed:", err);
+                console.log("preparing session without session code")
+                prepareSession();   // prepare without session code
+            }
+        } else {
+            prepareSession(sess);
+        }
     }
 });
 
