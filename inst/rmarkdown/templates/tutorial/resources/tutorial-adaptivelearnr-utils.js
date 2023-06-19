@@ -140,15 +140,17 @@ function mouseTrackingUpdate() {
 /**
  *
  */
-function registerInputTracking(selector, sess, tracking_session_id, authtoken) {
+function registerInputTracking(selector, sess, tracking_session_id, authtoken, listen_event, extract_val_fn) {
+    listen_event = listen_event === undefined ? 'change' : listen_event;
+    extract_val_fn = extract_val_fn === undefined ? (input_elem) => input_elem.val() : extract_val_fn;
     let eventtype = 'input_change';
 
-    $(selector).on('change', _.debounce(function() {
+    $(selector).on(listen_event, _.debounce(function() {
         let $this = $(this);
         let eventval = {
             'id': $this.prop('id'),
             'xpath': getXPathForElement(this),
-            'value': $this.val()
+            'value': extract_val_fn($this)
         };
         console.log(eventtype, eventval);
         //postEvent(sess, tracking_session_id, authtoken, eventtype, eventval);

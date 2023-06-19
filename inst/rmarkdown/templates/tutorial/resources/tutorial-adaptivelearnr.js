@@ -366,7 +366,46 @@ function setupTracking() {
 
     // shiny inputs tracking
     if (tracking_config.inputs) {
-        registerInputTracking('.js-range-slider');
+        // checkboxes
+        registerInputTracking(
+            'input.shiny-bound-input[type=checkbox]',
+            sess, tracking_session_id, sessdata.user_code,
+            'change',
+            (input_elem) => input_elem.prop('checked')
+        );
+
+        // dates
+        registerInputTracking('.shiny-bound-input input[type=text]', sess, tracking_session_id, sessdata.user_code);
+
+        // numeric inputs
+        registerInputTracking(
+            'input.shiny-bound-input[type=number]',
+            sess, tracking_session_id, sessdata.user_code,
+            'input'
+        );
+
+        // radio buttons
+        registerInputTracking('.shiny-options-group input[type=radio]', sess, tracking_session_id, sessdata.user_code);
+
+        // select inputs
+        registerInputTracking('select.shiny-bound-input', sess, tracking_session_id, sessdata.user_code);
+
+        // sliders
+        registerInputTracking('.js-range-slider', sess, tracking_session_id, sessdata.user_code);
+
+        // text input
+        registerInputTracking(
+            '.shiny-input-container input[type=text]',
+            sess, tracking_session_id, sessdata.user_code,
+            'input'
+        );
+
+        // text area input
+        registerInputTracking(
+            'textarea.shiny-bound-input',
+            sess, tracking_session_id, sessdata.user_code,
+            'input'
+        );
     }
 
     // mouse tracking
