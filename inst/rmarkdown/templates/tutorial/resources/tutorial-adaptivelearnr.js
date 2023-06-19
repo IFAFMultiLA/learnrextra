@@ -20,6 +20,8 @@ $.holdReady(true);
 const MOUSE_TRACK_UPDATE_INTERVAL = 10000;
 // debounce time in ms for window resize tracking
 const WINDOW_RESIZE_TRACKING_DEBOUNCE = 500;
+// input tracking time in ms for window resize tracking
+const INPUT_TRACKING_DEBOUNCE = 1000;
 
 var config = null;  // will be set when it is loaded
 

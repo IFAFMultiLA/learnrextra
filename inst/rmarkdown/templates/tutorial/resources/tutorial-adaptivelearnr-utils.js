@@ -143,31 +143,16 @@ function mouseTrackingUpdate() {
 function registerInputTracking(selector, sess, tracking_session_id, authtoken) {
     let eventtype = 'input_change';
 
-    if (selector === '.js-range-slider') {
-        $(selector).ionRangeSlider({
-            onFinish: function (data) {
-                let $this = data.input;
-                let eventval = {
-                    'id': $this.prop('id'),
-                    'xpath': getXPathForElement(this),
-                    'value': $this.val()
-                };
-
-                console.log(eventtype, eventval);
-            }
-        });
-    } else {
-        $(selector).on('change', function() {
-            let $this = $(this);
-            let eventval = {
-                'id': $this.prop('id'),
-                'xpath': getXPathForElement(this),
-                'value': $this.val()
-            };
-            console.log(eventtype, eventval);
-            //postEvent(sess, tracking_session_id, authtoken, eventtype, eventval);
-        });
-    }
+    $(selector).on('change', _.debounce(function() {
+        let $this = $(this);
+        let eventval = {
+            'id': $this.prop('id'),
+            'xpath': getXPathForElement(this),
+            'value': $this.val()
+        };
+        console.log(eventtype, eventval);
+        //postEvent(sess, tracking_session_id, authtoken, eventtype, eventval);
+    }, INPUT_TRACKING_DEBOUNCE));
 }
 
 /**
