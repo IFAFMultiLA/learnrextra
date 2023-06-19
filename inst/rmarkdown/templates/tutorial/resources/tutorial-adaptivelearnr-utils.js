@@ -138,6 +138,28 @@ function mouseTrackingUpdate() {
 
 
 /**
+ * Register an input element that is selectable via `selector` for tracking its changes by listening to the event
+ * `listen_event` (default: `"change"`). Extract the updated value of the input element by applying the function
+ * `extract_val_fn` which takes the jQuery element object as parameter (default: `(input_elem) => input_elem.val()`).
+ */
+function registerInputTracking(selector, sess, tracking_session_id, authtoken, listen_event, extract_val_fn) {
+    listen_event = listen_event === undefined ? 'change' : listen_event;
+    extract_val_fn = extract_val_fn === undefined ? (input_elem) => input_elem.val() : extract_val_fn;
+    let eventtype = 'input_change';
+
+    $(selector).on(listen_event, _.debounce(function() {
+        let $this = $(this);
+        let eventval = {
+            'id': $this.prop('id'),
+            'xpath': getXPathForElement(this),
+            'value': extract_val_fn($this)
+        };
+        //console.log(eventtype, eventval);
+        postEvent(sess, tracking_session_id, authtoken, eventtype, eventval);
+    }, INPUT_TRACKING_DEBOUNCE));
+}
+
+/**
  * Send a message of type `msgtype` to the parent window.
  *
  * This is used when the app is embedded as iframe (e.g. in "replay mode").

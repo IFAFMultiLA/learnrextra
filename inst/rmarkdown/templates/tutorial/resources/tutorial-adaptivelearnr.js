@@ -20,6 +20,8 @@ $.holdReady(true);
 const MOUSE_TRACK_UPDATE_INTERVAL = 10000;
 // debounce time in ms for window resize tracking
 const WINDOW_RESIZE_TRACKING_DEBOUNCE = 500;
+// input tracking time in ms for window resize tracking
+const INPUT_TRACKING_DEBOUNCE = 1000;
 
 var config = null;  // will be set when it is loaded
 
@@ -360,7 +362,51 @@ function setupTracking() {
     }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
 
     // handling tracking configuration
-    let tracking_config = _.defaults(sessdata.app_config.tracking, {'mouse': true});
+    let tracking_config = _.defaults(sessdata.app_config.tracking, {'mouse': true, 'inputs': true});
+
+    // shiny inputs tracking
+    if (tracking_config.inputs) {
+        // checkboxes
+        registerInputTracking(
+            'input.shiny-bound-input[type=checkbox]',
+            sess, tracking_session_id, sessdata.user_code,
+            'change',
+            (input_elem) => input_elem.prop('checked')
+        );
+
+        // dates
+        registerInputTracking('.shiny-bound-input input[type=text]', sess, tracking_session_id, sessdata.user_code);
+
+        // numeric inputs
+        registerInputTracking(
+            'input.shiny-bound-input[type=number]',
+            sess, tracking_session_id, sessdata.user_code,
+            'input'
+        );
+
+        // radio buttons
+        registerInputTracking('.shiny-options-group input[type=radio]', sess, tracking_session_id, sessdata.user_code);
+
+        // select inputs
+        registerInputTracking('select.shiny-bound-input', sess, tracking_session_id, sessdata.user_code);
+
+        // sliders
+        registerInputTracking('.js-range-slider', sess, tracking_session_id, sessdata.user_code);
+
+        // text input
+        registerInputTracking(
+            '.shiny-input-container input[type=text]',
+            sess, tracking_session_id, sessdata.user_code,
+            'input'
+        );
+
+        // text area input
+        registerInputTracking(
+            'textarea.shiny-bound-input',
+            sess, tracking_session_id, sessdata.user_code,
+            'input'
+        );
+    }
 
     // mouse tracking
     if (tracking_config.mouse && MOUSE_TRACK_UPDATE_INTERVAL > 0) {
