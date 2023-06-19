@@ -138,7 +138,9 @@ function mouseTrackingUpdate() {
 
 
 /**
- *
+ * Register an input element that is selectable via `selector` for tracking its changes by listening to the event
+ * `listen_event` (default: `"change"`). Extract the updated value of the input element by applying the function
+ * `extract_val_fn` which takes the jQuery element object as parameter (default: `(input_elem) => input_elem.val()`).
  */
 function registerInputTracking(selector, sess, tracking_session_id, authtoken, listen_event, extract_val_fn) {
     listen_event = listen_event === undefined ? 'change' : listen_event;
@@ -152,8 +154,8 @@ function registerInputTracking(selector, sess, tracking_session_id, authtoken, l
             'xpath': getXPathForElement(this),
             'value': extract_val_fn($this)
         };
-        console.log(eventtype, eventval);
-        //postEvent(sess, tracking_session_id, authtoken, eventtype, eventval);
+        //console.log(eventtype, eventval);
+        postEvent(sess, tracking_session_id, authtoken, eventtype, eventval);
     }, INPUT_TRACKING_DEBOUNCE));
 }
 
