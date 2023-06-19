@@ -1,5 +1,10 @@
 // Main adaptivelearnr javascript code.
 // Requires tutorial-adaptivelearnr-utils.js to be included before.
+//
+// Additionally, an adapted version of the "mus.js" JavaScript library is used (see
+// https://github.com/IFAFMultiLA/musjs).
+//
+//
 
 
 // disable "$(document).ready()" for all scripts to make sure that the
@@ -18,8 +23,10 @@ const WINDOW_RESIZE_TRACKING_DEBOUNCE = 500;
 
 var config = null;  // will be set when it is loaded
 
-var sess = null;   // session ID
-var apiserver = null;     // base URL to API server; will be loaded from config
+var replay = false;  // replay mode
+var sess = null;     // session ID
+var apiserver = null;       // base URL to API server; will be loaded from document config
+var apiserver_url = null;   // base URL to API server as URL object
 var fullsessdata = {};    // session data for all sessions saved to cookies
 var sessdata = {};        // session data for this specific session
 var tracking_session_id = null;     // tracking session ID for the current session
@@ -81,7 +88,8 @@ function sessionSetup(sess_config) {
     } else {
         // set up authentication modal dialog
         $("#login-btn").on("click", function() {
-            console.log("logging in...");
+            // log in an already registered user
+            console.log("logging in ...");
 
             var email = $("#email").val();
             var password = $("#password").val();
@@ -90,6 +98,7 @@ function sessionSetup(sess_config) {
         });
 
         $("#register-btn").on("click", function() {
+            // register a new user and log in that user
             console.log("registering ...");
 
             let email = $("#email").val();
@@ -102,13 +111,13 @@ function sessionSetup(sess_config) {
             })
             .then(response => {
                 if (Number(response.headers.get("content-length")) > 0) {
-                    return response.json();
+                    return response.json();  // got valid answer
                 } else {
                     return {};
                 }
             })
             .then(resp_data => {
-                if (resp_data.hasOwnProperty('error')) {    // failure
+                if (resp_data.hasOwnProperty('error')) {    // failure registering user
                     let alert_box = $('#register-login-fail-alert');
                     let error_type = 'unknown';
 
@@ -120,10 +129,11 @@ function sessionSetup(sess_config) {
                     }
 
                     alert_box.show();
-                } else {    // success
+                } else {    // success registering user
                     $('#register-login-fail-alert').text("").hide();
                     $('#authmodal').modal('hide');
 
+                    // log in the new user
                     userLogin(sess, email, password);
                 }
             });
@@ -151,43 +161,52 @@ function showPage() {
 /**
  * Prepare application session with obtained application session code `obtained_sess_code`.
  */
-async function prepareSession(obtained_sess_code) {
-
-    /**
-     * Lusias Slider code
-     */
-
-     console.log("Slider detection started");
-     var tim = Date.now();
-     let sliders = $('.js-range-slider');
-
-    $(".js-range-slider").ionRangeSlider({
-
-        onFinish: function (data) {
-            var $input = data.input;
-    		var id = $input.prop('id');
-    		console.log("Zeitstempel "+ tim + " ;;;;;; ID ist " + id);
-        }
-    });
-    /**
-     * Ende Lusias code
-     */
-
+async function prepareSession(obtained_sess_code, app_config_for_replay) {
     sess = obtained_sess_code;
 
-    if (sess === undefined) {
-        console.warn("no session ID passed as URL parameter");
-        showPage();
+    if (sess === undefined || replay) {
+        // we continue showing the page – tracking will be disabled
+        console.log("tracking disabled");
+
+        if (replay) {
+            console.log("preparing session in replay mode");
+
+            if (app_config_for_replay === undefined) {
+                console.error("replay mode but app_config_for_replay is undefined")
+            }
+            if (sess === undefined) {
+                console.error("replay mode but sess is undefined")
+            }
+
+            config = {
+                sess_code: sess,
+                user_code: null,
+                auth_mode: "none",
+                config: app_config_for_replay
+            }
+            sessionSetup(config);
+            appSetup();
+
+            // initial data pull
+            messageToParentWindow("pulldata", {i: 0});
+        } else {
+            showPage();
+        }
     } else {
+        // a session ID was passed
         console.log("using session ID", sess);
 
+        // get existing sessions from cookie storage
         if (Cookies.get('sessdata') !== undefined) {
             fullsessdata = $.parseJSON(atob(Cookies.get('sessdata')));
         }
 
+        // check if data for this session ID exists in the cookie
         if (fullsessdata.hasOwnProperty(sess)) {
+            // use the session data from the cookie
             sessdata = fullsessdata[sess];
         } else {
+            // create new, empty session data
             sessdata = {
                 user_code: null,
                 user_email: null,
@@ -196,14 +215,15 @@ async function prepareSession(obtained_sess_code) {
         }
 
         if (sessdata.user_code === undefined || sessdata.app_config === null) {
-            // start an application session
+            // no user auth. token and/or application configuration –  start an application session to fetch this
+            // information
             try {
                 await fetch(apiserver + 'session/?sess=' + sess)
                     .then((response) => response.json())
                     .then((config) => sessionSetup(config) && appSetup());
             } catch (err) {
                 console.error("fetch failed:", err);
-                console.log("setting up app without session code")
+                console.log("setting up app without user token code")
                 config = {
                     sess_code: sess,
                     user_code: null,
@@ -214,6 +234,7 @@ async function prepareSession(obtained_sess_code) {
                 appSetup();
             }
         } else {
+            // user auth token and application configuration already present (from cookie)
             console.log('loaded user code from cookies:', sessdata.user_code);
             console.log('loaded app config from cookies');
             appSetup();
@@ -232,6 +253,7 @@ function appSetup() {
         Cookies.set('sessdata', btoa(JSON.stringify(fullsessdata)));
     }
 
+    // show "logged in as ..." message in page header
     if (sessdata.user_email !== null) {
         $('#messages-container .alert-info').html("Logged in as " + sessdata.user_email +
             " – <a href='#' id='logout-link'>Logout</a>").show();
@@ -240,6 +262,7 @@ function appSetup() {
         $('#messages-container .alert-info').text("").hide();
     }
 
+    // set up the app according to the app configuration
     let config = sessdata.app_config;
 
     // handling excluding elements by selector
@@ -283,6 +306,7 @@ function appSetup() {
     if (sessdata.user_code === null) {
         console.log("skipping tracking")
     } else {
+        // send "tracking session started" information and obtain a tracking session ID
         let start_data = {
             sess: sess,
             start_time: nowISO(),
@@ -294,21 +318,24 @@ function appSetup() {
         }
 
         postJSON('start_tracking/', start_data, sessdata.user_code)
-        .then((response) => response.json())
-        .then(function (response) {
-            tracking_session_id = response.tracking_session_id;
-            console.log("received tracking session ID", tracking_session_id);
+            .then((response) => response.json())
+            .then(function (response) {
+                tracking_session_id = response.tracking_session_id;
+                console.log("received tracking session ID", tracking_session_id);
 
-            setupTracking();
-        });
+                // set up the tracking with the obtained tracking session ID
+                setupTracking();
+            });
 
-        // set a handler for stopping the tracking session
+        // set a handler for stopping the tracking session when the page is closed
         $(window).on('beforeunload', function() {
+            // stop the mouse tracking
             clearInterval(mouse_track_interval);
             mouse_track_interval = null;
             mouseTrackingUpdate();
             mus.stop();
 
+            // send "tracking session ended" information
             postJSON('stop_tracking/', {
                     sess: sess,
                     tracking_session_id: tracking_session_id,
@@ -327,14 +354,18 @@ function appSetup() {
  * Set up tracking.
  */
 function setupTracking() {
-    console.log("hello setup tracking");
     // set a handler for tracking window resize events
     $(window).on('resize', _.debounce(function(event) {  // use "debounce" to prevent sending too much information
         postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {window_size: getWindowSize()});
     }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
 
     // handling tracking configuration
-    let tracking_config = _.defaults(config.tracking, {'mouse': true});
+    let tracking_config = _.defaults(sessdata.app_config.tracking, {'mouse': true, 'inputs': true});
+
+    // shiny inputs tracking
+    if (tracking_config.inputs) {
+        registerInputTracking('.js-range-slider');
+    }
 
     // mouse tracking
     if (tracking_config.mouse && MOUSE_TRACK_UPDATE_INTERVAL > 0) {
@@ -356,30 +387,71 @@ $(window).on("load", async function() {
     // load configuration
     config = JSON.parse(document.getElementById('adaptivelearnr-config').textContent);
     apiserver = config.apiserver;
+    apiserver_url = new URL(config.apiserver);
 
     console.log("API server set to", apiserver);
 
-    // get session ID
-    if ($.urlParam('sess') !== undefined) {
-        sess = $.urlParam('sess');
-        Cookies.set('sess', sess);
-    } else {
-        sess = Cookies.get('sess');
-    }
+    // check if we're in replay mode
+    if ($.urlParam('replay') !== undefined) {
+        let replay_state = Number($.urlParam('replay'));
+        console.log("replay mode enabled with replay state ", replay_state);
+        replay = true;
+        mus = new Mus();
 
-    if (sess === undefined) {
-        console.log("trying to obtain session code via default application session");
-        try {
-            await fetch(apiserver + 'session/')
-                .then((response) => response.json())
-                .then((response) => prepareSession(response.sess_code));
-        } catch (err) {
-            console.error("fetch failed:", err);
-            console.log("preparing session without session code")
-            prepareSession();   // prepare without session code
+        sess = $.urlParam('sess');
+        if (sess === undefined) {
+            console.warn("session code not passed");
+        }
+
+        if (replay_state === 1) {
+            showPage();
+
+            setTimeout(function() {
+                tutorial.$removeState(function () {
+                    tutorial.$serverRequest('remove_state', null, function () {
+                        let url_params = window.location.search.replace("replay=1", "replay=2");
+                        window.location.replace(window.location.origin + window.location.pathname + url_params);
+                    })
+                });
+            }, 1000);
+        } else if (replay_state === 2) {
+            window.addEventListener('message', replayMessageReceived);
+            messageToParentWindow("init");
         }
     } else {
-        prepareSession(sess);
+        // get session ID
+        if ($.urlParam('sess') !== undefined) {
+            sess = $.urlParam('sess');
+            Cookies.set('sess', sess);
+        } else {
+            sess = Cookies.get('sess');
+        }
+
+        if (sess === undefined) {
+            console.log("trying to obtain session code via default application session");
+            try {
+                await fetch(apiserver + 'session/')
+                    .then((response) => response.json())
+                    .then((response) => prepareSession(response.sess_code));
+            } catch (err) {
+                console.error("fetch failed:", err);
+                console.log("preparing session without session code")
+                prepareSession();   // prepare without session code
+            }
+        } else {
+            prepareSession(sess);
+        }
     }
 });
 
+/**
+ * Initialize event handlers for custom messages coming from the Shiny server backend.
+ */
+$(document).on("shiny:connected", function() {
+    // receive learnr events like exercise submissions
+    Shiny.addCustomMessageHandler("learnr_event", function(data) {
+        let etype = data.event_type;
+        delete data.event_type;
+        postEvent(sess, tracking_session_id, sessdata.user_code, "learnr_event_" + etype, data);
+    });
+})

@@ -71,6 +71,10 @@ function postJSON(endpoint, data, authtoken, extras) {
  * Shortcut for posting event data to the API.
  */
 function postEvent(sess, tracking_session_id, authtoken, eventtype, eventval) {
+    if (replay) {
+        return null;
+    }
+
     return postJSON('track_event/', {
             sess: sess,
             tracking_session_id: tracking_session_id,
@@ -131,3 +135,47 @@ function mouseTrackingUpdate() {
         postEvent(sess, tracking_session_id, sessdata.user_code, "mouse", data);
     }
 }
+
+
+/**
+ *
+ */
+function registerInputTracking(selector, sess, tracking_session_id, authtoken) {
+    let eventtype = 'input_change';
+
+    if (selector === '.js-range-slider') {
+        $(selector).ionRangeSlider({
+            onFinish: function (data) {
+                let $this = data.input;
+                let eventval = {
+                    'id': $this.prop('id'),
+                    'xpath': getXPathForElement(this),
+                    'value': $this.val()
+                };
+
+                console.log(eventtype, eventval);
+            }
+        });
+    } else {
+        $(selector).on('change', function() {
+            let $this = $(this);
+            let eventval = {
+                'id': $this.prop('id'),
+                'xpath': getXPathForElement(this),
+                'value': $this.val()
+            };
+            console.log(eventtype, eventval);
+            //postEvent(sess, tracking_session_id, authtoken, eventtype, eventval);
+        });
+    }
+}
+
+/**
+ * Send a message of type `msgtype` to the parent window.
+ *
+ * This is used when the app is embedded as iframe (e.g. in "replay mode").
+ */
+function messageToParentWindow(msgtype, data) {
+    window.parent.postMessage({"msgtype": msgtype, "data": data}, apiserver_url.origin);
+}
+
