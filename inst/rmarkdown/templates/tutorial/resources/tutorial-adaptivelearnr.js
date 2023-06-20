@@ -491,8 +491,10 @@ $(window).on("load", async function() {
 $(document).on("shiny:connected", function() {
     // receive learnr events like exercise submissions
     Shiny.addCustomMessageHandler("learnr_event", function(data) {
-        let etype = data.event_type;
-        delete data.event_type;
-        postEvent(sess, tracking_session_id, sessdata.user_code, "learnr_event_" + etype, data);
+        if (tracking_session_id !== null) {
+            let etype = data.event_type;
+            delete data.event_type;
+            postEvent(sess, tracking_session_id, sessdata.user_code, "learnr_event_" + etype, data);
+        }
     });
 })
