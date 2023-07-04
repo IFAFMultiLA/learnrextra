@@ -23,6 +23,12 @@ const WINDOW_RESIZE_TRACKING_DEBOUNCE = 500;
 // input tracking time in ms for window resize tracking
 const INPUT_TRACKING_DEBOUNCE = 1000;
 
+// default cookie options (expires in half a year, valid for current path)
+const COOKIE_DEFAULT_OPTS = {
+    expires: 183,
+    path: ''
+};
+
 var config = null;  // will be set when it is loaded
 
 var replay = false;  // replay mode
@@ -69,7 +75,7 @@ function userLogin(sess, email, password) {
  * Perform a user logout.
  */
 function userLogout() {
-    Cookies.remove('sessdata');
+    Cookies.remove('sessdata', COOKIE_DEFAULT_OPTS);
     window.location.reload();   // should automatically close the tracking session
 }
 
@@ -252,7 +258,7 @@ function appSetup() {
     // retain session data via cookie
     if (sessdata.user_code !== null) {
         fullsessdata[sess] = sessdata;
-        Cookies.set('sessdata', btoa(JSON.stringify(fullsessdata)));
+        Cookies.set('sessdata', btoa(JSON.stringify(fullsessdata)), COOKIE_DEFAULT_OPTS);
     }
 
     // show "logged in as ..." message in page header
@@ -463,7 +469,7 @@ $(window).on("load", async function() {
         // get session ID
         if ($.urlParam('sess') !== undefined) {
             sess = $.urlParam('sess');
-            Cookies.set('sess', sess);
+            Cookies.set('sess', sess, COOKIE_DEFAULT_OPTS);
         } else {
             sess = Cookies.get('sess');
         }
