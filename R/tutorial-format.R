@@ -76,6 +76,8 @@ tutorial <- function(...) {
 #        "session_stop"     # already covered via tracking session end
     )
 
+    learnr::event_handlers_reset()
+
     for (e in learnr_events) {
         learnr::event_register_handler(e, function(session, event, data) {
             # send this event along with the collected data to the JavaScript side which in turn sends it to the
