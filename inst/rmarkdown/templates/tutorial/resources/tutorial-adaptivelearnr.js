@@ -371,19 +371,24 @@ function setupTracking() {
     let tracking_config = _.defaults(sessdata.app_config.tracking, {'mouse': true, 'inputs': true, 'chapters': true});
 
     if (tracking_config.chapters) {
+        // define a function that returns a chapter tracking function
+        function getChapterTrackingFn(elem) {
+            return function(input_elem_unused) {
+                return {
+                    element: elem,
+                    chapter_title: $('#tutorial-topic ul li.current a').text(),
+                    chapter_id: $('#tutorial-topic ul li.current a').attr('href').slice(1),
+                    chapter_index: $('#tutorial-topic ul li.current').index()
+                }
+            }
+        }
+
         // clicks on "previous chapter" button
         registerInputTracking(
             '.topicActions .btn-default',
             sess, tracking_session_id, sessdata.user_code,
             'click',
-            function (input_elem) {
-                return {
-                    element: 'btn_prev',
-                    chapter_title: $('#tutorial-topic ul li.current a').text(),
-                    chapter_id: $('#tutorial-topic ul li.current a').attr('href').slice(1),
-                    chapter_index: $('#tutorial-topic ul li.current').index()
-                }
-            },
+            getChapterTrackingFn('btn_prev'),
             'chapter'
         );
 
@@ -392,14 +397,7 @@ function setupTracking() {
             '.topicActions .btn-primary',
             sess, tracking_session_id, sessdata.user_code,
             'click',
-            function (input_elem) {
-                return {
-                    element: 'btn_next',
-                    chapter_title: $('#tutorial-topic ul li.current a').text(),
-                    chapter_id: $('#tutorial-topic ul li.current a').attr('href').slice(1),
-                    chapter_index: $('#tutorial-topic ul li.current').index()
-                }
-            },
+            getChapterTrackingFn('btn_next'),
             'chapter'
         );
 
@@ -408,14 +406,7 @@ function setupTracking() {
             '#tutorial-topic ul li a',
             sess, tracking_session_id, sessdata.user_code,
             'click',
-            function (input_elem) {
-                return {
-                    element: 'nav',
-                    chapter_title: $('#tutorial-topic ul li.current a').text(),
-                    chapter_id: $('#tutorial-topic ul li.current a').attr('href').slice(1),
-                    chapter_index: $('#tutorial-topic ul li.current').index()
-                }
-            },
+            getChapterTrackingFn('nav'),
             'chapter'
         );
     }

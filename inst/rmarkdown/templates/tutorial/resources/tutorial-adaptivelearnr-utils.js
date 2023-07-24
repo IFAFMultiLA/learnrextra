@@ -157,7 +157,7 @@ function registerInputTracking(selector, sess, tracking_session_id, authtoken, l
             'xpath': getXPathForElement(this),
             'value': extract_val_fn($this)
         };
-        console.log(event_type, eventval);
+        //console.log(event_type, eventval);
         postEvent(sess, tracking_session_id, authtoken, event_type, eventval);
     }, INPUT_TRACKING_DEBOUNCE));
 }
