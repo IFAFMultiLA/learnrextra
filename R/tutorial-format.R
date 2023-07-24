@@ -72,9 +72,9 @@ tutorial <- function(...) {
         "exercise_submitted",
         "exercise_result",
         "question_submission",
-        "video_progress",
-        "section_skipped",
-        "section_viewed"    # ,
+        "video_progress"    # ,
+#        "section_skipped", # already covered via JS events (more reliable)
+#        "section_viewed"   # already covered via JS events (more reliable)
 #        "session_start",   # already covered via tracking session start
 #        "session_stop"     # already covered via tracking session end
     )

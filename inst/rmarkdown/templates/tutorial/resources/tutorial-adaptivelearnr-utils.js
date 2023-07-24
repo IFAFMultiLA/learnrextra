@@ -63,7 +63,7 @@ function postJSON(endpoint, data, authtoken, extras) {
         options = {...options, ...extras};
     }
 
-    console.debug('sending data to endpoint ' + endpoint + ':', data);
+    //console.debug('sending data to endpoint ' + endpoint + ':', data);
 
     return fetch(apiserver + endpoint, options);
 }
@@ -144,10 +144,11 @@ function mouseTrackingUpdate() {
  * `listen_event` (default: `"change"`). Extract the updated value of the input element by applying the function
  * `extract_val_fn` which takes the jQuery element object as parameter (default: `(input_elem) => input_elem.val()`).
  */
-function registerInputTracking(selector, sess, tracking_session_id, authtoken, listen_event, extract_val_fn) {
+function registerInputTracking(selector, sess, tracking_session_id, authtoken, listen_event, extract_val_fn, event_type)
+{
     listen_event = listen_event === undefined ? 'change' : listen_event;
     extract_val_fn = extract_val_fn === undefined ? (input_elem) => input_elem.val() : extract_val_fn;
-    let eventtype = 'input_change';
+    event_type = event_type === undefined ? 'input_change' : event_type;
 
     $(selector).on(listen_event, _.debounce(function() {
         let $this = $(this);
@@ -156,8 +157,8 @@ function registerInputTracking(selector, sess, tracking_session_id, authtoken, l
             'xpath': getXPathForElement(this),
             'value': extract_val_fn($this)
         };
-        //console.log(eventtype, eventval);
-        postEvent(sess, tracking_session_id, authtoken, eventtype, eventval);
+        console.log(event_type, eventval);
+        postEvent(sess, tracking_session_id, authtoken, event_type, eventval);
     }, INPUT_TRACKING_DEBOUNCE));
 }
 
