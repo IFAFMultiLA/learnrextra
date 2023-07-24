@@ -20,8 +20,8 @@ $.holdReady(true);
 const MOUSE_TRACK_UPDATE_INTERVAL = 10000;
 // debounce time in ms for window resize tracking
 const WINDOW_RESIZE_TRACKING_DEBOUNCE = 500;
-// input tracking time in ms for window resize tracking
-const INPUT_TRACKING_DEBOUNCE = 1000;
+// input tracking time in ms
+const INPUT_TRACKING_DEBOUNCE = 250;
 
 // default cookie options (expires in half a year, valid for current path)
 const COOKIE_DEFAULT_OPTS = {
@@ -368,7 +368,48 @@ function setupTracking() {
     }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
 
     // handling tracking configuration
-    let tracking_config = _.defaults(sessdata.app_config.tracking, {'mouse': true, 'inputs': true});
+    let tracking_config = _.defaults(sessdata.app_config.tracking, {'mouse': true, 'inputs': true, 'chapters': true});
+
+    if (tracking_config.chapters) {
+        // define a function that returns a chapter tracking function
+        function getChapterTrackingFn(elem) {
+            return function(input_elem_unused) {
+                return {
+                    element: elem,
+                    chapter_title: $('#tutorial-topic ul li.current a').text(),
+                    chapter_id: $('#tutorial-topic ul li.current a').attr('href').slice(1),
+                    chapter_index: $('#tutorial-topic ul li.current').index()
+                }
+            }
+        }
+
+        // clicks on "previous chapter" button
+        registerInputTracking(
+            '.topicActions .btn-default',
+            sess, tracking_session_id, sessdata.user_code,
+            'click',
+            getChapterTrackingFn('btn_prev'),
+            'chapter'
+        );
+
+        // clicks on "next chapter" button
+        registerInputTracking(
+            '.topicActions .btn-primary',
+            sess, tracking_session_id, sessdata.user_code,
+            'click',
+            getChapterTrackingFn('btn_next'),
+            'chapter'
+        );
+
+        // clicks on navigation sidebar links
+        registerInputTracking(
+            '#tutorial-topic ul li a',
+            sess, tracking_session_id, sessdata.user_code,
+            'click',
+            getChapterTrackingFn('nav'),
+            'chapter'
+        );
+    }
 
     // shiny inputs tracking
     if (tracking_config.inputs) {
@@ -497,6 +538,8 @@ $(window).on("load", async function() {
 $(document).on("shiny:connected", function() {
     // receive learnr events like exercise submissions
     Shiny.addCustomMessageHandler("learnr_event", function(data) {
+        console.debug("received learnr event:", data);
+
         if (tracking_session_id !== null) {
             let etype = data.event_type;
             delete data.event_type;
