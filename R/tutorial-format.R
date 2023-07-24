@@ -63,6 +63,9 @@ tutorial <- function(...) {
         args$extra_dependencies
     )
 
+    # call internal event handler reset function
+    learnr:::event_handlers_reset()
+
     # register event handler for events triggered by users while interacting with the app
     learnr_events <- c(
         "exercise_hint",
@@ -75,8 +78,6 @@ tutorial <- function(...) {
 #        "session_start",   # already covered via tracking session start
 #        "session_stop"     # already covered via tracking session end
     )
-
-    learnr::event_handlers_reset()
 
     for (e in learnr_events) {
         learnr::event_register_handler(e, function(session, event, data) {
