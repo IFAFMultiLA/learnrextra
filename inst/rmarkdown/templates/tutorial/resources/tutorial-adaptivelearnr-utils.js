@@ -63,6 +63,8 @@ function postJSON(endpoint, data, authtoken, extras) {
         options = {...options, ...extras};
     }
 
+    console.debug('sending data to endpoint ' + endpoint + ':', data);
+
     return fetch(apiserver + endpoint, options);
 }
 
