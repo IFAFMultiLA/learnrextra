@@ -197,56 +197,97 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
 
             // initial data pull
             messageToParentWindow("pulldata", {i: 0});
-        } else {
-            showPage();
+        } else {  // no replay
+            // show consent modal to inform about usage of cookies
+            if (Cookies.get("consent") !== "restricted") {
+                $("#restricted-consent-btn").on("click", function() {
+                    $("#consentmodal").modal("hide");
+                    Cookies.set("consent", "restricted", COOKIE_DEFAULT_OPTS);
+                    showPage();
+                });
+
+                $("#consentmodal .text-restricted").show();
+                $("#consentmodal").modal('show');
+            } else {
+                showPage();
+            }
         }
     } else {
         // a session ID was passed
         console.log("using session ID", sess);
 
-        // get existing sessions from cookie storage
-        if (Cookies.get('sessdata') !== undefined) {
-            fullsessdata = $.parseJSON(atob(Cookies.get('sessdata')));
-        }
+        // show consent modal
+        if (Cookies.get("consent") === undefined || Cookies.get("consent") === "restricted") {
+            $("#consent-btn").on("click", function() {
+                $("#consentmodal").modal("hide");
+                Cookies.set("consent", "full-yes", COOKIE_DEFAULT_OPTS);
+                prepareSessionWithTracking();
+            });
 
-        // check if data for this session ID exists in the cookie
-        if (fullsessdata.hasOwnProperty(sess)) {
-            // use the session data from the cookie
-            sessdata = fullsessdata[sess];
-        } else {
-            // create new, empty session data
-            sessdata = {
+            $("#no-consent-btn").on("click", function() {
+                $("#consentmodal").modal("hide");
+                Cookies.set("consent", "full-no", COOKIE_DEFAULT_OPTS);
+                console.log("tracking disabled");
+                showPage();
+            });
+
+            $("#consentmodal .text-full").show();
+            $("#consentmodal").modal('show');
+        } else if (Cookies.get("consent") === "full-yes") {
+            prepareSessionWithTracking();
+        } else {   // consent is "full-no" -> disable tracking
+            console.log("tracking disabled");
+            showPage();
+        }
+    }
+}
+
+/**
+ * Prepare a session with tracking enabled (consent given).
+ */
+async function prepareSessionWithTracking() {
+    // get existing sessions from cookie storage
+    if (Cookies.get('sessdata') !== undefined) {
+        fullsessdata = $.parseJSON(atob(Cookies.get('sessdata')));
+    }
+
+    // check if data for this session ID exists in the cookie
+    if (fullsessdata.hasOwnProperty(sess)) {
+        // use the session data from the cookie
+        sessdata = fullsessdata[sess];
+    } else {
+        // create new, empty session data
+        sessdata = {
+            user_code: null,
+            user_email: null,
+            app_config: null
+        }
+    }
+
+    if (sessdata.user_code === undefined || sessdata.app_config === null) {
+        // no user auth. token and/or application configuration –  start an application session to fetch this
+        // information
+        try {
+            await fetch(apiserver + 'session/?sess=' + sess)
+                .then((response) => response.json())
+                .then((config) => sessionSetup(config) && appSetup());
+        } catch (err) {
+            console.error("fetch failed:", err);
+            console.log("setting up app without user token code")
+            config = {
+                sess_code: sess,
                 user_code: null,
-                user_email: null,
-                app_config: null
+                auth_mode: "none",
+                config: {}
             }
-        }
-
-        if (sessdata.user_code === undefined || sessdata.app_config === null) {
-            // no user auth. token and/or application configuration –  start an application session to fetch this
-            // information
-            try {
-                await fetch(apiserver + 'session/?sess=' + sess)
-                    .then((response) => response.json())
-                    .then((config) => sessionSetup(config) && appSetup());
-            } catch (err) {
-                console.error("fetch failed:", err);
-                console.log("setting up app without user token code")
-                config = {
-                    sess_code: sess,
-                    user_code: null,
-                    auth_mode: "none",
-                    config: {}
-                }
-                sessionSetup(config);
-                appSetup();
-            }
-        } else {
-            // user auth token and application configuration already present (from cookie)
-            console.log('loaded user code from cookies:', sessdata.user_code);
-            console.log('loaded app config from cookies');
+            sessionSetup(config);
             appSetup();
         }
+    } else {
+        // user auth token and application configuration already present (from cookie)
+        console.log('loaded user code from cookies:', sessdata.user_code);
+        console.log('loaded app config from cookies');
+        appSetup();
     }
 }
 
@@ -538,7 +579,7 @@ $(window).on("load", async function() {
 $(document).on("shiny:connected", function() {
     // receive learnr events like exercise submissions
     Shiny.addCustomMessageHandler("learnr_event", function(data) {
-        console.debug("received learnr event:", data);
+        //console.debug("received learnr event:", data);
 
         if (tracking_session_id !== null) {
             let etype = data.event_type;
