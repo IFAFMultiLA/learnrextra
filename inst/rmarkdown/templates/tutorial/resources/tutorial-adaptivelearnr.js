@@ -44,6 +44,7 @@ var apiserver = null;       // base URL to API server; will be loaded from docum
 var apiserver_url = null;   // base URL to API server as URL object
 var fullsessdata = {};    // session data for all sessions saved to cookies
 var sessdata = {};        // session data for this specific session
+var userfeedback =  {};   // user feedback data; maps section ID to feedback object {score: <int>, comment: <str>}
 var tracking_session_id = null;     // tracking session ID for the current session
 var tracking_config = {};           // tracking configuration
 var mus = null;                     // mus.js mouse tracking instance
@@ -540,9 +541,48 @@ function setupTracking() {
 
     // user feedback
     if (tracking_config.feedback) {
-        let fbcontainer = $('.feedback-container').clone();
-        $('.section.level2 .topicActions').prepend(fbcontainer);
-        $('.section.level2 .topicActions > .feedback-container').show();
+        $('.section.level2 .topicActions').prepend($('.feedback-container').clone());
+        let fbcontainers_per_section = $('.section.level2 .topicActions > .feedback-container');
+
+        fbcontainers_per_section.each(function() {
+            let fbcontainer = $(this);
+            fbcontainer.show();
+
+            // scoring event handlers
+            let stars = fbcontainer.find('.score li');
+            stars.on('mouseenter', function() {
+                setClassForContainerElementsUntilIndex(stars, $(this).index());
+            }).on('mouseleave', function() {
+                let section = $(this).parents('.section.level2').attr('id');
+                let sectionfb = _.defaults(userfeedback[section], {score: 0, comment: ''});
+                setClassForContainerElementsUntilIndex(stars, sectionfb.score-1);
+            }).on('click', function() {
+                let i = $(this).index();
+                let section = $(this).parents('.section.level2').attr('id');
+                let sectionfb = _.defaults(userfeedback[section], {score: 0, comment: ''});
+                sectionfb.score = i+1;
+                userfeedback[section] = sectionfb;
+                // TODO: send to API
+            });
+
+            // comment event handlers
+            let comment_input = fbcontainer.find('.comment_submit input');
+            comment_input.on('focus', function () {
+                if (comment_input.val() === 'Ihr Kommentar...') {
+                    comment_input.val('');
+                }
+            });
+            let comment_submit = fbcontainer.find('.comment_submit button');
+            comment_submit.on('click', function () {
+                comment_submit.prop('disabled', true);
+                comment_submit.html('Danke!');
+
+                setTimeout(function() {
+                    comment_submit.prop('disabled', false);
+                    comment_submit.html("Aktualisieren");
+                }, 3000);
+            });
+        });
     }
 }
 

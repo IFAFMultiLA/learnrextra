@@ -31,6 +31,20 @@ function getXPathForElement(element) {
     return segs(element).join('/');
 }
 
+/**
+ *
+ */
+function setClassForContainerElementsUntilIndex(container, i) {
+    container.each(function(j) {
+        let item = $(this);
+        if (j <= i) {
+            item.addClass('active');
+        } else {
+            item.removeClass('active');
+        }
+    });
+}
+
 
 /**
  * Current time in ISO format, corrected for local timezone.

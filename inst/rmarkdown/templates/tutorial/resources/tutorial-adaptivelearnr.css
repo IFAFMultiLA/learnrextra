@@ -19,8 +19,9 @@
     display: none;
 }
 
-.feedback-container .score {
+.feedback-container .infotext {
     float: right;
+    padding: 0.9em 1em 0 0;
 }
 
 .feedback-container .comment_submit {
@@ -29,6 +30,10 @@
 
 .feedback-container .comment_submit input {
     margin: 0 1em 0 0;
+}
+
+.feedback-container .score {
+    float: right;
 }
 
 .feedback-container .score ul {
@@ -43,6 +48,10 @@
     display: inline;
     margin: 0;
     padding: 0;
+}
+
+.feedback-container .score ul li.active {
+    color: gold;
 }
 
 .alert-fullwidth-hidden {
