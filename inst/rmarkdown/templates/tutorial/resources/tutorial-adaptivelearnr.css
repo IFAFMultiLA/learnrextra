@@ -11,6 +11,10 @@
     border-radius: 0px;
 }
 
+#consentmodal .text-full, #consentmodal .text-restricted {
+    display: none;
+}
+
 .alert-fullwidth-hidden {
     width: 100% !important;
     display: none;

@@ -9,20 +9,73 @@
 
           <p>Please provide your credentials:</p>
 
-         <div class="form-group">
+          <div class="form-group">
             <label for="email">Email address</label>
             <input type="email" class="form-control" id="email" placeholder="Enter email">
-          </div>
-          <div class="form-group">
+           </div>
+           <div class="form-group">
             <label for="password">Password</label>
             <input type="password" class="form-control" id="password" placeholder="Password">
-          </div>
+           </div>
 
-          <p>If you don't have an account yet, please choose "register" below.</p>
+           <p>If you don't have an account yet, please choose "register" below.</p>
       </div>
       <div class="modal-footer">
         <button id="login-btn" type="button" class="btn btn-primary">Login</button>
         <button id="register-btn" type="button" class="btn btn-primary">Register</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="consentmodal" tabindex="-2" data-keyboard="false" data-backdrop="static" data-show="false" role="dialog" aria-labelledby="consentmodal_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="authmodal_label">Einverständniserklärung</h5>
+      </div>
+      <div class="modal-body">
+          <div class="text-full">
+              <p>
+                  Das Projekt "Multimodale interaktive Lerndashboards mit Learning Analytics" (MultiLA) hat sich zum Ziel gesetzt das Lernverhalten in den zur Verfügung gestellten Lernanwendungen zu erforschen. Beim ersten Besuch dieser Webseite wird eine anonyme Nutzerkennung erzeugt. Für diese Nutzerkennung werden im Hintergrund Daten gesammelt, die wesentlich dazu beitragen das Nutzerverhalten anonym zu erfassen und im Anschluss in Bezug auf das Lernverhalten zu analysieren. Die Nutzerkennung wird als Browser Cookie gespeichert, so dass bei einem erneuten Besuch Informationen zur bestehenden Nutzerkennung ergänzt werden können.
+              </p>
+
+              <p>Bei den aufgezeichneten Daten handelt es sich um folgende Informationen:</p>
+
+              <ul>
+                <li>Browserinformationen (Browsersoftware, Fenstergröße)</li>
+                <li>Start- und Endzeitpunkt der Nutzung der Webseite</li>
+                <li class="trackingdata-chapters">Informationen über Seitenwechsel</li>
+                <li>Informationen beim Ausfüllen der Quizze (gegebene Antworten, Resultat)</li>
+                <li>Informationen beim Ausfüllen der Code-Aufgaben (eingegebener Code, Resultat, Erfolg)</li>
+                <li class="trackingdata-inputs">Änderungen an Bedienelementen (für interaktive Grafiken, etc.)</li>
+                <li class="trackingdata-mouse">Mausbewegungen</li>
+                <li class="trackingdata-mouse">Scrollbewegungen</li>
+                <li class="trackingdata-mouse">Klicks</li>
+              </ul>
+
+              <p>Die Speicherung von Cookies hilft außerdem, den schon bearbeiteten Stand der Lernanwendung zu speichern und den Bearbeitungsstand des Nutzers/der Nutzerin wieder zu erkennen und aufzurufen.</p>
+
+              <p>All diese Daten werden nur innerhalb der Lernanwendung aufgezeichnet. Sie werden in anonymisierter Form auf den Servern der HTW-Berlin gespeichert und werden mit Auslaufen des Projektes oder möglichen Folgeprojekten gelöscht.</p>
+
+              <p>Weiterhin werden diese Daten die Grundlage zur Erforschung und Analyse des Lernverhaltens darstellen und somit in mögliche wissenschaftliche Publikationen einfließen.</p>
+
+              <p style="font-weight:bold">Dieses Vorgehen dient ausschließlich der wissenschaftlichen Forschung. Es gibt zu keiner Zeit Rückschlüsse auf die jeweilige Person und somit keinerlei Auswirkungen auf Studienleistungen.</p>
+
+              <p>Wenn Sie die Einwilligung für Aufzeichnung der Daten für Forschungszwecke verweigern, werden ausschließlich Cookies zur Speicherung von Nutzerpräferenzen und dem schon bearbeiteten Stand der Lernanwendung in Ihrem Browser gespeichert. Durch die weitere Nutzung der Website stimmen Sie der Verwendung zu diesem Zwecke zu.</p>
+          </div>
+          <div class="text-restricted">
+              <p>Diese Internetseite verwendet Cookies zur Speicherung von Nutzerpräferenzen und dem schon bearbeiteten Stand der Lernanwendung. Durch die weitere Nutzung der Website stimmen Sie der Verwendung zu.</p>
+          </div>
+      </div>
+      <div class="modal-footer">
+          <div class="text-full">
+              <button id="consent-btn" type="button" class="btn btn-primary">Einwilligung zur Aufzeichnung der Daten für Forschungszwecke erteilen</button>
+              <button id="no-consent-btn" type="button" class="btn btn-default">Einwilligung zur Aufzeichnung der Daten für Forschungszwecke verweigern</button>
+          </div>
+          <div class="text-restricted">
+              <button id="restricted-consent-btn" type="button" class="btn btn-primary">OK</button>
+          </div>
       </div>
     </div>
   </div>

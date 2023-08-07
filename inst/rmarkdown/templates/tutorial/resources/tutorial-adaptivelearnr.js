@@ -29,6 +29,12 @@ const COOKIE_DEFAULT_OPTS = {
     path: ''
 };
 
+const TRACKING_CONFIG_DEFAULTS = {
+    'mouse': true,
+    'inputs': true,
+    'chapters': true
+};
+
 var config = null;  // will be set when it is loaded
 
 var replay = false;  // replay mode
@@ -38,6 +44,7 @@ var apiserver_url = null;   // base URL to API server as URL object
 var fullsessdata = {};    // session data for all sessions saved to cookies
 var sessdata = {};        // session data for this specific session
 var tracking_session_id = null;     // tracking session ID for the current session
+var tracking_config = {};           // tracking configuration
 var mus = null;                     // mus.js mouse tracking instance
 var mouse_track_interval = null;    // mouse tracking interval timer ID
 
@@ -65,6 +72,7 @@ function userLogin(sess, email, password) {
         sessdata.user_code = response.user_code;
         sessdata.app_config = response.config;
         sessdata.user_email = email;
+        tracking_config = _.defaults(sessdata.app_config.tracking, TRACKING_CONFIG_DEFAULTS);
         console.log("received user code", sessdata.user_code);
         appSetup();
     });
@@ -197,8 +205,20 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
 
             // initial data pull
             messageToParentWindow("pulldata", {i: 0});
-        } else {
-            showPage();
+        } else {  // no replay
+            // show consent modal to inform about usage of cookies
+            if (Cookies.get("consent") !== "restricted") {
+                $("#restricted-consent-btn").on("click", function() {
+                    $("#consentmodal").modal("hide");
+                    Cookies.set("consent", "restricted", COOKIE_DEFAULT_OPTS);
+                    showPage();
+                });
+
+                $("#consentmodal .text-restricted").show();
+                $("#consentmodal").modal('show');
+            } else {
+                showPage();
+            }
         }
     } else {
         // a session ID was passed
@@ -222,31 +242,86 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
             }
         }
 
-        if (sessdata.user_code === undefined || sessdata.app_config === null) {
-            // no user auth. token and/or application configuration –  start an application session to fetch this
-            // information
+        let sess_config = null;
+
+        if (sessdata.app_config === null) {
+            // no application configuration –  start an application session to fetch this information
             try {
                 await fetch(apiserver + 'session/?sess=' + sess)
                     .then((response) => response.json())
-                    .then((config) => sessionSetup(config) && appSetup());
+                    .then((response_data) => {
+                        sess_config = response_data;
+                        sessdata.app_config = sess_config.config;
+                    });
             } catch (err) {
                 console.error("fetch failed:", err);
                 console.log("setting up app without user token code")
-                config = {
+                sess_config = {
                     sess_code: sess,
                     user_code: null,
                     auth_mode: "none",
                     config: {}
                 }
-                sessionSetup(config);
-                appSetup();
             }
         } else {
             // user auth token and application configuration already present (from cookie)
             console.log('loaded user code from cookies:', sessdata.user_code);
             console.log('loaded app config from cookies');
-            appSetup();
         }
+
+        // handling tracking configuration
+        if (sessdata.app_config === undefined) {
+            tracking_config = TRACKING_CONFIG_DEFAULTS;
+        } else {
+            tracking_config = _.defaults(sessdata.app_config.tracking, TRACKING_CONFIG_DEFAULTS);
+        }
+
+        // show consent modal
+        if (Cookies.get("consent") === undefined || Cookies.get("consent") === "restricted") {
+            $("#consent-btn").on("click", function() {
+                $("#consentmodal").modal("hide");
+                Cookies.set("consent", "full-yes", COOKIE_DEFAULT_OPTS);
+                prepareSessionWithTracking(sess_config);
+            });
+
+            $("#no-consent-btn").on("click", function() {
+                $("#consentmodal").modal("hide");
+                Cookies.set("consent", "full-no", COOKIE_DEFAULT_OPTS);
+                console.log("tracking disabled");
+                showPage();
+            });
+
+            // show/hide items in tracking data list depending on configuration
+            for (let k in tracking_config) {
+                if (tracking_config.hasOwnProperty(k)) {
+                    let item = $("#consentmodal .trackingdata-" + k);
+                    if (tracking_config[k] === true) {
+                        item.show();
+                    } else {
+                        item.hide();
+                    }
+                }
+            }
+
+            $("#consentmodal .text-full").show();
+            $("#consentmodal").modal('show');
+        } else if (Cookies.get("consent") === "full-yes") {
+            prepareSessionWithTracking(sess_config);
+        } else {   // consent is "full-no" -> disable tracking
+            console.log("tracking disabled");
+            showPage();
+        }
+    }
+}
+
+/**
+ * Prepare a session with tracking enabled (consent given).
+ */
+async function prepareSessionWithTracking(sess_config) {
+    if (sess_config === null) {
+        appSetup();
+    } else {
+        sessionSetup(sess_config) && appSetup();
     }
 }
 
@@ -366,9 +441,6 @@ function setupTracking() {
     $(window).on('resize', _.debounce(function(event) {  // use "debounce" to prevent sending too much information
         postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {window_size: getWindowSize()});
     }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
-
-    // handling tracking configuration
-    let tracking_config = _.defaults(sessdata.app_config.tracking, {'mouse': true, 'inputs': true, 'chapters': true});
 
     if (tracking_config.chapters) {
         // define a function that returns a chapter tracking function
@@ -538,7 +610,7 @@ $(window).on("load", async function() {
 $(document).on("shiny:connected", function() {
     // receive learnr events like exercise submissions
     Shiny.addCustomMessageHandler("learnr_event", function(data) {
-        console.debug("received learnr event:", data);
+        //console.debug("received learnr event:", data);
 
         if (tracking_session_id !== null) {
             let etype = data.event_type;
