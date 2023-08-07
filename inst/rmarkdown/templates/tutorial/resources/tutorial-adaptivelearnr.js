@@ -32,7 +32,8 @@ const COOKIE_DEFAULT_OPTS = {
 const TRACKING_CONFIG_DEFAULTS = {
     'mouse': true,
     'inputs': true,
-    'chapters': true
+    'chapters': true,
+    'feedback': true
 };
 
 var config = null;  // will be set when it is loaded
@@ -535,6 +536,13 @@ function setupTracking() {
         //mus.setRecordInputs(false);
         mus.record();  // start recording
         mouse_track_interval = setInterval(mouseTrackingUpdate, MOUSE_TRACK_UPDATE_INTERVAL);
+    }
+
+    // user feedback
+    if (tracking_config.feedback) {
+        let fbcontainer = $('.feedback-container').clone();
+        $('.section.level2 .topicActions').prepend(fbcontainer);
+        $('.section.level2 .topicActions > .feedback-container').show();
     }
 }
 
