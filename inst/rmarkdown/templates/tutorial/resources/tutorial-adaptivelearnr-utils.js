@@ -32,10 +32,10 @@ function getXPathForElement(element) {
 }
 
 /**
- * Set a class to all direct children elements in `container` until including the `i`th children element.
+ * Set a class to all elements in `elems` until including the `i`th element.
  */
-function setClassForContainerElementsUntilIndex(container, i) {
-    container.each(function(j) {
+function setClassForElementsUntilIndex(elems, i) {
+    elems.each(function(j) {
         let item = $(this);
         if (j <= i) {
             item.addClass('active');

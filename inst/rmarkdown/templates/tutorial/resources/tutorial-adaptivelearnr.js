@@ -541,6 +541,7 @@ function setupTracking() {
 
     // user feedback
     if (tracking_config.feedback) {
+        // add the HTML chunk underneath each section
         $('.section.level2 .topicActions').prepend($('.feedback-container').clone());
         let fbcontainers_per_section = $('.section.level2 .topicActions > .feedback-container');
 
@@ -551,11 +552,11 @@ function setupTracking() {
             // scoring event handlers
             let stars = fbcontainer.find('.score li');
             stars.on('mouseenter', function() {
-                setClassForContainerElementsUntilIndex(stars, $(this).index());
+                setClassForElementsUntilIndex(stars, $(this).index());
             }).on('mouseleave', function() {
                 let section = $(this).parents('.section.level2').attr('id');
                 let sectionfb = _.defaults(userfeedback[section], {score: 0, comment: ''});
-                setClassForContainerElementsUntilIndex(stars, sectionfb.score-1);
+                setClassForElementsUntilIndex(stars, sectionfb.score-1);
             }).on('click', function() {
                 let i = $(this).index();
                 let section = $(this).parents('.section.level2').attr('id');
@@ -595,6 +596,30 @@ function setupTracking() {
                 }, 3000);
             });
         });
+
+        // get already existing feedback (if any)
+        try {
+            fetch(apiserver + 'user_feedback/?sess=' + sess, {
+                headers: {
+                    "X-CSRFToken": Cookies.get("csrftoken"),
+                    Authorization: "Token " + sessdata.user_code
+                }
+            }).then((response) => response.json())
+            .then(function (response_data) {
+                response_data.user_feedback.forEach(function (fbitem) {
+                    let fbcontainer = $(fbitem.content_section).find('.feedback-container');
+                    let stars = fbcontainer.find('.score li');
+                    let comment_input = fbcontainer.find('.comment_submit input');
+                    let section = fbitem.content_section.substr(1);
+
+                    userfeedback[section] = {score: fbitem.score, comment: fbitem.text};
+                    setClassForElementsUntilIndex(stars, fbitem.score-1);
+                    comment_input.val(fbitem.text);
+                });
+            });
+        } catch (err) {
+            console.error("fetch failed trying to get existing user feedback:", err);
+        }
     }
 }
 
