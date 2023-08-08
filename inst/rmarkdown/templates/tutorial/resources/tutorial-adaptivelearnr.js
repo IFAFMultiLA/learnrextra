@@ -562,7 +562,10 @@ function setupTracking() {
                 let sectionfb = _.defaults(userfeedback[section], {score: 0, comment: ''});
                 sectionfb.score = i+1;
                 userfeedback[section] = sectionfb;
-                // TODO: send to API
+
+                // send feedback data to the API
+                postUserFeedback(sess, tracking_session_id, sessdata.user_code,
+                    '#' + section, sectionfb.score, sectionfb.comment);
             });
 
             // comment event handlers
@@ -576,6 +579,15 @@ function setupTracking() {
             comment_submit.on('click', function () {
                 comment_submit.prop('disabled', true);
                 comment_submit.html('Danke!');
+
+                let section = $(this).parents('.section.level2').attr('id');
+                let sectionfb = _.defaults(userfeedback[section], {score: 0, comment: ''});
+                sectionfb.comment = comment_input.val();
+                userfeedback[section] = sectionfb;
+
+                // send feedback data to the API
+                postUserFeedback(sess, tracking_session_id, sessdata.user_code,
+                    '#' + section, sectionfb.score, sectionfb.comment);
 
                 setTimeout(function() {
                     comment_submit.prop('disabled', false);

@@ -32,7 +32,7 @@ function getXPathForElement(element) {
 }
 
 /**
- *
+ * Set a class to all direct children elements in `container` until including the `i`th children element.
  */
 function setClassForContainerElementsUntilIndex(container, i) {
     container.each(function(j) {
@@ -99,6 +99,26 @@ function postEvent(sess, tracking_session_id, authtoken, eventtype, eventval) {
                 type: eventtype,
                 value: eventval
             }
+        },
+        authtoken
+    );
+}
+
+
+/**
+ * Shortcut for posting user feedback data to the API.
+ */
+function postUserFeedback(sess, tracking_session_id, authtoken, content_section, score, comment) {
+    if (replay) {
+        return null;
+    }
+
+    return postJSON('user_feedback/', {
+            sess: sess,
+            tracking_session: tracking_session_id,
+            content_section: content_section,
+            score: score,
+            text: comment
         },
         authtoken
     );
