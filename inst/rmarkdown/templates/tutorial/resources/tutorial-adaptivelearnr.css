@@ -4,7 +4,7 @@
 }
 
 #messages-container {
-    font-size: 0.8em;
+    font-size: 0.9em;
 }
 
 #messages-container .alert {
@@ -54,9 +54,8 @@
     color: gold;
 }
 
-.alert-fullwidth-hidden {
+.alert-fullwidth {
     width: 100% !important;
-    display: none;
 }
 
 .with_sidebar {

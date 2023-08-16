@@ -37,7 +37,7 @@
       <div class="modal-body">
           <div class="text-full">
               <p>
-                  Das Projekt "Multimodale interaktive Lerndashboards mit Learning Analytics" (MultiLA) hat sich zum Ziel gesetzt das Lernverhalten in den zur Verfügung gestellten Lernanwendungen zu erforschen. Beim ersten Besuch dieser Webseite wird eine anonyme Nutzerkennung erzeugt. Für diese Nutzerkennung werden im Hintergrund Daten gesammelt, die wesentlich dazu beitragen das Nutzerverhalten anonym zu erfassen und im Anschluss in Bezug auf das Lernverhalten zu analysieren. Die Nutzerkennung wird als Browser Cookie gespeichert, so dass bei einem erneuten Besuch Informationen zur bestehenden Nutzerkennung ergänzt werden können.
+                  Das Projekt "Multimodale interaktive Lerndashboards mit Learning Analytics" (MultiLA) hat sich zum Ziel gesetzt das Lernverhalten in den zur Verfügung gestellten Lernanwendungen zu erforschen. Beim ersten Besuch dieser Webseite wird eine zufällige Nutzerkennung erzeugt. Für diese Nutzerkennung werden im Hintergrund Daten gesammelt, die wesentlich dazu beitragen das Nutzerverhalten pseudonymisiert zu erfassen und im Anschluss in Bezug auf das Lernverhalten zu analysieren. Die Nutzerkennung wird als Browser Cookie gespeichert, so dass bei einem erneuten Besuch Informationen zur bestehenden Nutzerkennung ergänzt werden können. Die Speicherung von Cookies hilft außerdem, den schon bearbeiteten Stand der Lernanwendung zu speichern und den Bearbeitungsstand des Nutzers/der Nutzerin wieder zu erkennen und aufzurufen.
               </p>
 
               <p>Bei den aufgezeichneten Daten handelt es sich um folgende Informationen:</p>
@@ -54,15 +54,15 @@
                 <li class="trackingdata-mouse">Klicks</li>
               </ul>
 
-              <p>Die Speicherung von Cookies hilft außerdem, den schon bearbeiteten Stand der Lernanwendung zu speichern und den Bearbeitungsstand des Nutzers/der Nutzerin wieder zu erkennen und aufzurufen.</p>
-
-              <p>All diese Daten werden nur innerhalb der Lernanwendung aufgezeichnet. Sie werden in anonymisierter Form auf den Servern der HTW-Berlin gespeichert und werden mit Auslaufen des Projektes oder möglichen Folgeprojekten gelöscht.</p>
+              <p>All diese Daten werden nur innerhalb der Lernanwendung aufgezeichnet. Sie werden auf den Servern der HTW-Berlin gespeichert und werden mit Auslaufen des Projektes oder möglichen Folgeprojekten gelöscht.</p>
 
               <p>Weiterhin werden diese Daten die Grundlage zur Erforschung und Analyse des Lernverhaltens darstellen und somit in mögliche wissenschaftliche Publikationen einfließen.</p>
 
               <p style="font-weight:bold">Dieses Vorgehen dient ausschließlich der wissenschaftlichen Forschung. Es gibt zu keiner Zeit Rückschlüsse auf die jeweilige Person und somit keinerlei Auswirkungen auf Studienleistungen.</p>
 
               <p>Wenn Sie die Einwilligung für Aufzeichnung der Daten für Forschungszwecke verweigern, werden ausschließlich Cookies zur Speicherung von Nutzerpräferenzen und dem schon bearbeiteten Stand der Lernanwendung in Ihrem Browser gespeichert. Durch die weitere Nutzung der Website stimmen Sie der Verwendung zu diesem Zwecke zu.</p>
+
+              <p>Weitere Informationen entnehmen Sie bitte den <a href="#" onclick="showDataProtectionModal(true)">Datenschutzhinweisen</a>.</p>
           </div>
           <div class="text-restricted">
               <p>Diese Internetseite verwendet Cookies zur Speicherung von Nutzerpräferenzen und dem schon bearbeiteten Stand der Lernanwendung. Durch die weitere Nutzung der Website stimmen Sie der Verwendung zu.</p>
@@ -80,6 +80,25 @@
     </div>
   </div>
 </div>
+
+
+
+<div class="modal fade" id="dataprotectmodal" tabindex="-2" data-keyboard="false" data-show="false" role="dialog" aria-labelledby="consentmodal_label" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="authmodal_label">Datenschutzhinweise</h5>
+      </div>
+      <div class="modal-body">
+          <p>Foo bar.</p>
+      </div>
+      <div class="modal-footer">
+          <button id="restricted-consent-btn" type="button" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <div class="feedback-container">
     <hr>
@@ -102,5 +121,8 @@
 </div>
 
 <div id="messages-container">
-    <div class="alert alert-info alert-fullwidth-hidden" role="alert"></div>
+    <div class="alert alert-info alert-fullwidth" role="alert">
+        <span class="dataprotect"><a href="#" onclick="showDataProtectionModal()">Datenschutzhinweise</a></span>
+        <span class="logininfo"></span>
+    </div>
 </div>
