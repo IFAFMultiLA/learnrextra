@@ -15,6 +15,45 @@
     display: none;
 }
 
+.feedback-container {
+    display: none;
+}
+
+.feedback-container .infotext {
+    float: right;
+    padding: 0.9em 1em 0 0;
+}
+
+.feedback-container .comment_submit {
+    float: right;
+}
+
+.feedback-container .comment_submit input {
+    margin: 0 1em 0 0;
+}
+
+.feedback-container .score {
+    float: right;
+}
+
+.feedback-container .score ul {
+    font-size: 1.5em;
+    list-style-type: none;
+    margin: 0 1em 0 0;
+    padding: 0;
+}
+
+.feedback-container .score ul li {
+    cursor: pointer;
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
+.feedback-container .score ul li.active {
+    color: gold;
+}
+
 .alert-fullwidth-hidden {
     width: 100% !important;
     display: none;

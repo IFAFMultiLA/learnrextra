@@ -31,6 +31,20 @@ function getXPathForElement(element) {
     return segs(element).join('/');
 }
 
+/**
+ * Set a class to all elements in `elems` until including the `i`th element.
+ */
+function setClassForElementsUntilIndex(elems, i) {
+    elems.each(function(j) {
+        let item = $(this);
+        if (j <= i) {
+            item.addClass('active');
+        } else {
+            item.removeClass('active');
+        }
+    });
+}
+
 
 /**
  * Current time in ISO format, corrected for local timezone.
@@ -85,6 +99,26 @@ function postEvent(sess, tracking_session_id, authtoken, eventtype, eventval) {
                 type: eventtype,
                 value: eventval
             }
+        },
+        authtoken
+    );
+}
+
+
+/**
+ * Shortcut for posting user feedback data to the API.
+ */
+function postUserFeedback(sess, tracking_session_id, authtoken, content_section, score, comment) {
+    if (replay) {
+        return null;
+    }
+
+    return postJSON('user_feedback/', {
+            sess: sess,
+            tracking_session: tracking_session_id,
+            content_section: content_section,
+            score: score,
+            text: comment
         },
         authtoken
     );

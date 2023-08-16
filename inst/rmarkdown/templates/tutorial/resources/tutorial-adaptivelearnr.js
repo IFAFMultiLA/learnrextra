@@ -32,7 +32,8 @@ const COOKIE_DEFAULT_OPTS = {
 const TRACKING_CONFIG_DEFAULTS = {
     'mouse': true,
     'inputs': true,
-    'chapters': true
+    'chapters': true,
+    'feedback': true
 };
 
 var config = null;  // will be set when it is loaded
@@ -43,6 +44,7 @@ var apiserver = null;       // base URL to API server; will be loaded from docum
 var apiserver_url = null;   // base URL to API server as URL object
 var fullsessdata = {};    // session data for all sessions saved to cookies
 var sessdata = {};        // session data for this specific session
+var userfeedback =  {};   // user feedback data; maps section ID to feedback object {score: <int>, comment: <str>}
 var tracking_session_id = null;     // tracking session ID for the current session
 var tracking_config = {};           // tracking configuration
 var mus = null;                     // mus.js mouse tracking instance
@@ -535,6 +537,89 @@ function setupTracking() {
         //mus.setRecordInputs(false);
         mus.record();  // start recording
         mouse_track_interval = setInterval(mouseTrackingUpdate, MOUSE_TRACK_UPDATE_INTERVAL);
+    }
+
+    // user feedback
+    if (tracking_config.feedback) {
+        // add the HTML chunk underneath each section
+        $('.section.level2 .topicActions').prepend($('.feedback-container').clone());
+        let fbcontainers_per_section = $('.section.level2 .topicActions > .feedback-container');
+
+        fbcontainers_per_section.each(function() {
+            let fbcontainer = $(this);
+            fbcontainer.show();
+
+            // scoring event handlers
+            let stars = fbcontainer.find('.score li');
+            stars.on('mouseenter', function() {
+                setClassForElementsUntilIndex(stars, $(this).index());
+            }).on('mouseleave', function() {
+                let section = $(this).parents('.section.level2').attr('id');
+                let sectionfb = _.defaults(userfeedback[section], {score: 0, comment: ''});
+                setClassForElementsUntilIndex(stars, sectionfb.score-1);
+            }).on('click', function() {
+                let i = $(this).index();
+                let section = $(this).parents('.section.level2').attr('id');
+                let sectionfb = _.defaults(userfeedback[section], {score: 0, comment: ''});
+                sectionfb.score = i+1;
+                userfeedback[section] = sectionfb;
+
+                // send feedback data to the API
+                postUserFeedback(sess, tracking_session_id, sessdata.user_code,
+                    '#' + section, sectionfb.score, sectionfb.comment);
+            });
+
+            // comment event handlers
+            let comment_input = fbcontainer.find('.comment_submit input');
+            comment_input.on('focus', function () {
+                if (comment_input.val() === 'Ihr Kommentar...') {
+                    comment_input.val('');
+                }
+            });
+            let comment_submit = fbcontainer.find('.comment_submit button');
+            comment_submit.on('click', function () {
+                comment_submit.prop('disabled', true);
+                comment_submit.html('Danke!');
+
+                let section = $(this).parents('.section.level2').attr('id');
+                let sectionfb = _.defaults(userfeedback[section], {score: 0, comment: ''});
+                sectionfb.comment = comment_input.val();
+                userfeedback[section] = sectionfb;
+
+                // send feedback data to the API
+                postUserFeedback(sess, tracking_session_id, sessdata.user_code,
+                    '#' + section, sectionfb.score, sectionfb.comment);
+
+                setTimeout(function() {
+                    comment_submit.prop('disabled', false);
+                    comment_submit.html("Aktualisieren");
+                }, 3000);
+            });
+        });
+
+        // get already existing feedback (if any)
+        try {
+            fetch(apiserver + 'user_feedback/?sess=' + sess, {
+                headers: {
+                    "X-CSRFToken": Cookies.get("csrftoken"),
+                    Authorization: "Token " + sessdata.user_code
+                }
+            }).then((response) => response.json())
+            .then(function (response_data) {
+                response_data.user_feedback.forEach(function (fbitem) {
+                    let fbcontainer = $(fbitem.content_section).find('.feedback-container');
+                    let stars = fbcontainer.find('.score li');
+                    let comment_input = fbcontainer.find('.comment_submit input');
+                    let section = fbitem.content_section.substr(1);
+
+                    userfeedback[section] = {score: fbitem.score, comment: fbitem.text};
+                    setClassForElementsUntilIndex(stars, fbitem.score-1);
+                    comment_input.val(fbitem.text);
+                });
+            });
+        } catch (err) {
+            console.error("fetch failed trying to get existing user feedback:", err);
+        }
     }
 }
 
