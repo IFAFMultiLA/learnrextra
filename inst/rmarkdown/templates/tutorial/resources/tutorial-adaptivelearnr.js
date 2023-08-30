@@ -340,11 +340,11 @@ function appSetup() {
 
     // show "logged in as ..." message in page header
     if (sessdata.user_email !== null) {
-        $('#messages-container .alert-info').html("Logged in as " + sessdata.user_email +
+        $('#messages-container .logininfo').html("| Logged in as " + sessdata.user_email +
             " – <a href='#' id='logout-link'>Logout</a>").show();
         $('#logout-link').on('click', userLogout);
     } else {
-        $('#messages-container .alert-info').text("").hide();
+        $('#messages-container .logininfo').text("").hide();
     }
 
     // set up the app according to the app configuration
@@ -621,6 +621,24 @@ function setupTracking() {
             console.error("fetch failed trying to get existing user feedback:", err);
         }
     }
+}
+
+
+function showDataProtectionModal(from_consent) {
+    from_consent = from_consent === undefined ? false : from_consent;
+
+    if (from_consent) {
+        // hide the consent modal but go back to it once the data protection model was closed
+        $("#consentmodal").modal("hide");
+        $('#dataprotectmodal').on('hidden.bs.modal', function (e) {
+            $("#consentmodal").modal("show");
+        });
+    } else {
+
+    }
+
+    $('#dataprotectmodal button').on('click', () => $("#dataprotectmodal").modal('hide'));
+    $("#dataprotectmodal").modal('show');
 }
 
 
