@@ -39,13 +39,6 @@ tutorial <- function(
         apiserver = apiserver
     )
 
-    # additional HTML to include at the start of the body tag
-    includes <- append(
-        list(before_body = system.file("rmarkdown/templates/tutorial/resources/before_body_includes.htm",
-                                       package = "adaptivelearnr")),
-        includes
-    )
-
     # base pandoc options
     args <- c()
 
@@ -146,6 +139,15 @@ tutorial <- function(
         theme <- "cerulean"
     }
 
+    extra_dependencies <- append(extra_dependencies, list(
+        htmltools::htmlDependency(
+            name = "tutorial-format",
+            version = utils::packageVersion("learnr"),
+            src = system.file("rmarkdown/templates/tutorial/resources", package = "learnr"),
+            stylesheet = stylesheets
+        )
+    ))
+
     # additional tutorial-format js and css. note that we also include the
     # tutorial_html_dependency() within our list of dependencies to ensure that
     # tutorial.js (and the API it provides) is always loaded prior to our
@@ -154,11 +156,10 @@ tutorial <- function(
         learnr:::tutorial_html_dependency(),
         learnr:::tutorial_i18n_html_dependency(language),
         htmltools::htmlDependency(
-            name = "tutorial-format",
-            version = utils::packageVersion("learnr"),
-            src = system.file("rmarkdown/templates/tutorial/resources", package = "learnr"),
-            script = "tutorial-format.js",
-            stylesheet = stylesheets
+            name = "adaptivelearnr-tutorial-format",
+            version = utils::packageVersion("adaptivelearnr"),
+            src = system.file("rmarkdown/templates/tutorial/resources", package = "adaptivelearnr"),
+            script = "tutorial-format.js"
         )
     ))
 

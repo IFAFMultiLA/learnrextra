@@ -1,0 +1,30 @@
+{
+  "name": "adaptivelearnr",
+  "private": true,
+  "engines": {
+    "node": ">= 14"
+  },
+  "scripts": {
+    "build": "npm run lint && npm run build:esbuild",
+    "build:esbuild": "node adaptivelearnr-js/build.js",
+    "lint": "standard --fix adaptivelearnr-js",
+    "copy": "npm run copy:clipboard && npm run copy:bootbox && npm run copy:i18next",
+    "copy:clipboard": "cpy 'clipboard.min.js' ../../../inst/lib/clipboardjs --cwd node_modules/clipboard/dist/",
+    "copy:bootbox": "cpy 'bootbox.min.js' ../../../inst/lib/bootbox --cwd node_modules/bootbox/dist/",
+    "copy:i18next": "cpy 'i18next.min.js' ../../inst/lib/i18next --cwd node_modules/i18next/"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.16.8",
+    "@babel/core": "^7.16.12",
+    "@babel/preset-env": "^7.16.11",
+    "bootbox": "^5.5.2",
+    "browserslist": "^4.19.1",
+    "clipboard": "^2.0.10",
+    "core-js": "^3.21.0",
+    "cpy-cli": "^4.1.0",
+    "esbuild": "0.14.54",
+    "esbuild-plugin-babel": "https://github.com/schloerke/esbuild-plugin-babel#patch-2",
+    "i18next": "^21.6.10",
+    "standard": "^16.0.4"
+  }
+}

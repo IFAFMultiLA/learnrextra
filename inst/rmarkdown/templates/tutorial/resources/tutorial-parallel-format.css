@@ -5,7 +5,7 @@
 .band {
   padding-left: 5%;
   padding-right: 5%;
-  position: relative;
+  /*position: relative;*/
 }
 
 .bandContent {
@@ -13,6 +13,7 @@
   max-width: 1200px;
 }
 
+/*
 .bandContent.page {
   display: flex;
   display: -ms-flexbox;
@@ -25,10 +26,10 @@
 
   flex-direction: row-reverse;
   -webkit-flex-direction: row-reverse;
-}
+}*/
 
 .topics {
-  width: 75%;
+  /*width: 75%;*/
   overflow-x: auto;
   padding: 0 0.5em 600px;
 }
@@ -47,7 +48,7 @@
   display: block;
 }
 
-.topicsContainer {
+/*.topicsContainer {
   width: 23%;
   min-width: 270px;
   margin-right: 2%;
@@ -70,10 +71,14 @@
   overflow: auto;
   height: auto;
   scroll-behavior: smooth;
-  transform: translateZ(0); /* force repaint to work on older browser used in the IDE */
+  transform: translateZ(0);
+}*/
+
+.topicsList {
+    overflow: hidden;
 }
 
-.topicsHeader {
+/*.topicsHeader {
   display: flex;
   display: -ms-flexbox;
   display: -webkit-box;
@@ -82,7 +87,7 @@
   justify-content: space-between;
   -webkit-justify-content: space-between;
   -ms-flex-pack: justify;
-}
+}*/
 
 .topicsFooter {
   margin-top: 10px;
@@ -99,7 +104,7 @@
   opacity: 1;
 }
 
-.topicsList .topic {
+/*.topicsList .topic {
   line-height: 2.5;
 	color: var(--bs-body-color, inherit);
 	background-color: var(--bs-body-bg, #f8f8f8);
@@ -108,12 +113,13 @@
   transition-property: background-position;
   -webkit-transition-duration: 0.25s;
   transition-duration: 0.25s;
-}
+}*/
 
 .topicsList .topic.current {
   font-weight: bold;
 }
 
+/*
 .topicsList .nav-link {
   padding-left: 0;
 }
@@ -128,6 +134,7 @@
 .tutorial-is-bs3 .topicsList {
   padding-left: 1em;
 }
+*/
 
 .section.level3 {
   margin-bottom: 40px;
@@ -187,6 +194,24 @@
 #doc-metadata {
   margin-bottom: 10px;
   line-height: 1.6em;
+  width: 50%;
+}
+
+#doc-metadata-additional {
+    width: 50%;
+    float: right;
+    text-align: right;
+}
+
+#doc-metadata-additional ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+#doc-metadata-additional ul li {
+    display: inline;
+    margin-left: 1em;
 }
 
 #doc-metadata h3 {
