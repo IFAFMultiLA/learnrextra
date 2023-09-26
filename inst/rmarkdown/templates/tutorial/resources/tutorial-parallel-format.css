@@ -146,11 +146,16 @@
 }
 
 .parallellayout.col.main {
-    flex: 70%;
+    flex: 100%;
 }
 
 .parallellayout.col.side {
-    flex: 30%;
+    flex: 0%;
+    display: none;
+}
+
+#learnr-tutorial-content .summary {
+    display: none;
 }
 
 .section.level3 {

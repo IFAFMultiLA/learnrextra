@@ -6,6 +6,7 @@ $(document).ready(function () {
   let docProgressiveReveal = false
   let docAllowSkip = false
   const topics = []
+  const finalSummaries = {}
 
   let scrollLastSectionToView = false
   let scrollLastSectionPosition = 0
@@ -261,6 +262,15 @@ $(document).ready(function () {
       } else {
         topic.progressiveReveal = docProgressiveReveal
       }
+
+      const summaries = $(topicElement).find('.summary')
+      summaries.each(function (summaryIdx, summaryElem) {
+        if (summaryIdx + 1 === summaries.length) {
+          finalSummaries[topicIndex] = summaryIdx
+        } else {
+          // TODO: handle non-final summaries
+        }
+      })
 
       const jqTopic = $(
         `<li class="topic${isBS3() ? '' : ' nav-item'}" index="${topicIndex}">` +
@@ -728,6 +738,36 @@ $(document).ready(function () {
     // update visibility of topic's exercises and actions
     updateVisibilityOfTopicElements(topicIndex)
   }
+
+  function addSummary (summaryIdx) {
+    const maincol = $('.parallellayout.col.main')
+    const sidebar = $('.parallellayout.col.side')
+
+    if (!sidebar.is(':visible')) {
+      maincol.css('flexBasis', '100%')
+      sidebar.css('flexBasis', '0%')
+      sidebar.show()
+      sidebar.animate({
+        flexBasis: '30%'
+      }, {
+        duration: 1000,
+        step: function (now, fx) {
+          maincol.css('flexBasis', (100 - now) + '%')
+        }
+      })
+    }
+  }
+
+  // add listener for scrolling to the end of the main column -> will trigger adding a final summary for this topic
+  $('.parallellayout.col.main').scroll(function () {
+    const maxScroll = this.scrollHeight - this.clientHeight
+    if (this.scrollTop >= maxScroll - 10) {
+      const summaryIdx = finalSummaries[currentTopicIndex]
+      if (summaryIdx !== undefined) {
+        addSummary(summaryIdx)
+      }
+    }
+  })
 
   preTransformDOMMigrateFromBS3()
   transformDOM()
