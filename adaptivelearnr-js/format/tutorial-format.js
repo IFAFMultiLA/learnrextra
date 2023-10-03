@@ -6,7 +6,8 @@ $(document).ready(function () {
   let docProgressiveReveal = false
   let docAllowSkip = false
   const topics = []
-  const finalSummaries = {}
+  const finalSummaries = {} // maps topic index to summary index
+  const addedSummaries = new Set() // stores keys of "<topicIndex>.<summaryIndex>" of already shown summaries
 
   let scrollLastSectionToView = false
   let scrollLastSectionPosition = 0
@@ -740,21 +741,40 @@ $(document).ready(function () {
   }
 
   function addSummary (summaryIdx) {
+    function addContent () {
+      const topicSummaryKey = `${currentTopicIndex}.${summaryIdx}`
+      if (!addedSummaries.has(topicSummaryKey)) {
+        const summary = $(`.section.level2:eq(${currentTopicIndex})  .summary:eq(${summaryIdx})`).detach().children()
+        summary.css('opacity', '0%').css('background-color', 'white')
+        $('#summarytext').append(summary)
+        summary.animate(
+          { opacity: '100%', backgroundColor: 'yellow' },
+          { duration: 1000, complete: function () { summary.animate({ backgroundColor: 'white' }) } }
+        )
+        addedSummaries.add(topicSummaryKey)
+      }
+    }
+
     const maincol = $('.parallellayout.col.main')
     const sidebar = $('.parallellayout.col.side')
 
-    if (!sidebar.is(':visible')) {
-      maincol.css('flexBasis', '100%')
-      sidebar.css('flexBasis', '0%')
-      sidebar.show()
-      sidebar.animate({
-        flexBasis: '30%'
-      }, {
-        duration: 1000,
-        step: function (now, fx) {
-          maincol.css('flexBasis', (100 - now) + '%')
-        }
-      })
+    if (!sidebar.is(':animated')) {
+      if (!sidebar.is(':visible')) {
+        maincol.css('flexBasis', '100%')
+        sidebar.css('flexBasis', '0%')
+        sidebar.show()
+        sidebar.animate({
+          flexBasis: '30%'
+        }, {
+          duration: 1000,
+          step: function (now, fx) {
+            maincol.css('flexBasis', (100 - now) + '%')
+          },
+          complete: addContent
+        })
+      } else {
+        addContent()
+      }
     }
   }
 
