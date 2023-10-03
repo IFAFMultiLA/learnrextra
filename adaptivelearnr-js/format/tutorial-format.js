@@ -6,7 +6,6 @@ $(document).ready(function () {
   let docProgressiveReveal = false
   let docAllowSkip = false
   const topics = []
-  const finalSummaries = {} // maps topic index to summary index
   const addedSummaries = new Set() // stores keys of "<topicIndex>.<summaryIndex>" of already shown summaries
 
   let scrollLastSectionToView = false
@@ -263,15 +262,6 @@ $(document).ready(function () {
       } else {
         topic.progressiveReveal = docProgressiveReveal
       }
-
-      const summaries = $(topicElement).find('.summary')
-      summaries.each(function (summaryIdx, summaryElem) {
-        if (summaryIdx + 1 === summaries.length) {
-          finalSummaries[topicIndex] = summaryIdx
-        } else {
-          // TODO: handle non-final summaries
-        }
-      })
 
       const jqTopic = $(
         `<li class="topic${isBS3() ? '' : ' nav-item'}" index="${topicIndex}">` +
@@ -744,7 +734,7 @@ $(document).ready(function () {
     function addContent () {
       const topicSummaryKey = `${currentTopicIndex}.${summaryIdx}`
       if (!addedSummaries.has(topicSummaryKey)) {
-        const summary = $(`.section.level2:eq(${currentTopicIndex})  .summary:eq(${summaryIdx})`).detach().children()
+        const summary = $(`.section.level2:eq(${currentTopicIndex})  .summary:eq(${summaryIdx})`).children()
         summary.css('opacity', '0%').css('background-color', 'white')
         $('#summarytext').append(summary)
         summary.animate(
@@ -778,14 +768,26 @@ $(document).ready(function () {
     }
   }
 
-  // add listener for scrolling to the end of the main column -> will trigger adding a final summary for this topic
+  // add listener for scrolling through main column -> will trigger adding summaries for this topic
   $('.parallellayout.col.main').scroll(function () {
-    const maxScroll = this.scrollHeight - this.clientHeight
-    if (this.scrollTop >= maxScroll - 10) {
-      const summaryIdx = finalSummaries[currentTopicIndex]
-      if (summaryIdx !== undefined) {
+    const summaries = $(`.section.level2:eq(${currentTopicIndex})`).find('.summary')
+    const pastScroll = $('.bandContent.topicsListContainer').height()
+
+    summaries.each(function (summaryIdx, summaryElem) {
+      // console.log(summaryIdx, summaryElem.getBoundingClientRect().bottom, pastScroll)
+      if (summaryElem.getBoundingClientRect().bottom < pastScroll) {
         addSummary(summaryIdx)
       }
+    })
+
+    const maxScroll = this.scrollHeight - this.clientHeight
+    if (this.scrollTop >= maxScroll - 10) {
+      // scrolled to end; add all summaries that haven't been added, yet
+      summaries.each(function (summaryIdx, summaryElem) {
+        if (!addedSummaries.has(`${currentTopicIndex}.${summaryIdx}`)) {
+          addSummary(summaryIdx)
+        }
+      })
     }
   })
 
