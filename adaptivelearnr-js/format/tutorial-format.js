@@ -734,7 +734,7 @@ $(document).ready(function () {
     function addContent () {
       const topicSummaryKey = `${currentTopicIndex}.${summaryIdx}`
       if (!addedSummaries.has(topicSummaryKey)) {
-        const summary = $(`.section.level2:eq(${currentTopicIndex})  .summary:eq(${summaryIdx})`).children()
+        const summary = $(`.section.level2:eq(${currentTopicIndex})  .summary:eq(${summaryIdx})`).children().detach()
         summary.css('opacity', '0%').css('background-color', 'white')
         $('#summarytext').append(summary)
         summary.animate(
@@ -774,7 +774,7 @@ $(document).ready(function () {
     const pastScroll = $('.bandContent.topicsListContainer').height()
 
     summaries.each(function (summaryIdx, summaryElem) {
-      // console.log(summaryIdx, summaryElem.getBoundingClientRect().bottom, pastScroll)
+      console.log(summaryIdx, summaryElem.getBoundingClientRect().bottom, pastScroll)
       if (summaryElem.getBoundingClientRect().bottom < pastScroll) {
         addSummary(summaryIdx)
       }

@@ -155,7 +155,9 @@
 }
 
 #learnr-tutorial-content .summary {
-    /*display: none;*/
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
 }
 
 .section.level3 {
