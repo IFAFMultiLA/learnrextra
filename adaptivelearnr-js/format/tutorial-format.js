@@ -730,17 +730,74 @@ $(document).ready(function () {
     updateVisibilityOfTopicElements(topicIndex)
   }
 
+  function hashCode (str) {
+    let hash = 0; let i = 0; const len = str.length
+    while (i < len) {
+      hash = ((hash << 5) - hash + str.charCodeAt(i++)) << 0
+    }
+    return hash + 2147483647 + 1
+  }
+
   function addSummary (summaryIdx) {
     function addContent () {
       const topicSummaryKey = `${currentTopicIndex}.${summaryIdx}`
+      const summariesContainer = $('#summarytext')
+
       if (!addedSummaries.has(topicSummaryKey)) {
-        const summary = $(`.section.level2:eq(${currentTopicIndex})  .summary:eq(${summaryIdx})`).children().detach()
-        summary.css('opacity', '0%').css('background-color', 'white')
-        $('#summarytext').append(summary)
-        summary.animate(
-          { opacity: '100%', backgroundColor: 'yellow' },
-          { duration: 1000, complete: function () { summary.animate({ backgroundColor: 'white' }) } }
-        )
+        const embeddedSummariesContainer = $(`.section.level2:eq(${currentTopicIndex})  .summary:eq(${summaryIdx})`)
+        const summaryElems = embeddedSummariesContainer.children().detach()
+
+        let sectionContainer = null
+        let sectionContainerCreated = false
+        for (let i = 0; i < summaryElems.length; i++) {
+          const supElem = summaryElems[i]
+          const replacemode = $(supElem).hasClass('replace') || embeddedSummariesContainer.hasClass('replace')
+
+          const subElems = supElem.tagName === 'DIV' ? $(supElem).children() : [supElem]
+
+          for (let j = 0; j < subElems.length; j++) {
+            const e = subElems[j]
+            const $e = $(e)
+
+            if (e.tagName === 'H4') {
+              if (sectionContainer !== null) {
+                sectionContainer.css('opacity', '0%').animate(
+                  { opacity: '100%' },
+                  { duration: 1000 }
+                )
+                summariesContainer.append(sectionContainer)
+              }
+
+              const cls = 'summaryContainer_' + hashCode($e.text())
+              sectionContainer = summariesContainer.find('.' + cls)
+              if (sectionContainer.length === 0) {
+                sectionContainer = $(`<div class="${cls}"></div>`)
+                sectionContainer.append($e)
+                sectionContainerCreated = true
+              }
+            } else if (sectionContainer !== null) {
+              if (replacemode) {
+                sectionContainer.find(':not(h4)').remove()
+              }
+              sectionContainer.append($e)
+            } else {
+              console.error('invalid summary definition (no summary section provided before)')
+            }
+
+            if (sectionContainer !== null && i >= summaryElems.length - 1) {
+              sectionContainer.css('opacity', '0%').animate(
+                { opacity: '100%' },
+                { duration: 1000 }
+              )
+
+              if (sectionContainerCreated) {
+                summariesContainer.append(sectionContainer)
+                sectionContainerCreated = false
+              }
+            }
+          }
+        }
+
         addedSummaries.add(topicSummaryKey)
       }
     }
@@ -774,7 +831,7 @@ $(document).ready(function () {
     const pastScroll = $('.bandContent.topicsListContainer').height()
 
     summaries.each(function (summaryIdx, summaryElem) {
-      console.log(summaryIdx, summaryElem.getBoundingClientRect().bottom, pastScroll)
+      // console.log(summaryIdx, summaryElem.getBoundingClientRect().bottom, pastScroll)
       if (summaryElem.getBoundingClientRect().bottom < pastScroll) {
         addSummary(summaryIdx)
       }
