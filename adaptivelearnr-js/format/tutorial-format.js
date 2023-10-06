@@ -853,6 +853,10 @@ $(document).ready(function () {
     }
   })
 
+  $(window).on('hashchange', function () { // monitor external location hash change
+    addRemainingSummaries(currentTopicIndex - 1)
+  })
+
   preTransformDOMMigrateFromBS3()
   transformDOM()
   handleLocationHash()
