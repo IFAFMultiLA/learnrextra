@@ -13,25 +13,36 @@
   max-width: 1200px;
 }
 
-/*
-.bandContent.page {
-  display: flex;
-  display: -ms-flexbox;
-  display: -webkit-box;
-  display: -webkit-flex;
+.nav {
+    margin: 0 0 2em 0;
+    background-color: #2fa4e7;
+    border-radius: 4px;
+    color: white;
+}
 
-  justify-content: space-between;
-  -webkit-justify-content: space-between;
-  -ms-flex-pack: justify;
+.topicsList .topic {
+    color: white !important;
+    border: 0 !important;
+    background: none !important;
+}
 
-  flex-direction: row-reverse;
-  -webkit-flex-direction: row-reverse;
-}*/
+.topicsList .topic .nav-link, .nav>li>a {
+    color: white !important;
+}
+
+.topicsList .topic.current .nav-link, .nav > li.topic.current > a {
+    color: #555 !important;
+    background-color: #eeeeee;
+    text-decoration: underline;
+}
+
+.topicsList .topic .nav-link:hover, .nav>li>a:hover, .nav>li>a:focus {
+    color: #555 !important;
+}
 
 .topics {
-  /*width: 75%;*/
   overflow-x: auto;
-  padding: 0 0.5em 3em;
+  padding: 0 0.5em 3em 1.1em;
 }
 
 .topics .tutorialTitle {
@@ -48,46 +59,9 @@
   display: block;
 }
 
-/*.topicsContainer {
-  width: 23%;
-  min-width: 270px;
-  margin-right: 2%;
-  z-index: 100;
-}
-
-.topicsPositioner {
-  position: fixed;
-  left: 0px;
-  width: 100%;
-  height: 0px;
-  background-color: pink;
-}
-
-.topicsList {
-  float: left;
-  position: relative;
-  width: 23%;
-  min-width: 270px;
-  overflow: auto;
-  height: auto;
-  scroll-behavior: smooth;
-  transform: translateZ(0);
-}*/
-
 .topicsList {
     overflow: hidden;
 }
-
-/*.topicsHeader {
-  display: flex;
-  display: -ms-flexbox;
-  display: -webkit-box;
-  display: -webkit-flex;
-
-  justify-content: space-between;
-  -webkit-justify-content: space-between;
-  -ms-flex-pack: justify;
-}*/
 
 .topicsFooter {
   margin-top: 10px;
@@ -104,41 +78,15 @@
   opacity: 1;
 }
 
-/*.topicsList .topic {
-  line-height: 2.5;
-	color: var(--bs-body-color, inherit);
-	background-color: var(--bs-body-bg, #f8f8f8);
-
-  -webkit-transition-property: background-position;
-  transition-property: background-position;
-  -webkit-transition-duration: 0.25s;
-  transition-duration: 0.25s;
-}*/
-
 .topicsList .topic.current {
   font-weight: bold;
 }
 
-/*
-.topicsList .nav-link {
-  padding-left: 0;
-}
-
-.tutorial-is-bs3 .topicsList .topic,
-.tutorial-is-bs3 .topicsList .nav-link,
-.tutorial-is-bs3 .topicsList .resetButton {
-  padding-left: 1em;
-  margin-left: -1em;
-}
-
-.tutorial-is-bs3 .topicsList {
-  padding-left: 1em;
-}
-*/
-
 .parallellayout.row {
     display: flex;
     height: 70vh;
+    margin-left: 1em;
+    margin-right: 1em;
 }
 
 .parallellayout.col {
@@ -152,6 +100,16 @@
 .parallellayout.col.side {
     flex: 0%;
     display: none;
+    padding: 1.25em 1em 3em 0.55em;
+    margin-left: 0.55em;
+    background-color: #eeeeee;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.parallellayout.col.side h3 {
+    margin-top: 0;
 }
 
 #learnr-tutorial-content .summary {
@@ -246,7 +204,7 @@
 
 #doc-metadata h4 {
   margin: 0;
-  font-size: 1em;
+  /*font-size: 1em;*/
   line-height: 1.6em;
 }
 

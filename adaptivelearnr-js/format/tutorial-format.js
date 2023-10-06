@@ -853,13 +853,23 @@ $(document).ready(function () {
     }
   })
 
+  function updateContentElemHeight (containerH) {
+    const h = Math.floor(containerH - $('.topicsContainer').height())
+    $('.parallellayout.row').height(h)
+  }
+
   $(window).on('hashchange', function () { // monitor external location hash change
     addRemainingSummaries(currentTopicIndex - 1)
+  })
+
+  $(window).on('resize', function () { // monitor window resize events
+    updateContentElemHeight($(this).height())
   })
 
   preTransformDOMMigrateFromBS3()
   transformDOM()
   handleLocationHash()
+  updateContentElemHeight($(window).height())
 
   // initialize components within tutorial.onInit event
   tutorial.onInit(function () {
