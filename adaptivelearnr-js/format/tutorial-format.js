@@ -1,4 +1,4 @@
-/* global $,tutorial,Shiny,i18next,bootbox */
+/* global $,tutorial,Shiny,i18next,bootbox,introJs */
 
 $(document).ready(function () {
   let titleText = ''
@@ -756,7 +756,8 @@ $(document).ready(function () {
         duration: 1000,
         step: function (now, fx) {
           maincol.css('flexBasis', (100 - now) + '%')
-        }
+        },
+        complete: () => introJs().setOption('dontShowAgain', true).start()
       })
     }
 

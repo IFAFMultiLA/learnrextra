@@ -77,6 +77,13 @@ tutorial <- function(
                 version = "1.1.0",
                 src = system.file("rmarkdown/templates/tutorial/resources", package = "adaptivelearnr"),
                 script = "mus.min.js"
+            ),
+            htmltools::htmlDependency(
+                name = "intro.js",
+                version = "7.2.0",
+                src = system.file("rmarkdown/templates/tutorial/resources", package = "adaptivelearnr"),
+                script = "intro.min.js",
+                stylesheet = "introjs.min.css"
             )
         ),
         extra_dependencies
