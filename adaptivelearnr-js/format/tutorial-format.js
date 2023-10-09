@@ -757,7 +757,14 @@ $(document).ready(function () {
         step: function (now, fx) {
           maincol.css('flexBasis', (100 - now) + '%')
         },
-        complete: () => introJs().setOption('dontShowAgain', true).start()
+        complete: () => introJs().setOptions({
+          dontShowAgain: true,
+          nextLabel: 'Weiter',
+          prevLabel: 'Zurück',
+          doneLabel: 'Fertig',
+          stepNumbersOfLabel: 'von',
+          dontShowAgainLabel: 'Nicht wieder anzeigen'
+        }).start()
       })
     }
 
