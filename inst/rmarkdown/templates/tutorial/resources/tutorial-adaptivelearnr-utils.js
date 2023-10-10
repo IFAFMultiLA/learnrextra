@@ -32,6 +32,38 @@ function getXPathForElement(element) {
 }
 
 /**
+ * Function to get CSS selector that uniquely identifies `el`.
+ *
+ * Taken from https://stackoverflow.com/a/57257763.
+ */
+function getCSSPath(el) {
+    let rendered_path_parts = [];
+
+    $( el ).parents().addBack().each((i, el) => {
+        const $el = $( el );
+        let current_el_path = $el.prop('tagName').toLowerCase();
+
+        if ($el.attr('id')) {
+            current_el_path += '#' + $el.attr('id');
+        }
+
+        if ($el.attr('class')) {
+            current_el_path += '.' + $el.attr('class').split(' ').join('.');
+        }
+
+        rendered_path_parts.push( current_el_path );
+    })
+
+    return rendered_path_parts.join(' ');
+}
+
+$.fn.extend({
+    getPath: function() {
+        return getCSSPath(this.length === 1 ? this : this.eq(0));
+    }
+});
+
+/**
  * Set a class to all elements in `elems` until including the `i`th element.
  */
 function setClassForElementsUntilIndex(elems, i) {
@@ -166,6 +198,10 @@ function mouseTrackingUpdate() {
     mus.frames = [];
     mus.finishedAt = 0;
 
+    if (!tracking_config.attribute_changes) {  // optionally filter frames
+        data.frames = data.frames.filter((f) => f[0] !== 'a');
+    }
+
     if (data.frames.length > 0) {
         // only post when we have recorded data
         postEvent(sess, tracking_session_id, sessdata.user_code, "mouse", data);
@@ -189,6 +225,7 @@ function registerInputTracking(selector, sess, tracking_session_id, authtoken, l
         let eventval = {
             'id': $this.prop('id'),
             'xpath': getXPathForElement(this),
+            'csspath': getCSSPath(this),
             'value': extract_val_fn($this)
         };
         //console.log(event_type, eventval);

@@ -32,11 +32,12 @@ const COOKIE_DEFAULT_OPTS = {
 const TRACKING_CONFIG_DEFAULTS = {
     'mouse': true,
     'inputs': true,
+    'attribute_changes': false,
     'chapters': true,
     'feedback': true
 };
 
-var config = null;  // will be set when it is loaded
+var config = null;  // document config (configuration from the Rmd document); will be set when it is loaded
 
 var replay = false;  // replay mode
 var sess = null;     // session ID
