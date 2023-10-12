@@ -584,7 +584,7 @@ function setupTracking() {
 
                 let section = $(this).parents('.section.level2').attr('id');
                 let sectionfb = _.defaults(userfeedback[section], {score: 0, comment: ''});
-                sectionfb.comment = comment_input.val();
+                sectionfb.comment = comment_input.val() === 'Ihr Kommentar...' ? '' : comment_input.val();
                 userfeedback[section] = sectionfb;
 
                 // send feedback data to the API
