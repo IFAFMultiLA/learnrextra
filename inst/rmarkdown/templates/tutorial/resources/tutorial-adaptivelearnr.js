@@ -210,7 +210,7 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
             messageToParentWindow("pulldata", {i: 0});
         } else {  // no replay
             // show consent modal to inform about usage of cookies
-            if (Cookies.get("consent") !== "restricted") {
+            if ($("#consentmodal").length > 0 && Cookies.get("consent") !== "restricted") {
                 $("#restricted-consent-btn").on("click", function() {
                     $("#consentmodal").modal("hide");
                     Cookies.set("consent", "restricted", COOKIE_DEFAULT_OPTS);
@@ -273,46 +273,51 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
         }
 
         // handling tracking configuration
-        if (sessdata.app_config === undefined) {
+        if (sessdata.app_config === undefined || sessdata.app_config === null) {
             tracking_config = TRACKING_CONFIG_DEFAULTS;
         } else {
             tracking_config = _.defaults(sessdata.app_config.tracking, TRACKING_CONFIG_DEFAULTS);
         }
 
-        // show consent modal
-        if (Cookies.get("consent") === undefined || Cookies.get("consent") === "restricted") {
-            $("#consent-btn").on("click", function() {
-                $("#consentmodal").modal("hide");
-                Cookies.set("consent", "full-yes", COOKIE_DEFAULT_OPTS);
-                prepareSessionWithTracking(sess_config);
-            });
+        if ($("#consentmodal").length > 0) {
+            // show consent modal
+            if (Cookies.get("consent") === undefined || Cookies.get("consent") === "restricted") {
+                $("#consent-btn").on("click", function() {
+                    $("#consentmodal").modal("hide");
+                    Cookies.set("consent", "full-yes", COOKIE_DEFAULT_OPTS);
+                    prepareSessionWithTracking(sess_config);
+                });
 
-            $("#no-consent-btn").on("click", function() {
-                $("#consentmodal").modal("hide");
-                Cookies.set("consent", "full-no", COOKIE_DEFAULT_OPTS);
-                console.log("tracking disabled");
-                showPage();
-            });
+                $("#no-consent-btn").on("click", function() {
+                    $("#consentmodal").modal("hide");
+                    Cookies.set("consent", "full-no", COOKIE_DEFAULT_OPTS);
+                    console.log("tracking disabled");
+                    showPage();
+                });
 
-            // show/hide items in tracking data list depending on configuration
-            for (let k in tracking_config) {
-                if (tracking_config.hasOwnProperty(k)) {
-                    let item = $("#consentmodal .trackingdata-" + k);
-                    if (tracking_config[k] === true) {
-                        item.show();
-                    } else {
-                        item.hide();
+                // show/hide items in tracking data list depending on configuration
+                for (let k in tracking_config) {
+                    if (tracking_config.hasOwnProperty(k)) {
+                        let item = $("#consentmodal .trackingdata-" + k);
+                        if (tracking_config[k] === true) {
+                            item.show();
+                        } else {
+                            item.hide();
+                        }
                     }
                 }
-            }
 
-            $("#consentmodal .text-full").show();
-            $("#consentmodal").modal('show');
-        } else if (Cookies.get("consent") === "full-yes") {
+                $("#consentmodal .text-full").show();
+                $("#consentmodal").modal('show');
+            } else if (Cookies.get("consent") === "full-yes") {
+                prepareSessionWithTracking(sess_config);
+            } else {   // consent is "full-no" -> disable tracking
+                console.log("tracking disabled");
+                showPage();
+            }
+        } else {
+            // no need to get consent
             prepareSessionWithTracking(sess_config);
-        } else {   // consent is "full-no" -> disable tracking
-            console.log("tracking disabled");
-            showPage();
         }
     }
 }
@@ -651,6 +656,9 @@ $(window).on("load", async function() {
     // load configuration
     config = JSON.parse(document.getElementById('adaptivelearnr-config').textContent);
     apiserver = config.apiserver;
+    if (!apiserver.endsWith("/")) {
+        apiserver += "/";
+    }
     apiserver_url = new URL(config.apiserver);
 
     console.log("API server set to", apiserver);
