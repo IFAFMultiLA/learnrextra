@@ -273,7 +273,7 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
         }
 
         // handling tracking configuration
-        if (sessdata.app_config === undefined) {
+        if (sessdata.app_config === undefined || sessdata.app_config === null) {
             tracking_config = TRACKING_CONFIG_DEFAULTS;
         } else {
             tracking_config = _.defaults(sessdata.app_config.tracking, TRACKING_CONFIG_DEFAULTS);
