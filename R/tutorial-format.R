@@ -56,16 +56,23 @@ tutorial <- function(
 
     # content includes
     if (is.null(includes)) {
-        includes <- get_includes()
+        # set default includes
+        includes <- rmarkdown::includes(before_body = get_includes())
     } else {
-        std_includes <- get_includes()
+        # merge given includes and default includes
+        std_includes <- rmarkdown::includes(before_body = get_includes())
         tmp_includes <- includes
-        for (inc in std_includes) {
-            if (!any(endsWith(includes, fs::path_file(inc)))) {
-                tmp_includes <- c(tmp_includes, inc)
+        includes <- list()
+
+        for (k in c("in_header", "before_body", "after_body")) {
+            if (is.null(tmp_includes[[k]])) {
+                includes[[k]] <- std_includes[[k]]
+            } else {
+                includes[[k]] <- tmp_includes[[k]]
             }
         }
-        includes <- tmp_includes
+
+        includes <- tmp_include
     }
 
     args <- c(args, rmarkdown::includes_to_pandoc_args(includes))
