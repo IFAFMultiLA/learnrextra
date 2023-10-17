@@ -17,6 +17,7 @@
 
 .feedback-container {
     display: none;
+    margin-bottom: 2em;
 }
 
 .feedback-container .infotext {
@@ -30,6 +31,7 @@
 
 .feedback-container .comment_submit input {
     margin: 0 1em 0 0;
+    width: 250px;
 }
 
 .feedback-container .score {
@@ -84,5 +86,9 @@
 }
 
 .MathJax_Display {
-    margin: 2em 0 2em 0 !important;
+    margin: 2em 0 !important;
+}
+
+.tutorial-exercise {
+    margin: 2em 0;
 }
