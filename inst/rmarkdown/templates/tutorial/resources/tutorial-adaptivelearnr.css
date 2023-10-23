@@ -11,7 +11,7 @@
     border-radius: 0px;
 }
 
-#consentmodal .text-full, #consentmodal .text-restricted {
+#consentmodal .text-full, #consentmodal .text-restricted, #register-login-fail-alert {
     display: none;
 }
 
