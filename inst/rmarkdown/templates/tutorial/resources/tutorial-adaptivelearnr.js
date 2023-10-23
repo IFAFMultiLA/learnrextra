@@ -346,11 +346,11 @@ function appSetup() {
 
     // show "logged in as ..." message in page header
     if (sessdata.user_email !== null) {
-        $('#messages-container .logininfo').html("| Logged in as " + sessdata.user_email +
+        $('#doc-metadata-additional .logininfo').html("Logged in as " + sessdata.user_email +
             " – <a href='#' id='logout-link'>Logout</a>").show();
         $('#logout-link').on('click', userLogout);
     } else {
-        $('#messages-container .logininfo').text("").hide();
+        $('#doc-metadata-additional .logininfo').text("").hide();
     }
 
     // set up the app according to the app configuration
