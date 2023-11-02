@@ -281,7 +281,7 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
 
         if ($("#consentmodal").length > 0) {
             // show consent modal
-            if (Cookies.get("consent") === undefined || Cookies.get("consent") === "restricted") {
+            if (Cookies.get("consent") === undefined || Cookies.get("consent") !== "full-yes") {
                 $("#consent-btn").on("click", function() {
                     $("#consentmodal").modal("hide");
                     Cookies.set("consent", "full-yes", COOKIE_DEFAULT_OPTS);
