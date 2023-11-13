@@ -71,6 +71,10 @@ $(document).ready(function () {
   function updateLocation (topicIndex) {
     const baseUrl = window.location.href.replace(window.location.hash, '')
     window.location = `${baseUrl}#${topics[topicIndex].id}`
+
+    // scroll content to top
+    $('#learnr-tutorial-content').parent().scrollTop(0)
+
     addRemainingSummaries(topicIndex - 1)
   }
 
