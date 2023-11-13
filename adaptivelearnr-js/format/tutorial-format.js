@@ -826,6 +826,8 @@ $(document).ready(function () {
         }
       }
 
+      const summariesScrollable = summariesContainer.parent()
+      summariesScrollable.animate({ scrollTop: summariesScrollable.prop('scrollHeight') }, 1000)
       addedSummaries.add(topicSummaryKey)
     }
   }
