@@ -542,7 +542,11 @@ function setupTracking() {
         mus.setRecordCurrentElem(true);
         //mus.setRecordInputs(false);
         mus.record();  // start recording
+
+        // send mouse tracking data collected within time chunks
         mouse_track_interval = setInterval(mouseTrackingUpdate, MOUSE_TRACK_UPDATE_INTERVAL);
+
+        $(window).on("hashchange", mouseTrackingUpdate);    // also send mouse data update on chapter change
     }
 
     // user feedback
