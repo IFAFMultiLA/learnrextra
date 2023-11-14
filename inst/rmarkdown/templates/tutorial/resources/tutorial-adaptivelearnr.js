@@ -50,6 +50,7 @@ var tracking_session_id = null;     // tracking session ID for the current sessi
 var tracking_config = {};           // tracking configuration
 var mus = null;                     // mus.js mouse tracking instance
 var mouse_track_interval = null;    // mouse tracking interval timer ID
+var content_scroll_frames = null;   // additional scroll events for main content div
 
 
 /**
@@ -398,13 +399,16 @@ function appSetup() {
         console.log("skipping tracking")
     } else {
         // send "tracking session started" information and obtain a tracking session ID
-        let start_data = {
+        const main_content_elem = $('#learnr-tutorial-content').parent();
+        const start_data = {
             sess: sess,
             start_time: nowISO(),
             device_info: {
                 form_factor: detectFormFactor(),
                 window_size: getWindowSize(),
-                user_agent: navigator.userAgent
+                user_agent: navigator.userAgent,
+                main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
+                main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
             }
         }
 
@@ -447,7 +451,13 @@ function appSetup() {
 function setupTracking() {
     // set a handler for tracking window resize events
     $(window).on('resize', _.debounce(function(event) {  // use "debounce" to prevent sending too much information
-        postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {window_size: getWindowSize()});
+        const main_content_elem = $('#learnr-tutorial-content').parent();
+
+        postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {
+            window_size: getWindowSize(),
+            main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
+            main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
+        });
     }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
 
     if (tracking_config.chapters) {
@@ -489,6 +499,15 @@ function setupTracking() {
             getChapterTrackingFn('nav'),
             'chapter'
         );
+
+        // send initial chapter
+        const eventval = {
+            'id': null,
+            'xpath': null,
+            'csspath': null,
+            'value': getChapterTrackingFn(null)(null)
+        };
+        postEvent(sess, tracking_session_id, sessdata.user_code, "chapter", eventval);
     }
 
     // shiny inputs tracking
@@ -543,10 +562,33 @@ function setupTracking() {
         //mus.setRecordInputs(false);
         mus.record();  // start recording
 
+        content_scroll_frames = [];   // initialize additional scroll data
+        $('#learnr-tutorial-content').parent().on("scroll", function() {   // set listener for content scroll
+            content_scroll_frames.push(
+                ["S", this.scrollLeft, this.scrollTop, new Date().getTime() - (mus.startedAt * 1000)]
+            );
+        });
+
         // send mouse tracking data collected within time chunks
         mouse_track_interval = setInterval(mouseTrackingUpdate, MOUSE_TRACK_UPDATE_INTERVAL);
 
-        $(window).on("hashchange", mouseTrackingUpdate);    // also send mouse data update on chapter change
+        const main_content_elem = $('#learnr-tutorial-content').parent();
+
+        $(window).on("hashchange", function() {        // also send mouse data update on chapter change
+            mouseTrackingUpdate();
+
+            // content size may change on chapter change -> post update
+            postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {
+                main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
+                main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
+            });
+        });
+
+        // send initial main content sizes
+        postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {
+                main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
+                main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
+        });
     }
 
     // user feedback

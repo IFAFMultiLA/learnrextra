@@ -202,6 +202,9 @@ function mouseTrackingUpdate() {
         data.frames = data.frames.filter((f) => f[0] !== 'a');
     }
 
+    data.frames = data.frames.concat(content_scroll_frames);
+    content_scroll_frames = [];
+
     if (data.frames.length > 0) {
         // only post when we have recorded data
         postEvent(sess, tracking_session_id, sessdata.user_code, "mouse", data);
