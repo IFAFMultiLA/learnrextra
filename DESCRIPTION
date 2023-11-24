@@ -1,7 +1,7 @@
 Package: adaptivelearnr
 Type: Package
 Title: An Extension to the learnr Package for Learning Analytics
-Version: 0.6.7
+Version: 0.6.8
 Author: Markus Konrad
 Maintainer: Markus Konrad <markus.konrad@htw-berlin.de>
 Description: A learnr extension package to interact with the MultiLA web API
