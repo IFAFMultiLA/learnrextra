@@ -21,7 +21,7 @@ const MOUSE_TRACK_UPDATE_INTERVAL = 10000;
 // debounce time in ms for window resize tracking
 const WINDOW_RESIZE_TRACKING_DEBOUNCE = 500;
 // input tracking time in ms
-const INPUT_TRACKING_DEBOUNCE = 250;
+const INPUT_TRACKING_DEBOUNCE = 50;
 
 // default cookie options (expires in half a year, valid for current path)
 const COOKIE_DEFAULT_OPTS = {
@@ -457,13 +457,15 @@ function setupTracking() {
             window_size: getWindowSize(),
             main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
             main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
-        });
+        }, nowISO());
     }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
 
     if (tracking_config.chapters) {
         // define a function that returns a chapter tracking function
         function getChapterTrackingFn(elem) {
             return function(input_elem_unused) {
+                //console.log("chapter index change ", $('#tutorial-topic ul li.current').index());
+
                 return {
                     element: elem,
                     chapter_title: $('#tutorial-topic ul li.current a').text(),

@@ -118,7 +118,7 @@ function postJSON(endpoint, data, authtoken, extras) {
 /**
  * Shortcut for posting event data to the API.
  */
-function postEvent(sess, tracking_session_id, authtoken, eventtype, eventval) {
+function postEvent(sess, tracking_session_id, authtoken, eventtype, eventval, eventtime) {
     if (replay) {
         return null;
     }
@@ -127,7 +127,7 @@ function postEvent(sess, tracking_session_id, authtoken, eventtype, eventval) {
             sess: sess,
             tracking_session_id: tracking_session_id,
             event: {
-                time: nowISO(),
+                time: typeof eventtime === "undefined" ? nowISO() : eventtime,
                 type: eventtype,
                 value: eventval
             }
@@ -205,6 +205,8 @@ function mouseTrackingUpdate() {
     data.frames = data.frames.concat(content_scroll_frames);
     content_scroll_frames = [];
 
+    //console.log("mouse tracking update with ", data.frames.length);
+
     if (data.frames.length > 0) {
         // only post when we have recorded data
         postEvent(sess, tracking_session_id, sessdata.user_code, "mouse", data);
@@ -232,7 +234,7 @@ function registerInputTracking(selector, sess, tracking_session_id, authtoken, l
             'value': extract_val_fn($this)
         };
         //console.log(event_type, eventval);
-        postEvent(sess, tracking_session_id, authtoken, event_type, eventval);
+        postEvent(sess, tracking_session_id, authtoken, event_type, eventval, nowISO());
     }, INPUT_TRACKING_DEBOUNCE));
 }
 
