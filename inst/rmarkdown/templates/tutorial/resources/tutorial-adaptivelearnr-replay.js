@@ -23,15 +23,15 @@ function replayChunkEnd() {
         return;
     }
 
-    // get chunk data for the current replay chunk index
-    replay_chunk_i++;
-
-    if (!Object.values(replay_chunks).includes(replay_chunk_i)) {
+    if (!Object.values(replay_chunks).includes(replay_chunk_i + 1)) {
         // no replay data (yet) for this chunk – try again in 500ms
         console.log("no replay data (yet) for chunk index ", replay_chunk_i);
         window.setTimeout(replayChunkEnd, 500);
         return;
     }
+
+    // get chunk data for the current replay chunk index
+    replay_chunk_i++;
 
     console.log("continue playing with chunk index ", replay_chunk_i);
     let replaydata = replay_chunks[replay_chunk_i];
