@@ -717,6 +717,7 @@ $(window).on("load", async function() {
         console.log("replay mode enabled with replay state ", replay_state);
         replay = true;
         mus = new Mus();
+        mus.setTimePoint(true);    // replay in realtime
 
         sess = $.urlParam('sess');
         if (sess === undefined) {
