@@ -4,9 +4,9 @@
  * Global variables and constants
  */
 
-var replay_chunk_i = 0;  // current replay chunk index
-var replay_n_chunks = null;  // index of the last replay chunk
-var replay_chunks = {};  // object that maps replay chunk indices to chunk data for all chunks
+let replay_chunk_i = 0;  // current replay chunk index
+let replay_n_chunks = null;  // index of the last replay chunk
+let replay_chunks = {};  // object that maps replay chunk indices to chunk data for all chunks
                          // that were not completely played, yet
 
 
@@ -25,8 +25,16 @@ function replayChunkEnd() {
 
     // get chunk data for the current replay chunk index
     replay_chunk_i++;
+
+    if (!Object.values(replay_chunks).includes(replay_chunk_i)) {
+        // no replay data (yet) for this chunk – try again in 500ms
+        console.log("no replay data (yet) for chunk index ", replay_chunk_i);
+        window.setTimeout(replayChunkEnd, 500);
+        return;
+    }
+
     console.log("continue playing with chunk index ", replay_chunk_i);
-    replaydata = replay_chunks[replay_chunk_i];
+    let replaydata = replay_chunks[replay_chunk_i];
 
     // set the new chunk data and continue playing
     //window.resizeTo(replaydata.window.width, replaydata.window.height);
