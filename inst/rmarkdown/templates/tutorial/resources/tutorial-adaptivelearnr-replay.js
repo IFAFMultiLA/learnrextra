@@ -14,6 +14,8 @@ let replay_chunks = {};  // object that maps replay chunk indices to chunk data 
  * Callback function when replay of a chunk has ended.
  */
 function replayChunkEnd() {
+    // time elapsed in millisec. for all chunks that were played so far
+    const time_elapsed = replay_chunks[replay_chunk_i].timeElapsed * 1000;
     // remove chunk data that was just played
     delete replay_chunks[replay_chunk_i];
 
@@ -33,10 +35,12 @@ function replayChunkEnd() {
 
         console.log("continue playing with chunk index ", replay_chunk_i);
         let replaydata = replay_chunks[replay_chunk_i];
+        const frames = Array.from(replaydata.frames, (f) => f.slice(0, -1).concat(f.slice(-1) - time_elapsed));
 
         // set the new chunk data and continue playing
         //window.resizeTo(replaydata.window.width, replaydata.window.height);
-        mus.setFrames(replaydata.frames);
+        mus.pause();
+        mus.setFrames(frames);
         mus.setWindowSize(replaydata.window.width, replaydata.window.height);
         mus.play(replayChunkEnd);
     }
@@ -103,6 +107,34 @@ function replayMessageReceived(event) {
         mus.pause(replayChunkEnd);
     } else if (event.data.msgtype === "replay_ctrl_stop") {
         replayStop();
+    } else if (event.data.msgtype === "set_replay_speed") {
+        const speed = event.data.data;
+
+        switch (speed) {
+            case 'realtime':
+                mus.setTimePoint(true);
+                break;
+            case 'slow':
+                mus.setTimePoint(false);
+                mus.setPlaybackSpeed(mus.speed.SLOW);
+                break;
+            case 'normal':
+                mus.setTimePoint(false);
+                mus.setPlaybackSpeed(mus.speed.NORMAL);
+                break;
+            case 'fast':
+                mus.setTimePoint(false);
+                mus.setPlaybackSpeed(mus.speed.FAST);
+                break;
+            default:
+                console.warn("unknown playback speed setting: ", speed);
+        }
+
+        if (mus.isPlaying()) {
+            // mus.js requires this to actually update the timeouts and hence the speed:
+            mus.pause();
+            mus.play();
+        }
     } else {
         console.error("event message type not understood:", event.data.msgtype);
     }
