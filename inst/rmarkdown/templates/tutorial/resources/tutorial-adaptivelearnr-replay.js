@@ -15,7 +15,10 @@ let replay_chunks = {};  // object that maps replay chunk indices to chunk data 
  */
 function replayChunkEnd() {
     // time elapsed in millisec. for all chunks that were played so far
-    const time_elapsed = replay_chunks[replay_chunk_i].timeElapsed * 1000;
+    let time_elapsed = 0;
+    if (replay_chunk_i in replay_chunks) {
+        time_elapsed = replay_chunks[replay_chunk_i].timeElapsed * 1000;
+    }
     // remove chunk data that was just played
     delete replay_chunks[replay_chunk_i];
 
