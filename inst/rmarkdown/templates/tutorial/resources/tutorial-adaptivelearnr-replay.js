@@ -27,20 +27,19 @@ function replayChunkEnd() {
         // no replay data (yet) for this chunk – try again in 500ms
         console.log("no replay data (yet) for chunk index ", replay_chunk_i);
         window.setTimeout(replayChunkEnd, 500);
-        return;
+    } else {
+            // get chunk data for the current replay chunk index
+        replay_chunk_i++;
+
+        console.log("continue playing with chunk index ", replay_chunk_i);
+        let replaydata = replay_chunks[replay_chunk_i];
+
+        // set the new chunk data and continue playing
+        //window.resizeTo(replaydata.window.width, replaydata.window.height);
+        mus.setFrames(replaydata.frames);
+        mus.setWindowSize(replaydata.window.width, replaydata.window.height);
+        mus.play(replayChunkEnd);
     }
-
-    // get chunk data for the current replay chunk index
-    replay_chunk_i++;
-
-    console.log("continue playing with chunk index ", replay_chunk_i);
-    let replaydata = replay_chunks[replay_chunk_i];
-
-    // set the new chunk data and continue playing
-    //window.resizeTo(replaydata.window.width, replaydata.window.height);
-    mus.setFrames(replaydata.frames);
-    mus.setWindowSize(replaydata.window.width, replaydata.window.height);
-    mus.play(replayChunkEnd);
 
     if (replay_chunk_i < replay_n_chunks - 1) {
         // request next chunk
