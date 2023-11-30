@@ -23,9 +23,9 @@ function replayChunkEnd() {
         return;
     }
 
-    if (!Object.values(replay_chunks).includes(replay_chunk_i + 1)) {
+    if (!((replay_chunk_i + 1) in replay_chunks)) {
         // no replay data (yet) for this chunk – try again in 500ms
-        console.log("no replay data (yet) for chunk index ", replay_chunk_i);
+        console.log("no replay data (yet) for chunk index ", replay_chunk_i + 1);
         window.setTimeout(replayChunkEnd, 500);
     } else {
             // get chunk data for the current replay chunk index
