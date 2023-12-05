@@ -22,7 +22,7 @@ const excludeNodeModules = excludeVendorFromSourceMapPlugin({
   filter: /node_modules/
 })
 
-const buildConfig = {
+const buildConfigDefault = {
   sourcemap: true,
   bundle: true,
   minify: true,
@@ -32,10 +32,24 @@ const buildConfig = {
   plugins: [excludeNodeModules, babelPlugin()]
 }
 
+const buildConfigMusJs = {
+  sourcemap: true,
+  bundle: false,
+  minify: true,
+  allowOverwrite: true
+}
+
 const buildTutorialFormat = {
   entryPoints: ['adaptivelearnr-js/format/tutorial-format.js'],
   outfile: 'inst/rmarkdown/templates/tutorial/resources/tutorial-format.js',
-  ...buildConfig
+  ...buildConfigDefault
+}
+
+const buildMusJs = {
+  entryPoints: ['adaptivelearnr-js/musjs/mus.js'],
+  outfile: 'inst/rmarkdown/templates/tutorial/resources/mus.min.js',
+  ...buildConfigMusJs
 }
 
 build(buildTutorialFormat).catch(() => process.exit(1))
+build(buildMusJs).catch(() => process.exit(1))
