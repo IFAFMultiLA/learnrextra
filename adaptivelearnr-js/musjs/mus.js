@@ -19,11 +19,11 @@
   const cursorIcon = 'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiCSB2aWV3Qm94PSIwIDAgMjggMjgiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDI4IDI4IiB4bWw6c3BhY2U9InByZXNlcnZlIj48cG9seWdvbiBmaWxsPSIjRkZGRkZGIiBwb2ludHM9IjguMiwyMC45IDguMiw0LjkgMTkuOCwxNi41IDEzLDE2LjUgMTIuNiwxNi42ICIvPjxwb2x5Z29uIGZpbGw9IiNGRkZGRkYiIHBvaW50cz0iMTcuMywyMS42IDEzLjcsMjMuMSA5LDEyIDEyLjcsMTAuNSAiLz48cmVjdCB4PSIxMi41IiB5PSIxMy42IiB0cmFuc2Zvcm09Im1hdHJpeCgwLjkyMjEgLTAuMzg3MSAwLjM4NzEgMC45MjIxIC01Ljc2MDUgNi41OTA5KSIgd2lkdGg9IjIiIGhlaWdodD0iOCIvPjxwb2x5Z29uIHBvaW50cz0iOS4yLDcuMyA5LjIsMTguNSAxMi4yLDE1LjYgMTIuNiwxNS41IDE3LjQsMTUuNSAiLz48L3N2Zz4='
 
   /**
-     * Mus constructor that defines initial variables and
-     * sets browser width and height.
-     * @knownbug: if user decides to change browser window size on-the-go
-     *        it may cause bugs during playback
-     */
+   * Mus constructor that defines initial variables and
+   * sets browser width and height.
+   * @knownbug: if user decides to change browser window size on-the-go
+   *        it may cause bugs during playback
+   */
   function Mus () {
     if (this === undefined) {
       console.error('Have you initialized Mus with "new" statement? (i.e. var mus = new Mus())')
@@ -42,6 +42,7 @@
     this.curElemXPath = null
     this.curElemCSSPath = null
     this.recording = false
+    this.clickHighlightTimeout = 5000
     this.playing = false
     this.playbackSpeed = this.speed.NORMAL
     this.observer = ''
@@ -68,17 +69,17 @@
   };
 
   /**
-     * Here goes all Mus magic
-     */
+   * Here goes all Mus magic
+   */
   Mus.prototype = {
 
     /** Mus Listeners **/
 
     /**
-         * Listener intended to be used with window 'resize' event
-         * @param callback function a callback fnc
-         * @return function the window resize event listener
-         */
+     * Listener intended to be used with window 'resize' event
+     * @param callback function a callback fnc
+     * @return function the window resize event listener
+     */
     windowResizeListener: function (callback) {
       return function (e) {
         if (callback) {
@@ -89,10 +90,10 @@
     },
 
     /**
-         * Listener intended to be used with onmousemove
-         * @param callback function a callback fnc
-         * @return function the mouse move listener
-         */
+     * Listener intended to be used with onmousemove
+     * @param callback function a callback fnc
+     * @return function the mouse move listener
+     */
     moveListener: function (callback) {
       const self = this
       return function (e) {
@@ -112,10 +113,10 @@
     },
 
     /**
-         * Listener intended to be used with onmousedown
-         * @param callback function a callback fnc
-         * @return function the mouse click listener
-         */
+     * Listener intended to be used with onmousedown
+     * @param callback function a callback fnc
+     * @return function the mouse click listener
+     */
     clickListener: function (callback) {
       const self = this
       return function (e) {
@@ -131,10 +132,10 @@
     },
 
     /**
-         * Listener intended to be used with onscroll
-         * @param callbackFn function a callback fnc
-         * @return function the window scroll listener
-         */
+     * Listener intended to be used with onscroll
+     * @param callbackFn function a callback fnc
+     * @return function the window scroll listener
+     */
     scrollListener: function (callbackFn) {
       return function (e) {
         if (callbackFn) callbackFn(['s', document.scrollingElement.scrollLeft, document.scrollingElement.scrollTop])
@@ -142,10 +143,10 @@
     },
 
     /**
-         * Listener intended to be used with onKeyDown
-         * @param callbackFn function a callback fnc
-         * @return function the input with user key listener
-         */
+     * Listener intended to be used with onKeyDown
+     * @param callbackFn function a callback fnc
+     * @return function the input with user key listener
+     */
 
     inputWithUserKeyListener: function (callbackFn) {
       const self = this
@@ -155,10 +156,10 @@
     },
 
     /**
-         * Listener intended to be used with onChange
-         * @param callbackFn function a callback fnc
-         * @return function the input with onChange listener
-         */
+     * Listener intended to be used with onChange
+     * @param callbackFn function a callback fnc
+     * @return function the input with onChange listener
+     */
 
     inputWithOnchangeListener: function (callbackFn) {
       const self = this
@@ -168,10 +169,10 @@
     },
 
     /**
-         * Listener intended to be used with mutation observer (remove or add a class name)
-         * @param callback function a callback fnc
-         * @return function the mutation observer
-         */
+     * Listener intended to be used with mutation observer (remove or add a class name)
+     * @param callback function a callback fnc
+     * @return function the mutation observer
+     */
 
     mutationObserver: function (callback) {
       return function (mutations) {
@@ -182,8 +183,8 @@
     /** Mus recording tools **/
 
     /**
-         * Starts screen recording
-         */
+     * Starts screen recording
+     */
     record: function (onFrame) {
       if (this.recording) return
 
@@ -299,8 +300,8 @@
     },
 
     /**
-         * Stops screen recording
-         */
+     * Stops screen recording
+     */
     stop: function () {
       this.finishedAt = new Date().getTime() / 1000
       window.removeEventListener('resize', this.curWindowResizeEventListener)
@@ -319,8 +320,8 @@
     },
 
     /**
-         * Pauses current execution
-         */
+     * Pauses current execution
+     */
     pause: function () {
       if (this.playing) {
         this.pos = this.currPos
@@ -330,9 +331,9 @@
     },
 
     /**
-         * Runs a playback of a recording
-         * @param function onfinish a callback function
-         */
+     * Runs a playback of a recording
+     * @param function onfinish a callback function
+     */
     play: function (onfinish) {
       if (this.playing) return
 
@@ -374,8 +375,8 @@
     },
 
     /**
-         * Releases Mus instance
-         */
+     * Releases Mus instance
+     */
     release: function () {
       this.frames = []
       this.startedAt = 0
@@ -389,8 +390,8 @@
     /** Mus internal functions **/
 
     /**
-         * Play a specific frame from playback
-         */
+     * Play a specific frame from playback
+     */
     playFrame: function (self, frame, node) {
       try {
         if (frame[0] === 'm') {
@@ -434,8 +435,8 @@
     },
 
     /**
-         * Clears all timeouts stored
-         */
+     * Clears all timeouts stored
+     */
     clearTimeouts: function () {
       for (const i in this.timeouts) {
         clearTimeout(this.timeouts[i])
@@ -445,16 +446,16 @@
     },
 
     /**
-         * Calculates time elapsed during recording
-         * @return integer time elapsed
-         */
+     * Calculates time elapsed during recording
+     * @return integer time elapsed
+     */
     timeElapsed: function () {
       return this.finishedAt - this.startedAt
     },
 
     /**
-         * Creates Mus cursor if non-existent
-         */
+     * Creates Mus cursor if non-existent
+     */
     createCursor: function () {
       if (!document.getElementById('musCursor')) {
         const node = document.createElement('div')
@@ -471,16 +472,16 @@
     },
 
     /**
-         * Destroys Mus cursor
-         */
+     * Destroys Mus cursor
+     */
     destroyCursor: function () {
       const cursor = document.getElementById('musCursor')
       if (cursor) cursor.remove()
     },
 
     /**
-         * Creates Mus click snapshot
-         */
+     * Creates Mus click snapshot
+     */
     createClickSnapshot: function (x, y) {
       const left = document.scrollingElement.scrollLeft
       const top = document.scrollingElement.scrollTop
@@ -495,11 +496,14 @@
       node.style.backgroundColor = 'red'
       node.style.opacity = 0.2
       document.body.appendChild(node)
+      window.setTimeout(function () {
+        document.body.removeChild(node)
+      }, this.clickHighlightTimeout)
     },
 
     /**
-         * Destroys Mus click snapshot
-         */
+     * Destroys Mus click snapshot
+     */
     destroyClickSnapshot: function () {
       const nodes = document.getElementsByClassName('musClickSnapshot')
       while (nodes.length > 0) {
@@ -508,10 +512,10 @@
     },
 
     /**
-         * Calculates current X coordinate of mouse based on window dimensions provided
-         * @param x integer the x position
-         * @return integer calculated x position
-         */
+     * Calculates current X coordinate of mouse based on window dimensions provided
+     * @param x integer the x position
+     * @return integer calculated x position
+     */
     getXCoordinate: function (x) {
       if (window.outerWidth > this.window.width) {
         return parseInt(this.window.width * x / window.outerWidth)
@@ -521,10 +525,10 @@
     },
 
     /**
-         * Calculates current Y coordinate of mouse based on window dimensions provided
-         * @param y integer the y position
-         * @return integer calculated y position
-         */
+     * Calculates current Y coordinate of mouse based on window dimensions provided
+     * @param y integer the y position
+     * @return integer calculated y position
+     */
     getYCoordinate: function (y) {
       if (window.outerHeight > this.window.height) {
         return parseInt(this.window.height * y / window.outerHeight)
@@ -536,9 +540,9 @@
     /** Public getters and setters **/
 
     /**
-         * Get all generated Mus data
-         * @return array generated Mus data
-         */
+     * Get all generated Mus data
+     * @return array generated Mus data
+     */
     getData: function () {
       return {
         frames: this.frames,
@@ -552,84 +556,84 @@
     },
 
     /**
-         * Get point time recording flag
-         * @return boolean point time flag
-         */
+     * Get point time recording flag
+     * @return boolean point time flag
+     */
     isTimePoint: function () {
       return this.timePoint
     },
 
     /**
-         * Sets generated Mus data for playback
-         * @param data array generated Mus data
-         */
+     * Sets generated Mus data for playback
+     * @param data array generated Mus data
+     */
     setData: function (data) {
       if (data.frames) this.frames = data.frames
       if (data.window) this.window = data.window
     },
 
     /**
-         * Sets recorded frames for playback
-         * @param frames array the frames array
-         */
+     * Sets recorded frames for playback
+     * @param frames array the frames array
+     */
     setFrames: function (frames) {
       this.frames = frames
     },
 
     /**
-         * Sets custom window size for playback
-         * @param width integer window width
-         * @param height integer window height
-         */
+     * Sets custom window size for playback
+     * @param width integer window width
+     * @param height integer window height
+     */
     setWindowSize: function (width, height) {
       this.window.width = width
       this.window.height = height
     },
 
     /**
-         * Sets a playback speed based on Mus speed set
-         * @param speed integer the playback speed
-         */
+     * Sets a playback speed based on Mus speed set
+     * @param speed integer the playback speed
+     */
     setPlaybackSpeed: function (speed) {
       this.playbackSpeed = speed
     },
 
     /**
-         * Sets point time recording for accurate data
-         * @param
-         */
+     * Sets point time recording for accurate data
+     * @param
+     */
     setTimePoint: function (timePoint) {
       this.timePoint = timePoint
     },
 
     /**
-         * Sets point time recording for accurate data
-         * @param
-         */
+     * Sets point time recording for accurate data
+     * @param
+     */
     setRecordInputs: function (recordInputs) {
       this.recordInputs = recordInputs
     },
 
     /**
-         * Sets point time recording for accurate data
-         * @param
-         */
+     * Sets point time recording for accurate data
+     * @param
+     */
     setRecordCurrentElem: function (recordCurrentElem) {
       this.recordCurrentElem = recordCurrentElem
     },
 
     /**
-         * Informs if Mus is currently recording
-         * @return boolean is recording?
-         */
+     * Informs if Mus is currently recording
+     * @return boolean is recording?
+     */
     isRecording: function () {
       return this.recording
     },
 
     /**
-         * Informs if Mus is currently playing
-         * @return boolean is playing?
-         */
+     * Informs if Mus is currently playing
+     * @return boolean is playing?
+     */
     isPlaying: function () {
       return this.playing
     },
@@ -643,10 +647,10 @@
     },
 
     /**
-         * Function to get CSS selector that uniquely identifies `el`.
-         *
-         * Taken from https://stackoverflow.com/a/57257763.
-         */
+     * Function to get CSS selector that uniquely identifies `el`.
+     *
+     * Taken from https://stackoverflow.com/a/57257763.
+     */
     getCSSPath: function (el) {
       const renderedPathParts = []
 
