@@ -4,8 +4,6 @@
 #'
 #' @return An [rmarkdown::output_format()] for adaptive \pkg{learnr} tutorials.
 #' @export
-
-
 tutorial <- function(
         fig_width = 6.5,
         fig_height = 4,
@@ -210,3 +208,57 @@ tutorial <- function(
                              df_print = df_print,
                              base_format = base_format)
 }
+
+
+#' Helper function to be used to check numeric algebraic expressions like "(1 + 3) / 3.14" in a [learnr::answer_fn()].
+#'
+#' Dismisses all inputs that are longer than `allowed_max_length` or contain characters other than those in
+#' `allowed_chars`. The latter is very important as the input will be evaluated by the R interpreter and one should
+#' watch out that it only contains numeric algebraic expressions.
+#'
+#' @param expected_result the expected result after evaluating `input`
+#' @param allowed_chars all characters that are allowed in `input`
+#' @param allowed_max_length allowed maximum string length of `input`
+#' @return a function to be used in [learnr::answer_fn()]
+#' @export
+
+check_algebraic_expression <- function(chunk_label,
+                                       expected_result,
+                                       allowed_chars = "0123456789\\.\\+\\-\\*/\\(\\)",
+                                       allowed_max_length = 128) {
+    set_prefixed_opt <- function(suffix, value) {
+        opt <- list(value)
+        names(opt) <- paste0("adaptivelearnr.check_algebraic_expression.", chunk_label, ".", suffix)
+        options(opt)
+    }
+
+    # there is currently no other way to pass variables to the input checking function below in learnr because
+    # the function is evaluated in a bare environment and hence doesn't know about the closure variables
+    set_prefixed_opt("expected_result", expected_result)
+    set_prefixed_opt("allowed_chars", allowed_chars)
+    set_prefixed_opt("allowed_max_length", allowed_max_length)
+
+    function(input) {
+        expected_result <- getOption("adaptivelearnr.check_algebraic_expression.expected_result")
+        allowed_chars <- getOption("adaptivelearnr.check_algebraic_expression.allowed_chars")
+        allowed_max_length <- getOption("adaptivelearnr.check_algebraic_expression.allowed_max_length")
+
+        if (nchar(input) > allowed_max_length) {
+            return(learnr::incorrect("Your submission exceeds the maximum number of characters."))
+        }
+
+        if (grepl(paste0("[^", allowed_chars, " ]"), input)) {
+            return(learnr::incorrect(paste("Your submission contains characters that are not allowed.
+                                        You can only use the following characters:",
+                                        gsub("\\", "", allowed_chars, fixed = TRUE))))
+        }
+
+        result <- eval(parse(text = input), envir = new.env())
+
+        learnr::mark_as(result == expected_result, messages = list(
+            `TRUE` = as.character(expected_result),
+            `FALSE` = NULL
+        ))
+    }
+}
+
