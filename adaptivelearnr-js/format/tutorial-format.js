@@ -1,4 +1,4 @@
-/* global $,tutorial,Shiny,i18next,bootbox,introJs */
+/* global _,$,tutorial,Shiny,i18next,bootbox,introJs, sessdata */
 
 $(document).ready(function () {
   let titleText = ''
@@ -6,6 +6,7 @@ $(document).ready(function () {
   let docProgressiveReveal = false
   let docAllowSkip = false
   const topics = []
+  const enableSummaryPanel = _.defaults(sessdata.app_config, { summary: true }).summary
   const addedSummaries = new Set() // stores keys of "<topicIndex>.<summaryIndex>" of already shown summaries
 
   let scrollLastSectionToView = false
@@ -747,6 +748,8 @@ $(document).ready(function () {
   }
 
   function addSummary (topicIndex, summaryIdx) {
+    if (!enableSummaryPanel) return
+
     const maincol = $('.parallellayout.col.main')
     const sidebar = $('.parallellayout.col.side')
 
@@ -837,6 +840,8 @@ $(document).ready(function () {
   }
 
   function addRemainingSummaries (upToTopicIndex) {
+    if (!enableSummaryPanel) return
+
     for (let t = 0; t <= upToTopicIndex; t++) {
       const summaries = $(`.section.level2:eq(${t})`).find('.summary')
 
@@ -848,33 +853,35 @@ $(document).ready(function () {
     }
   }
 
-  // add listener for scrolling through main column -> will trigger adding summaries for this topic
-  $('.parallellayout.col.main').scroll(function () {
-    const summaries = $(`.section.level2:eq(${currentTopicIndex})`).find('.summary')
-    const pastScroll = $('.bandContent.topicsListContainer').height()
-
-    summaries.each(function (summaryIdx, summaryElem) {
-      // console.log(summaryIdx, summaryElem.getBoundingClientRect().bottom, pastScroll)
-      if (summaryElem.getBoundingClientRect().bottom < pastScroll) {
-        addSummary(currentTopicIndex, summaryIdx)
-      }
-    })
-
-    const maxScroll = this.scrollHeight - this.clientHeight
-    if (this.scrollTop >= maxScroll - 10) {
-      // scrolled to end; add all summaries that haven't been added, yet
-      addRemainingSummaries(currentTopicIndex)
-    }
-  })
-
   function updateContentElemHeight (containerH) {
     const h = Math.floor(containerH - $('.topicsContainer').height())
     $('.parallellayout.row').height(h)
   }
 
-  $(window).on('hashchange', function () { // monitor external location hash change
-    addRemainingSummaries(currentTopicIndex - 1)
-  })
+  // add listener for scrolling through main column -> will trigger adding summaries for this topic
+  if (enableSummaryPanel) {
+    $('.parallellayout.col.main').scroll(function () {
+      const summaries = $(`.section.level2:eq(${currentTopicIndex})`).find('.summary')
+      const pastScroll = $('.bandContent.topicsListContainer').height()
+
+      summaries.each(function (summaryIdx, summaryElem) {
+        // console.log(summaryIdx, summaryElem.getBoundingClientRect().bottom, pastScroll)
+        if (summaryElem.getBoundingClientRect().bottom < pastScroll) {
+          addSummary(currentTopicIndex, summaryIdx)
+        }
+      })
+
+      const maxScroll = this.scrollHeight - this.clientHeight
+      if (this.scrollTop >= maxScroll - 10) {
+        // scrolled to end; add all summaries that haven't been added, yet
+        addRemainingSummaries(currentTopicIndex)
+      }
+    })
+
+    $(window).on('hashchange', function () { // monitor external location hash change
+      addRemainingSummaries(currentTopicIndex - 1)
+    })
+  }
 
   $(window).on('resize', function () { // monitor window resize events
     updateContentElemHeight($(this).height())
