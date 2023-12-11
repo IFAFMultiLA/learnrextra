@@ -33,8 +33,7 @@ const TRACKING_CONFIG_DEFAULTS = {
     'mouse': true,
     'inputs': true,
     'attribute_changes': false,
-    'chapters': true,
-    'feedback': true
+    'chapters': true
 };
 
 var config = null;  // document config (configuration from the Rmd document); will be set when it is loaded
@@ -594,7 +593,7 @@ function setupTracking() {
     }
 
     // user feedback
-    if (tracking_config.feedback) {
+    if (_.defaults(sessdata.app_config, {feedback: true}).feedback) {
         // add the HTML chunk underneath each section
         $('.section.level2 .topicActions').prepend($('.feedback-container').clone());
         let fbcontainers_per_section = $('.section.level2 .topicActions > .feedback-container');
