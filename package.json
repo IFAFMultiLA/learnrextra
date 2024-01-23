@@ -1,13 +1,13 @@
 {
-  "name": "adaptivelearnr",
+  "name": "learnrextra",
   "private": true,
   "engines": {
     "node": ">= 14"
   },
   "scripts": {
     "build": "npm run lint && npm run build:esbuild",
-    "build:esbuild": "node adaptivelearnr-js/build.js",
-    "lint": "standard --fix adaptivelearnr-js",
+    "build:esbuild": "node learnrextra-js/build.js",
+    "lint": "standard --fix learnrextra-js",
     "copy": "npm run copy:clipboard && npm run copy:bootbox && npm run copy:i18next",
     "copy:clipboard": "cpy 'clipboard.min.js' ../../../inst/lib/clipboardjs --cwd node_modules/clipboard/dist/",
     "copy:bootbox": "cpy 'bootbox.min.js' ../../../inst/lib/bootbox --cwd node_modules/bootbox/dist/",

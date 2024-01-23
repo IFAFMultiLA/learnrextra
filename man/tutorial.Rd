@@ -2,7 +2,7 @@
 % Please edit documentation in R/tutorial-format.R
 \name{tutorial}
 \alias{tutorial}
-\title{Adaptive tutorial document format derived from learnr tutorial format.}
+\title{Extended tutorial document format derived from learnr tutorial format.}
 \usage{
 tutorial(
   fig_width = 6.5,
@@ -117,8 +117,8 @@ bootstrap, etc.) into. By default this will be the name of the document with
 \item{...}{Forward parameters to html_document}
 }
 \value{
-An [rmarkdown::output_format()] for adaptive \pkg{learnr} tutorials.
+An [rmarkdown::output_format()] for \pkg{learnrextra} tutorials.
 }
 \description{
-Adaptive tutorial document format derived from learnr tutorial format.
+Extended tutorial document format derived from learnr tutorial format.
 }

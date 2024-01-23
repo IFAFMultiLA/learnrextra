@@ -1,4 +1,4 @@
-name: Adaptive Interactive Tutorial
-description: > 
+name: Interactive Tutorial (learnrextra)
+description: >
   Interactive tutorial containing figures, videos, R exercises and quiz questions (derived from learnr).
 create_dir: true

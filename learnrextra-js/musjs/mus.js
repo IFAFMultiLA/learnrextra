@@ -1,6 +1,6 @@
 /* global $, define, XPathEvaluator, XPathResult */
 /*!
- * Mus.js v1.1.0 adapted by Markus Konrad <markus.konrad@htw-berlin.de>
+ * Mus.js v1.1.0 adapted by Markus Konrad <markus.konrad@htw-berlin.de> for learnrextra package.
  *
  * Original code:
  * (c) 2018 Mauricio Giordano <giordano@inevent.us> - InEvent

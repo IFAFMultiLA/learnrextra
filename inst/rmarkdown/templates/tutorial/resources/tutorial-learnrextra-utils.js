@@ -1,4 +1,4 @@
-// Utility functions for adaptivelearnr javascript code.
+// Utility functions for learnrextra javascript code.
 
 
 /**

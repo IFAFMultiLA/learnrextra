@@ -2,4 +2,4 @@
 
 export(info_display)
 export(tutorial)
-export(use_adaptivelearnr)
+export(use_learnrextra)
