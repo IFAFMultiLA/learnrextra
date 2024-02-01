@@ -40,13 +40,13 @@ const buildConfigMusJs = {
 }
 
 const buildTutorialFormat = {
-  entryPoints: ['adaptivelearnr-js/format/tutorial-format.js'],
+  entryPoints: ['learnrextra-js/format/tutorial-format.js'],
   outfile: 'inst/rmarkdown/templates/tutorial/resources/tutorial-format.js',
   ...buildConfigDefault
 }
 
 const buildMusJs = {
-  entryPoints: ['adaptivelearnr-js/musjs/mus.js'],
+  entryPoints: ['learnrextra-js/musjs/mus.js'],
   outfile: 'inst/rmarkdown/templates/tutorial/resources/mus.min.js',
   ...buildConfigMusJs
 }

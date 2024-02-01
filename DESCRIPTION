@@ -1,11 +1,11 @@
-Package: adaptivelearnr
+Package: learnrextra
 Type: Package
-Title: An Extension to the learnr Package for Learning Analytics
+Title: An extension to the learnr package with improved layout and tracking functions for learning analytics.
 Version: 0.6.10
 Author: Markus Konrad
 Maintainer: Markus Konrad <markus.konrad@htw-berlin.de>
-Description: A learnr extension package to interact with the MultiLA web API
-   for learning analytics and adaptive learning applications.
+Description: A learnr extension package providing an improved layout with a summary pane and also tracking functions
+   that interact with the MultiLA web API for learning analytics.
 License: Apache-2.0 license
 Encoding: UTF-8
 LazyData: true

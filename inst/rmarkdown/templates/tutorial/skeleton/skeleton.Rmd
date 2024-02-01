@@ -4,7 +4,7 @@ author:
 email: 
 date: "`r format(Sys.time(), '%d.%m.%Y')`"
 output:
-    adaptivelearnr::tutorial:
+    learnrextra::tutorial:
         language: en
         apiserver: http://localhost:8000/
 runtime: shiny_prerendered

@@ -1,8 +1,8 @@
-// Main adaptivelearnr javascript code.
-// Requires tutorial-adaptivelearnr-utils.js to be included before.
+// Main learnrextra javascript code.
+// Requires tutorial-learnrextra-utils.js to be included before.
 //
 // Additionally, an adapted version of the "mus.js" JavaScript library is used (see
-// https://github.com/IFAFMultiLA/musjs).
+// directory `learnrextra-js/musjs/`).
 //
 //
 
@@ -701,7 +701,7 @@ function showDataProtectionModal(from_consent) {
  */
 $(window).on("load", async function() {
     // load configuration
-    config = JSON.parse(document.getElementById('adaptivelearnr-config').textContent);
+    config = JSON.parse(document.getElementById('learnrextra-config').textContent);
     apiserver = config.apiserver;
     if (!apiserver.endsWith("/")) {
         apiserver += "/";

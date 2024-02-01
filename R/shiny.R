@@ -8,11 +8,11 @@
 #' @param dataprotectmodal either logical value or string pointing to an HTML file for a "data protection license" modal
 #'
 #' @return tag list with sources to include
-use_adaptivelearnr <- function(consentmodal = TRUE, dataprotectmodal = TRUE) {
+use_learnrextra <- function(consentmodal = TRUE, dataprotectmodal = TRUE) {
     dependencies <- list()
 
     al_config <- list(
-        apiserver = getOption("adaptivelearnr.apiserver", NULL)
+        apiserver = getOption("learnrextra.apiserver", NULL)
     )
 
     dependencies <- append_html_dependencies(dependencies, doc_config = al_config, introjs = FALSE)

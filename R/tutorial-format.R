@@ -1,8 +1,8 @@
-#' Adaptive tutorial document format derived from learnr tutorial format.
+#' Extended tutorial document format derived from learnr tutorial format.
 #'
 #' @inheritParams learnr::tutorial
 #'
-#' @return An [rmarkdown::output_format()] for adaptive \pkg{learnr} tutorials.
+#' @return An [rmarkdown::output_format()] for \pkg{learnrextra} tutorials.
 #' @export
 
 
@@ -34,7 +34,7 @@ tutorial <- function(
         stop("learnr tutorials do not support the `anchor_sections` option.")
     }
 
-    # configuration options specific to adaptivelearnr, loaded from the document
+    # configuration options specific to learnrextra, loaded from the document
     doc_config <- list(
         apiserver = apiserver
     )
@@ -51,7 +51,7 @@ tutorial <- function(
     # template
     args <- c(args, "--template", rmarkdown::pandoc_path_arg(
         system.file("rmarkdown/templates/tutorial/resources/tutorial-parallel-format.htm",
-                    package = "adaptivelearnr")
+                    package = "learnrextra")
     ))
 
     # content includes
@@ -104,8 +104,8 @@ tutorial <- function(
     extra_dependencies <- append(extra_dependencies, list(
         htmltools::htmlDependency(
             name = "tutorial-parallel-format",
-            version = utils::packageVersion("adaptivelearnr"),
-            src = system.file("rmarkdown/templates/tutorial/resources", package = "adaptivelearnr"),
+            version = utils::packageVersion("learnrextra"),
+            src = system.file("rmarkdown/templates/tutorial/resources", package = "learnrextra"),
             stylesheet = "tutorial-parallel-format.css"
         )
     ))
@@ -134,9 +134,9 @@ tutorial <- function(
         learnr:::tutorial_html_dependency(),
         learnr:::tutorial_i18n_html_dependency(language),
         htmltools::htmlDependency(
-            name = "adaptivelearnr-tutorial-format",
-            version = utils::packageVersion("adaptivelearnr"),
-            src = system.file("rmarkdown/templates/tutorial/resources", package = "adaptivelearnr"),
+            name = "learnrextra-tutorial-format",
+            version = utils::packageVersion("learnrextra"),
+            src = system.file("rmarkdown/templates/tutorial/resources", package = "learnrextra"),
             script = "tutorial-format.js"
         )
     ))

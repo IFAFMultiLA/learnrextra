@@ -1,4 +1,4 @@
-// Session replay functions for adaptivelearnr javascript code.
+// Session replay functions for learnrextra javascript code.
 
 /**
  * Global variables and constants
