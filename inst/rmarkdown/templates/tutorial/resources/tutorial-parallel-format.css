@@ -108,6 +108,10 @@
     border-bottom-right-radius: 4px;
 }
 
+#summarytext {
+    font-size: 0.8em;
+}
+
 #summarytext ul {
     margin-inline-start: 0;
     padding-inline-start: 1em;
