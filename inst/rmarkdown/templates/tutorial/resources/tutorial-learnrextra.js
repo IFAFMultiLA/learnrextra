@@ -37,6 +37,7 @@ const TRACKING_CONFIG_DEFAULTS = {
 };
 
 var config = null;  // document config (configuration from the Rmd document); will be set when it is loaded
+var tr = null;      // translations as map `key` => `translated text`
 
 var replay = false;  // replay mode
 var sess = null;     // session ID
@@ -144,7 +145,7 @@ function sessionSetup(sess_config) {
                         error_type = resp_data.error;
                         alert_box.text(resp_data.message);
                     } else {
-                        alert_box.text("Failed to register.");
+                        alert_box.text(tr['registering_failed']);
                     }
 
                     alert_box.show();
@@ -632,11 +633,12 @@ function setupTracking() {
             let comment_submit = fbcontainer.find('.comment_submit button');
             comment_submit.on('click', function () {
                 comment_submit.prop('disabled', true);
-                comment_submit.html('Danke!');
+                comment_submit.html(tr['feedback_thankyou']);
 
                 let section = $(this).parents('.section.level2').attr('id');
                 let sectionfb = _.defaults(userfeedback[section], {score: 0, comment: ''});
-                sectionfb.comment = comment_input.val() === 'Ihr Kommentar...' ? '' : comment_input.val();
+                sectionfb.comment = comment_input.val() === tr['feedback_comment_placeholder'] ?
+                    '' : comment_input.val();
                 userfeedback[section] = sectionfb;
 
                 // send feedback data to the API
@@ -645,7 +647,7 @@ function setupTracking() {
 
                 setTimeout(function() {
                     comment_submit.prop('disabled', false);
-                    comment_submit.html("Aktualisieren");
+                    comment_submit.html(tr['feedback_update']);
                 }, 3000);
             });
         });
@@ -709,6 +711,33 @@ $(window).on("load", async function() {
     apiserver_url = new URL(config.apiserver);
 
     console.log("API server set to", apiserver);
+    console.log("Language set to", config.language);
+
+    // load translations into global object `tr`
+    let all_translations = JSON.parse(document.getElementById('learnrextra-translations').textContent);
+    tr = _.defaults(all_translations[config.language], all_translations["en"]);
+
+    if ($('.tracking_consent_text').length > 0) {
+        tr['consentmodal_full_text'] = $('.tracking_consent_text').detach().html();
+    }
+
+    if ($('.data_protection_text').length > 0) {
+        tr['dataprotectmodal_text'] = $('.data_protection_text').detach().html();
+    }
+
+    $('#doc-metadata-additional .dataprotect a').text(tr['dataprotect_link']);
+    $('.parallellayout.col.side')
+        .attr('data-title', tr['summary_intro_title'])
+        .attr('data-intro', tr['summary_intro_text']);
+    $('#summarytitle').text(tr['summary_title']);
+
+    // load HTML templates modals and other elements, substitude placeholders with translations and add to body
+    ['authmodal', 'consentmodal', 'dataprotectmodal', 'feedback'].forEach(function(inc) {
+        let templ = new DOMParser().parseFromString($('#learnrextra-' + inc).text(), "text/html")
+            .documentElement.textContent;
+        let inc_html = _.template(templ)(tr);
+        $('body').append(inc_html);
+    });
 
     // check if we're in replay mode
     if ($.urlParam('replay') !== undefined) {

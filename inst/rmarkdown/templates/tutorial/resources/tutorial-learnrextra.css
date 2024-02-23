@@ -15,6 +15,11 @@
     display: none;
 }
 
+.tracking_consent_text,
+.data_protection_text {
+    display: none;
+}
+
 .feedback-container {
     display: none;
     margin-bottom: 2em;

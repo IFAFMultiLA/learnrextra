@@ -36,7 +36,8 @@ tutorial <- function(
 
     # configuration options specific to learnrextra, loaded from the document
     doc_config <- list(
-        apiserver = apiserver
+        apiserver = apiserver,
+        language = language
     )
 
     # base pandoc options
@@ -55,26 +56,6 @@ tutorial <- function(
     ))
 
     # content includes
-    if (is.null(includes)) {
-        # set default includes
-        includes <- rmarkdown::includes(before_body = get_includes())
-    } else {
-        # merge given includes and default includes
-        std_includes <- rmarkdown::includes(before_body = get_includes())
-        tmp_includes <- includes
-        includes <- list()
-
-        for (k in c("in_header", "before_body", "after_body")) {
-            if (is.null(tmp_includes[[k]])) {
-                includes[[k]] <- std_includes[[k]]
-            } else {
-                includes[[k]] <- tmp_includes[[k]]
-            }
-        }
-
-        includes <- tmp_include
-    }
-
     args <- c(args, rmarkdown::includes_to_pandoc_args(includes))
 
     # prepend JS and CSS as extra dependencies

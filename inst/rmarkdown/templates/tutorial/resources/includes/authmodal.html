@@ -2,29 +2,29 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="authmodal_label">Login required</h5>
+        <h5 class="modal-title" id="authmodal_label"><%- authmodal_title %></h5>
       </div>
       <div class="modal-body">
           <div id="register-login-fail-alert" class="alert alert-danger alert-fullwidth-hidden" role="alert"></div>
 
-          <p>Please provide your credentials:</p>
+          <p><%- authmodal_provide_credentials %></p>
 
           <form id="authform">
           <div class="form-group">
-            <label for="email">Email address</label>
-            <input type="email" class="form-control" id="email" placeholder="Enter email">
+            <label for="email"><%- authmodal_email_label %></label>
+            <input type="email" class="form-control" id="email" placeholder="<%- authmodal_email_placeholder %>">
            </div>
            <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" class="form-control" id="password" placeholder="Password">
+            <label for="password"><%- authmodal_password_label %></label>
+            <input type="password" class="form-control" id="password" placeholder="<%- authmodal_password_placeholder %>">
            </div>
            </form>
 
-           <p>If you don't have an account yet, please choose "register" below.</p>
+           <p><%- authmodal_register_info %></p>
       </div>
       <div class="modal-footer">
-        <button id="login-btn" type="button" class="btn btn-primary">Login</button>
-        <button id="register-btn" type="button" class="btn btn-primary">Register</button>
+        <button id="login-btn" type="button" class="btn btn-primary"><%- authmodal_login_btn %></button>
+        <button id="register-btn" type="button" class="btn btn-primary"><%- authmodal_register_btn %></button>
       </div>
     </div>
   </div>

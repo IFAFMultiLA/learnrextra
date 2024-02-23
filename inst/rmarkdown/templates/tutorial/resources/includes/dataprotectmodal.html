@@ -1,73 +1,14 @@
-<div class="modal fade" id="dataprotectmodal" tabindex="-2" data-keyboard="false" data-show="false" role="dialog" aria-labelledby="consentmodal_label" aria-hidden="true">
+<div class="modal fade" id="dataprotectmodal" tabindex="-2" data-keyboard="false" data-show="false" role="dialog" aria-labelledby="dataprotectmodal_label" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="authmodal_label">Datenschutzhinweise</h5>
+        <h5 class="modal-title" id="dataprotectmodal_label"><%- dataprotectmodal_title %></h5>
       </div>
       <div class="modal-body">
-          <h3>Datenschutzrechtliche Informationspflichten über die Datensammlung im Forschungsprojekt "MultiLA" nach Art. 13 DSGVO</h3>
-
-          <p>Das Projekt "Multimodale interaktive Lerndashboards mit Learning Analytics" (MultiLA) hat sich zum Ziel gesetzt das Lernverhalten in den zur Verfügung gestellten Lernanwendungen zu erforschen. Zu diesem Zwecke werden Daten erhoben und verarbeiten, worüber wir im folgenden aufklären.</p>
-
-          <h4>1. Name und Kontaktdaten des Verantwortlichen</h4>
-
-          <p>
-              Hochschule für Technik und Wirtschaft Berlin<br>
-              Treskowallee 8<br>
-              10318 Berlin<br>
-              <br>
-              T: +49.40.42875-0<br>
-              <br>
-              Vertreten durch die <a href="https://www.htw-berlin.de/einrichtungen/hochschulleitung/praesidentin/" target="_blank">Präsidentin</a><br>
-              Praesidentin@HTW-Berlin.de
-          </p>
-
-          <h4>2. Datenschutzbeauftragter</h4>
-
-          <p>
-              Behördlicher Datenschutzbeauftragter<br>
-              Vitali Dick (HiSolutions AG)<br>
-              datenschutz@htw-berlin.de
-          </p>
-
-          <p>
-              Projektverantwortlicher<br>
-              Andre Beinrucker<br>
-              andre.beinrucker@htw-berlin.de
-          </p>
-
-          <h4>3. Die Verarbeitung von personenbezogenen Daten</h4>
-
-          <h4>3.1 Zweck</h4>
-
-          <p>
-              Die Verarbeitung personenbezogener Daten dient dem Zweck der Analyse des Lernverhaltens und des Umgangs mit interaktiven Lernanwendungen im Rahmen des Foschungsprojekts "MultiLA".
-          </p>
-
-          <h4>3.2 Rechtsgrundlage</h4>
-
-          <p>
-               Die Rechtsgrundlage ist Art. 6 Abs. 1 lit. e DSGVO.
-          </p>
-
-          <h4>3.3 Dauer der Speicherung</h4>
-
-          <p>
-              Alle Daten werden nur innerhalb der Lernanwendung aufgezeichnet. Sie werden auf den Servern der HTW-Berlin gespeichert und werden mit Auslaufen des Projektes oder möglichen Folgeprojekten gelöscht.
-          </p>
-
-          <h4>4. Ihre Rechte</h4>
-
-          <ul><li>Sie haben das Recht, von der Hochschule Auskunft über die zu Ihrer Person gespeicherten Daten zu erhalten und/oder unrichtig gespeicherte Daten berichtigen zu lassen.</li><li>Sie haben darüber hinaus das Recht auf Löschung oder auf Einschränkung der Verarbeitung oder ein Widerspruchsrecht gegen die Verarbeitung.</li><li>Außerdem haben Sie in dem Fall, in dem als Rechtsgrundlage für die Verarbeitung Sie die Einwilligung gegeben haben, das Recht, die Einwilligung jederzeit zu widerrufen. Die Rechtmäßigkeit, der aufgrund der Einwilligung bis zum Widerruf erfolgten Verarbeitung bleibt davon unberührt. Bitte wenden Sie sich in dem Fall jeweils an folgende Person: Andre Beinrucker, andre.beinrucker@htw-berlin.de.</li><li>Sie haben das Recht auf Beschwerde bei einer Aufsichtsbehörde, wenn Sie der Ansicht sind, dass die Verarbeitung der Sie betreffenden personenbezogenen Daten gegen die Rechtsvorschriften verstößt.</li></ul>
-
-          <h4>5. Information über Ihr Widerspruchsrecht nach Art . 21 Abs. 1 DSGVO</h4>
-
-          <p>
-              Sie haben das Recht, aus Gründen, die sich aus Ihrer besonderen Situation ergeben, jederzeit gegen die Verarbeitung Sie betreffender Daten, die aufgrund von Art. 6 Abs. 1 lit. e DSGVO                  (Datenverarbeitung im öffentlichen Interesse) erfolgt, Widerspruch einzulegen.
-          </p>
+          <%= dataprotectmodal_text %>
       </div>
       <div class="modal-footer">
-          <button id="restricted-consent-btn" type="button" class="btn btn-primary">OK</button>
+          <button id="restricted-consent-btn" type="button" class="btn btn-primary"><%- dataprotectmodal_close_btn %></button>
       </div>
     </div>
   </div>
