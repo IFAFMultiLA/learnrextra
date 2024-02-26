@@ -12,7 +12,8 @@ use_learnrextra <- function(consentmodal = TRUE, dataprotectmodal = TRUE) {
     dependencies <- list()
 
     al_config <- list(
-        apiserver = getOption("learnrextra.apiserver", NULL)
+        apiserver = getOption("learnrextra.apiserver", NULL),
+        language = getOption("learnrextra.language", "en")
     )
 
     dependencies <- append_html_dependencies(dependencies, doc_config = al_config, introjs = FALSE,

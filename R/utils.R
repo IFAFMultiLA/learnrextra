@@ -56,11 +56,11 @@ append_html_dependencies <- function(html_dependencies, doc_config, introjs = FA
 
     html_includes <- c("authmodal", "feedback")
 
-    if (consentmodal) {
+    if (isTRUE(consentmodal)) {
         html_includes <- c(html_includes, "consentmodal")
     }
 
-    if (dataprotectmodal) {
+    if (isTRUE(dataprotectmodal)) {
         html_includes <- c(html_includes, "dataprotectmodal")
     }
 
@@ -71,6 +71,22 @@ append_html_dependencies <- function(html_dependencies, doc_config, introjs = FA
                                       type = "text/html",
                                       paste(inctext, collapse = "\n")))
     })
+
+    if (is.character(consentmodal) && file.exists(here::here(consentmodal))) {
+        inctext <- readLines(here::here(consentmodal))
+        head_includes <- c(head_includes,
+                           format(htmltools::tags$script(id = "learnrextra-consentmodal",
+                                                         type = "text/html",
+                                                         paste(inctext, collapse = "\n"))))
+    }
+
+    if (is.character(dataprotectmodal) && file.exists(here::here(dataprotectmodal))) {
+        inctext <- readLines(here::here(dataprotectmodal))
+        head_includes <- c(head_includes,
+                           format(htmltools::tags$script(id = "learnrextra-dataprotectmodal",
+                                                         type = "text/html",
+                                                         paste(inctext, collapse = "\n"))))
+    }
 
     html_dependencies <- append(
         list(
