@@ -10,7 +10,8 @@
 #' @param introjs if TRUE, include the intro.js library
 #'
 #' @return updated list of HTML dependencies
-append_html_dependencies <- function(html_dependencies, doc_config, introjs = FALSE) {
+append_html_dependencies <- function(html_dependencies, doc_config, introjs = FALSE,
+                                     consentmodal = TRUE, dataprotectmodal = TRUE) {
     html_dependencies <- append(
         list(
             htmltools::htmlDependency(
@@ -50,6 +51,43 @@ append_html_dependencies <- function(html_dependencies, doc_config, introjs = FA
         )
     }
 
+    translations <- jsonlite::read_json(system.file("rmarkdown/templates/tutorial/resources/translations.json",
+                                                    package = "learnrextra"))
+
+    html_includes <- c("authmodal", "feedback")
+
+    if (isTRUE(consentmodal)) {
+        html_includes <- c(html_includes, "consentmodal")
+    }
+
+    if (isTRUE(dataprotectmodal)) {
+        html_includes <- c(html_includes, "dataprotectmodal")
+    }
+
+    head_includes <- sapply(html_includes, function(inc) {
+        inctext <- readLines(system.file(sprintf("rmarkdown/templates/tutorial/resources/includes/%s.html", inc),
+                                         package = "learnrextra"))
+        format(htmltools::tags$script(id = paste0("learnrextra-", inc),
+                                      type = "text/html",
+                                      paste(inctext, collapse = "\n")))
+    })
+
+    if (is.character(consentmodal) && file.exists(here::here(consentmodal))) {
+        inctext <- readLines(here::here(consentmodal))
+        head_includes <- c(head_includes,
+                           format(htmltools::tags$script(id = "learnrextra-consentmodal",
+                                                         type = "text/html",
+                                                         paste(inctext, collapse = "\n"))))
+    }
+
+    if (is.character(dataprotectmodal) && file.exists(here::here(dataprotectmodal))) {
+        inctext <- readLines(here::here(dataprotectmodal))
+        head_includes <- c(head_includes,
+                           format(htmltools::tags$script(id = "learnrextra-dataprotectmodal",
+                                                         type = "text/html",
+                                                         paste(inctext, collapse = "\n"))))
+    }
+
     html_dependencies <- append(
         list(
             htmltools::htmlDependency(
@@ -60,49 +98,23 @@ append_html_dependencies <- function(html_dependencies, doc_config, introjs = FA
                            "tutorial-learnrextra-replay.js",
                            "tutorial-learnrextra.js"),
                 stylesheet = "tutorial-learnrextra.css",
-                head = format(htmltools::tags$script(
-                    id = "learnrextra-config",
-                    type = "application/json",
-                    htmltools::HTML(jsonlite::toJSON(doc_config, auto_unbox = TRUE))    # include config as JSON
-                ))
+                head = c(
+                    format(htmltools::tags$script(
+                        id = "learnrextra-config",
+                        type = "application/json",
+                        htmltools::HTML(jsonlite::toJSON(doc_config, auto_unbox = TRUE))    # include config as JSON
+                    )),
+                    format(htmltools::tags$script(
+                        id = "learnrextra-translations",
+                        type = "application/json",
+                        htmltools::HTML(jsonlite::toJSON(translations, auto_unbox = TRUE))    # include translations as JSON
+                    )),
+                    head_includes
+                )
             )
         ),
         html_dependencies
     )
 
     html_dependencies
-}
-
-#' Get HTML files (HTML snippets) to include
-#'
-#' @keywords internal
-#'
-#' @param consentmodal either logical value or string pointing to an HTML file for a "data protection consent" modal
-#' @param dataprotectmodal either logical value or string pointing to an HTML file for a "data protection license" modal
-#' @param feedback either logical value or string pointing to an HTML file for a feedback element
-#'
-#' @return list with includes
-get_includes <- function(consentmodal = TRUE, dataprotectmodal = TRUE, feedback = TRUE) {
-    rootpath <- "rmarkdown/templates/tutorial/resources/includes/"
-    includes <-system.file(paste0(rootpath, "authmodal.html"), package = "learnrextra")
-
-    if (isTRUE(consentmodal)) {
-        includes <- c(includes, system.file(paste0(rootpath, "consentmodal.html"), package = "learnrextra"))
-    } else if (is.character(consentmodal)) {
-        includes <- c(includes, consentmodal)
-    }
-
-    if (isTRUE(dataprotectmodal)) {
-        includes <- c(includes, system.file(paste0(rootpath, "dataprotectmodal.html"), package = "learnrextra"))
-    } else if (is.character(dataprotectmodal)) {
-        includes <- c(includes, dataprotectmodal)
-    }
-
-    if (isTRUE(feedback)) {
-        includes <- c(includes, system.file(paste0(rootpath, "feedback.html"), package = "learnrextra"))
-    } else if (is.character(feedback)) {
-        includes <- c(includes, feedback)
-    }
-
-    includes
 }

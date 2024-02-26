@@ -1,7 +1,7 @@
 Package: learnrextra
 Type: Package
 Title: An extension to the learnr package with improved layout and tracking functions for learning analytics.
-Version: 0.6.11
+Version: 0.7.0
 Author: Markus Konrad
 Maintainer: Markus Konrad <markus.konrad@htw-berlin.de>
 Description: A learnr extension package providing an improved layout with a summary pane and also tracking functions
@@ -12,6 +12,7 @@ LazyData: true
 Imports:
     fs (>= 1.6.0),
     htmltools (>= 0.5.0),
+    here (>= 1.0.1),
     jsonlite (>= 1.8.0),
     learnr (>= 0.11.0),
     shiny (>= 1.7.0)
