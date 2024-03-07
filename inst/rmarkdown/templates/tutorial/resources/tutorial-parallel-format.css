@@ -185,11 +185,28 @@
 #doc-metadata {
   margin-bottom: 10px;
   line-height: 1.6em;
-  width: 50%;
+  width: 80%;
+}
+
+#doc-metadata .author_and_date {
+    float: left;
+    padding-right: 2em;
+}
+
+#doc-metadata .tutorial_title {
+    vertical-align: bottom;
+}
+
+#doc-metadata .tutorial_title h1 {
+    font-size: 2.8em;
+}
+
+#doc-metadata .tutorial_title h2 {
+    font-size: 2em;
 }
 
 #doc-metadata-additional {
-    width: 50%;
+    width: 20%;
     float: right;
     text-align: right;
 }

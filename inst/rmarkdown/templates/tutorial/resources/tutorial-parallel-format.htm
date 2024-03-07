@@ -153,10 +153,9 @@ $endfor$
 
 <!-- begin doc-metadata -->
 <div id="doc-metadata">
-$if(title)$
-<h1 class="title toc-ignore" style="display:none;">$title$</h1>
-$if(subtitle)$
-<h2 class="subtitle"><em>$subtitle$</em></h2>
+<div class="author_and_date">
+$if(date)$
+<h4 class="date"><em>$date$</em></h4>
 $endif$
 $for(author)$
 $if(author.name)$
@@ -172,9 +171,14 @@ $else$
 <h4 class="author"><em>$author$</em></h4>
 $endif$
 $endfor$
-$if(date)$
-<h4 class="date"><em>$date$</em></h4>
+</div>
+<div class="tutorial_title">
+$if(title)$
+<h1 class="title toc-ignore">$title$</h1>
+$if(subtitle)$
+<h2 class="subtitle"><em>$subtitle$</em></h2>
 $endif$
+</div>
 $if(abstract)$
 <div class="abstract">
 <p class="abstract">Abstract</p>

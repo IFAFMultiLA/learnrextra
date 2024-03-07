@@ -234,7 +234,7 @@ $(document).ready(function () {
     )
 
     const topicsHeader = $('<header class="topicsHeader"></header>')
-    topicsHeader.append($('<h1 class="tutorialTitle">' + titleText + '</h1>'))
+    // topicsHeader.append($('<h1 class="tutorialTitle">' + titleText + '</h1>'))
     const topicsCloser = $('<div class="paneCloser"></div>')
     topicsCloser.on('click', hideFloatingTopics)
     topicsHeader.append(topicsCloser)
