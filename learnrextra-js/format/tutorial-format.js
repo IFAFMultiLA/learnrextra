@@ -1,4 +1,4 @@
-/* global _,$,tutorial,Shiny,i18next,bootbox,introJs, sessdata */
+/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config */
 
 $(document).ready(function () {
   let titleText = ''
@@ -754,6 +754,18 @@ $(document).ready(function () {
     const sidebar = $('.parallellayout.col.side')
 
     if (!sidebar.is(':visible')) {
+      let opts = { dontShowAgain: true }
+      if (config.language === 'de') {
+        const transl = {
+          nextLabel: 'Weiter',
+          prevLabel: 'Zurück',
+          doneLabel: 'Fertig',
+          stepNumbersOfLabel: 'von',
+          dontShowAgainLabel: 'Nicht wieder anzeigen'
+        }
+        opts = { ...opts, ...transl }
+      }
+
       maincol.css('flexBasis', '100%')
       sidebar.css('flexBasis', '0%')
       sidebar.show()
@@ -764,14 +776,7 @@ $(document).ready(function () {
         step: function (now, fx) {
           maincol.css('flexBasis', (100 - now) + '%')
         },
-        complete: () => introJs().setOptions({
-          dontShowAgain: true,
-          nextLabel: 'Weiter',
-          prevLabel: 'Zurück',
-          doneLabel: 'Fertig',
-          stepNumbersOfLabel: 'von',
-          dontShowAgainLabel: 'Nicht wieder anzeigen'
-        }).start()
+        complete: () => introJs().setOptions(opts).start()
       })
     }
 
