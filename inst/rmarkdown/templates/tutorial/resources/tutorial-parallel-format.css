@@ -239,19 +239,9 @@
 }
 
 @media screen and (max-width: 767px) {
-  .topics {
-    width: 99%;
-  }
-
   .topics .tutorialTitle {
     display: block;
     cursor: pointer;
-  }
-
-  .topicsContainer {
-    width: 1%;
-    min-width: 1px;
-    margin-right: 0;
   }
 
   .topicsList {
@@ -269,6 +259,28 @@
   .paneCloser {
     display: inline-block;
   }
+
+    #doc-metadata {
+      margin-bottom: 10px;
+      line-height: 1em;
+      width: 100%;
+    }
+
+    #doc-metadata .author_and_date {
+        float: none;
+        padding-right: 2em;
+    }
+
+    #doc-metadata-additional {
+        padding-top: 1em;
+        width: 100%;
+        float: none;
+        text-align: right;
+    }
+
+    #doc-metadata-additional ul {
+        line-height: 1em;
+    }
 }
 
 /* override the width to be 100%, not 300px wide */
