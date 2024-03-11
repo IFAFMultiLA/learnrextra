@@ -460,7 +460,9 @@ function setupTracking() {
         }, nowISO());
     }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
 
-    if (tracking_config.chapters) {
+    let has_chapter_nav = $('#tutorial-topic ul li').length > 0;
+
+    if (has_chapter_nav && tracking_config.chapters) {
         // define a function that returns a chapter tracking function
         function getChapterTrackingFn(elem) {
             return function(input_elem_unused) {
@@ -594,7 +596,8 @@ function setupTracking() {
     }
 
     // user feedback
-    if (_.defaults(sessdata.app_config, {feedback: true}).feedback) {
+    let has_user_feedback = $('.section.level2 .topicActions > .feedback-container').length > 0;
+    if (has_user_feedback && _.defaults(sessdata.app_config, {feedback: true}).feedback) {
         // add the HTML chunk underneath each section
         $('.section.level2 .topicActions').prepend($('.feedback-container').clone());
         let fbcontainers_per_section = $('.section.level2 .topicActions > .feedback-container');
@@ -731,13 +734,17 @@ $(window).on("load", async function() {
         .attr('data-intro', tr['summary_intro_text']);
     $('#summarytitle').text(tr['summary_title']);
 
-    // load HTML templates modals and other elements, substitude placeholders with translations and add to body
-    ['authmodal', 'consentmodal', 'dataprotectmodal', 'feedback'].forEach(function(inc) {
-        let templ = new DOMParser().parseFromString($('#learnrextra-' + inc).text(), "text/html")
-            .documentElement.textContent;
-        let inc_html = _.template(templ)(tr);
-        $('body').append(inc_html);
-    });
+    // load HTML templates for modals and other elements, substitude placeholders with translations and add to body
+    try {
+        ['authmodal', 'consentmodal', 'dataprotectmodal', 'feedback'].forEach(function(inc) {
+            let templ = new DOMParser().parseFromString($('#learnrextra-' + inc).text(), "text/html")
+                .documentElement.textContent;
+            let inc_html = _.template(templ)(tr);
+            $('body').append(inc_html);
+        });
+    } catch (err) {
+        console.error("error when loading  HTML templates for modals and other elements:", err);
+    }
 
     // check if we're in replay mode
     if ($.urlParam('replay') !== undefined) {
