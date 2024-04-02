@@ -219,7 +219,7 @@
 
 #doc-metadata-additional ul li {
     display: inline;
-    margin-left: 1em;
+    margin: 0;
 }
 
 #doc-metadata h3 {
