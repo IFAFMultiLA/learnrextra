@@ -460,6 +460,12 @@ function setupTracking() {
         }, nowISO());
     }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
 
+    $(document).on('visibilitychange', function(event) {
+        postEvent(sess, tracking_session_id, sessdata.user_code, "visibility_change", {
+            state: document.visibilityState
+        }, nowISO());
+    });
+
     let has_chapter_nav = $('#tutorial-topic ul li').length > 0;
 
     if (has_chapter_nav && tracking_config.chapters) {
