@@ -825,12 +825,18 @@ $(document).ready(function () {
           }
 
           if (sectionContainer !== null && i >= summaryElems.length - 1) {
+            // display the summary panel with an animation
             sectionContainer.css('opacity', '0%').animate(
               { opacity: '100%' },
               {
                 duration: 1000,
                 complete: function () {
+                  // after the animation is complete, we need to re-render some elements to prevent cluttering of
+                  // math and plots
+                  // re-render all math
                   MathJax.Hub.Queue(['Rerender', MathJax.Hub])
+                  // re-render all plots
+                  $('.shiny-plot-output').each(() => Shiny.renderContent(this.id))
                 }
               }
             )
