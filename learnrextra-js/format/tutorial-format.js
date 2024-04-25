@@ -1,4 +1,4 @@
-/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config */
+/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config, MathJax */
 
 $(document).ready(function () {
   let titleText = ''
@@ -827,7 +827,12 @@ $(document).ready(function () {
           if (sectionContainer !== null && i >= summaryElems.length - 1) {
             sectionContainer.css('opacity', '0%').animate(
               { opacity: '100%' },
-              { duration: 1000 }
+              {
+                duration: 1000,
+                complete: function () {
+                  MathJax.Hub.Queue(['Rerender', MathJax.Hub])
+                }
+              }
             )
 
             if (sectionContainerCreated) {
