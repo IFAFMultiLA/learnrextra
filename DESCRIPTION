@@ -1,7 +1,7 @@
 Package: learnrextra
 Type: Package
 Title: An extension to the learnr package with improved layout and tracking functions for learning analytics.
-Version: 0.8.2
+Version: 0.8.3
 Author: Markus Konrad
 Maintainer: Markus Konrad <markus.konrad@htw-berlin.de>
 Description: A learnr extension package providing an improved layout with a summary pane and also tracking functions
