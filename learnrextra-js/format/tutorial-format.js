@@ -1,4 +1,4 @@
-/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config, MathJax */
+/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config,MathJax,postEvent,sess,tracking_session_id,sessdata */
 
 $(document).ready(function () {
   let titleText = ''
@@ -777,13 +777,15 @@ $(document).ready(function () {
           maincol.css('flexBasis', (100 - now) + '%')
         },
         complete: function () {
+          // send event
+          postEvent(sess, tracking_session_id, sessdata.user_code, 'summary_shown')
           // after the animation is complete, we need to re-render some elements to prevent cluttering of
           // math and plots
           // re-render all math
           MathJax.Hub.Queue(['Rerender', MathJax.Hub])
           // re-render all plots
           $('.shiny-plot-output').each(() => Shiny.renderContent(this.id))
-
+          // show intro js box
           introJs().setOptions(opts).start()
         }
       })
@@ -791,9 +793,11 @@ $(document).ready(function () {
 
     const topicSummaryKey = `${topicIndex}.${summaryIdx}`
     const summariesContainer = $('#summarytext')
+    let topicID = null
 
     if (!addedSummaries.has(topicSummaryKey)) {
       const embeddedSummariesContainer = $(`.section.level2:eq(${topicIndex})  .summary:eq(${summaryIdx})`)
+      topicID = embeddedSummariesContainer.prop('id')
       const summaryElems = embeddedSummariesContainer.children().detach()
 
       let sectionContainer = null
@@ -847,6 +851,11 @@ $(document).ready(function () {
           }
         }
       }
+
+      postEvent(sess, tracking_session_id, sessdata.user_code, 'summary_topic_added', {
+        key: topicSummaryKey,
+        id: topicID
+      })
 
       const summariesScrollable = summariesContainer.parent()
       summariesScrollable.animate({ scrollTop: summariesScrollable.prop('scrollHeight') }, 1000)
