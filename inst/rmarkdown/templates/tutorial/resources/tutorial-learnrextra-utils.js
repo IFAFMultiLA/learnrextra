@@ -119,7 +119,7 @@ function postJSON(endpoint, data, authtoken, extras) {
  * Shortcut for posting event data to the API.
  */
 function postEvent(sess, tracking_session_id, authtoken, eventtype, eventval, eventtime) {
-    if (replay) {
+    if (replay || sess === null || tracking_session_id === null) {
         return null;
     }
 
