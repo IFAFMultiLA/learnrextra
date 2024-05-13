@@ -359,18 +359,26 @@ function appSetup() {
 
     // handling excluding elements by selector
     if (config.hasOwnProperty('exclude')) {
-        config.exclude.forEach(function(selector) {
-            // hide element
-            $(selector).remove();
+        function excludeElements() {
+            config.exclude.forEach(function(selector) {
+                // hide element
+                $(selector).remove();
 
-            // hide main navigation menu item
-            $('#tutorial-topic ul li a').each(function() {
-                var link = $(this);
-                if (link.attr('href') == selector) {
-                    link.parent().remove();
-                }
+                // hide main navigation menu item
+                $('#tutorial-topic ul li a').each(function() {
+                    var link = $(this);
+                    if (link.attr('href') == selector) {
+                        link.parent().remove();
+                    }
+                });
             });
-        });
+        }
+
+        // some contents are rendered with some delay (e.g. quizzes, interactive graphics, etc.), so repeat element
+        // exclusion several times after some delay
+        excludeElements();
+        setTimeout(excludeElements, 2500);
+        setTimeout(excludeElements, 5000);
     }
 
     // load additional JS files
