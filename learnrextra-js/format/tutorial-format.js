@@ -6,7 +6,11 @@ $(document).ready(function () {
   let docProgressiveReveal = false
   let docAllowSkip = false
   const topics = []
-  const enableSummaryPanel = _.defaults(sessdata.app_config, { summary: true }).summary
+  const appConfig = _.defaults(sessdata.app_config, { summary: true, reset_button: true })
+  // stupid javascript somehow requires "valueOf()" because `_.defaults(..., true)` returns a Boolean object which
+  // behaves... strange
+  const enableSummaryPanel = _.defaults(appConfig.summary, true).valueOf()
+  const enableResetBtn = _.defaults(appConfig.reset_button, true).valueOf()
   const addedSummaries = new Set() // stores keys of "<topicIndex>.<summaryIndex>" of already shown summaries
 
   let scrollLastSectionToView = false
@@ -389,22 +393,24 @@ $(document).ready(function () {
 
     // const topicsFooter = $('<footer class="topicsFooter"></footer>')
 
-    const resetButton = $(
-      '<li class="resetButton"><a href="#" data-i18n="text.startover">Start Over</a></li>'
-    )
-    resetButton.on('click', function () {
-      const areyousure = i18next.t([
-        'text.areyousure',
-        'Are you sure you want to start over? (all exercise progress will be reset)'
-      ])
+    if (enableResetBtn) {
+      const resetButton = $(
+        '<li class="resetButton"><a href="#" data-i18n="text.startover">Start Over</a></li>'
+      )
+      resetButton.on('click', function () {
+        const areyousure = i18next.t([
+          'text.areyousure',
+          'Are you sure you want to start over? (all exercise progress will be reset)'
+        ])
 
-      bootbox.setLocale(i18nextLang())
-      bootbox.confirm(areyousure, function (result) {
-        result && tutorial.startOver()
+        bootbox.setLocale(i18nextLang())
+        bootbox.confirm(areyousure, function (result) {
+          result && tutorial.startOver()
+        })
       })
-    })
 
-    $('#doc-metadata-additional ul').prepend(resetButton)
+      $('#doc-metadata-additional ul').prepend(resetButton)
+    }
 
     // topicsFooter.append(resetButton)
     // topicsList.append(topicsFooter)
