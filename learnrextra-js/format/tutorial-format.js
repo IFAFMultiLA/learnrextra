@@ -885,7 +885,7 @@ $(document).ready(function () {
 
   function updateContentElemHeight (containerH) {
     const h = Math.floor(containerH - $('.topicsContainer').height())
-    $('.parallellayout.row').height(h)
+    $('.parallellayout.row').height(h - 24)
   }
 
   // add listener for scrolling through main column -> will trigger adding summaries for this topic
