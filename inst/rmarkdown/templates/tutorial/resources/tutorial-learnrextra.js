@@ -56,10 +56,10 @@ var content_scroll_frames = null;   // additional scroll events for main content
 /**
  * Perform a user login.
  */
-function userLogin(sess, email, password) {
+function userLogin(sess, username, password) {
     postJSON('session_login/', {
             sess: sess,
-            email: email,
+            username: username,
             password: password
     })
     .then((response) => {
@@ -75,7 +75,7 @@ function userLogin(sess, email, password) {
         $('#authmodal').modal('hide');
         sessdata.user_code = response.user_code;
         sessdata.app_config = response.config;
-        sessdata.user_email = email;
+        sessdata.user_name = username;
         tracking_config = _.defaults(sessdata.app_config.tracking, TRACKING_CONFIG_DEFAULTS);
         console.log("received user code", sessdata.user_code);
         appSetup();
@@ -102,7 +102,7 @@ function sessionSetup(sess_config) {
     if (sess_config.auth_mode == "none") {
         sessdata.user_code = sess_config.user_code;
         sessdata.app_config = sess_config.config;
-        sessdata.user_email = null;
+        sessdata.user_name = null;
         console.log("received user code", sessdata.user_code);
         return true;
     } else {
@@ -111,22 +111,22 @@ function sessionSetup(sess_config) {
             // log in an already registered user
             console.log("logging in ...");
 
-            var email = $("#email").val();
+            var username = $("#username").val();
             var password = $("#password").val();
 
-            userLogin(sess, email, password);
+            userLogin(sess, username, password);
         });
 
         $("#register-btn").on("click", function() {
             // register a new user and log in that user
             console.log("registering ...");
 
-            let email = $("#email").val();
+            let username = $("#username").val();
             let password = $("#password").val();
 
             postJSON('register_user/', {
                 sess: sess,
-                email: email,
+                username: username,
                 password: password
             })
             .then(response => {
@@ -154,7 +154,7 @@ function sessionSetup(sess_config) {
                     $('#authmodal').modal('hide');
 
                     // log in the new user
-                    userLogin(sess, email, password);
+                    userLogin(sess, username, password);
                 }
             });
         });
@@ -241,7 +241,7 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
             // create new, empty session data
             sessdata = {
                 user_code: null,
-                user_email: null,
+                user_name: null,
                 app_config: null
             }
         }
@@ -346,8 +346,8 @@ function appSetup() {
     }
 
     // show "logged in as ..." message in page header
-    if (sessdata.user_email !== null) {
-        $('#doc-metadata-additional .logininfo').html("Logged in as " + sessdata.user_email +
+    if (sessdata.user_name !== null) {
+        $('#doc-metadata-additional .logininfo').html("Logged in as " + sessdata.user_name +
             " – <a href='#' id='logout-link'>Logout</a>").show();
         $('#logout-link').on('click', userLogout);
     } else {

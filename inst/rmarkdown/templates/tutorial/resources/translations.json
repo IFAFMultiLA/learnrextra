@@ -2,8 +2,8 @@
     "en": {
         "authmodal_title": "Login required",
         "authmodal_provide_credentials": "Please provide your credentials:",
-        "authmodal_email_label": "Email address",
-        "authmodal_email_placeholder": "Enter email",
+        "authmodal_username_label": "User pseudonym",
+        "authmodal_username_placeholder": "Enter a self-chosen pseudonym",
         "authmodal_password_label": "Password",
         "authmodal_password_placeholder": "Enter password",
         "authmodal_register_info": "If you don't have an account yet, please choose \"register\" below.",
@@ -33,8 +33,8 @@
     "de": {
         "authmodal_title": "Anmeldung erforderlich",
         "authmodal_provide_credentials": "Bitte geben Sie Ihre Anmeldeinformationen ein:",
-        "authmodal_email_label": "E-Mail-Adresse",
-        "authmodal_email_placeholder": "E-Mail eingeben",
+        "authmodal_username_label": "Pseudonym",
+        "authmodal_username_placeholder": "Selbstgewähltes Pseudonym eingeben",
         "authmodal_password_label": "Passwort",
         "authmodal_password_placeholder": "Passwort eingeben",
         "authmodal_register_info": "Wenn Sie noch kein Konto haben, wählen Sie bitte unten \"Registrieren\".",
