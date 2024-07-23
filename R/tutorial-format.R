@@ -1,6 +1,7 @@
 #' Extended tutorial document format derived from learnr tutorial format.
 #'
 #' @inheritParams learnr::tutorial
+#' @param apiserver URL to web API for data collection
 #'
 #' @return An [rmarkdown::output_format()] for \pkg{learnrextra} tutorials.
 #' @export

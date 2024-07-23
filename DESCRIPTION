@@ -16,5 +16,6 @@ Imports:
     jsonlite (>= 1.8.0),
     learnr (>= 0.11.0),
     shiny (>= 1.7.0),
+    rmarkdown (>= 2.27),
     rcmdcheck (>= 1.4.0)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2

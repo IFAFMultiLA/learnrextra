@@ -114,6 +114,8 @@ available options and formatting}
 bootstrap, etc.) into. By default this will be the name of the document with
 \code{_files} appended to it.}
 
+\item{apiserver}{URL to web API for data collection}
+
 \item{...}{Forward parameters to html_document}
 }
 \value{

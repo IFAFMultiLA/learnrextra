@@ -4,7 +4,13 @@
 \alias{append_html_dependencies}
 \title{Append necessary HTML dependencies (JS, CSS)}
 \usage{
-append_html_dependencies(html_dependencies, doc_config, introjs = FALSE)
+append_html_dependencies(
+  html_dependencies,
+  doc_config,
+  introjs = FALSE,
+  consentmodal = TRUE,
+  dataprotectmodal = TRUE
+)
 }
 \arguments{
 \item{html_dependencies}{list of existing HTML dependencies}
