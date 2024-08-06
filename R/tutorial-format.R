@@ -178,7 +178,7 @@ tutorial <- function(
     for (e in learnr_events) {
         learnr::event_register_handler(e, function(session, event, data) {
             # send this event along with the collected data to the JavaScript side which in turn sends it to the
-            # web API
+            # web API (if the tracking the respective learnr events is enabled in the tracking configuration)
             #message("received event ", event, " with data ", names(data))
             data$event_type <- event
             session$sendCustomMessage("learnr_event", data)

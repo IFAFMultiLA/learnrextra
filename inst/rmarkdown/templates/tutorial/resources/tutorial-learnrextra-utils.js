@@ -198,10 +198,6 @@ function mouseTrackingUpdate() {
     mus.frames = [];
     mus.finishedAt = 0;
 
-    if (!tracking_config.attribute_changes) {  // optionally filter frames
-        data.frames = data.frames.filter((f) => f[0] !== 'a');
-    }
-
     data.frames = data.frames.concat(content_scroll_frames);
     content_scroll_frames = [];
 

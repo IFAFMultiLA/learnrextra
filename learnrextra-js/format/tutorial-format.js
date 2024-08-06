@@ -1,4 +1,4 @@
-/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config,MathJax,postEvent,sess,tracking_session_id,sessdata */
+/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config,MathJax,postEvent,sess,tracking_session_id,sessdata,tracking_config */
 
 $(document).ready(function () {
   let titleText = ''
@@ -783,8 +783,10 @@ $(document).ready(function () {
           maincol.css('flexBasis', (100 - now) + '%')
         },
         complete: function () {
-          // send event
-          postEvent(sess, tracking_session_id, sessdata.user_code, 'summary_shown')
+          if (tracking_config.summary) {
+            // send tracking event
+            postEvent(sess, tracking_session_id, sessdata.user_code, 'summary_shown')
+          }
           // after the animation is complete, we need to re-render some elements to prevent cluttering of
           // math and plots
           // re-render all math
@@ -858,10 +860,13 @@ $(document).ready(function () {
         }
       }
 
-      postEvent(sess, tracking_session_id, sessdata.user_code, 'summary_topic_added', {
-        key: topicSummaryKey,
-        id: topicID
-      })
+      if (tracking_config.summary) {
+        // send tracking event
+        postEvent(sess, tracking_session_id, sessdata.user_code, 'summary_topic_added', {
+          key: topicSummaryKey,
+          id: topicID
+        })
+      }
 
       const summariesScrollable = summariesContainer.parent()
       summariesScrollable.animate({ scrollTop: summariesScrollable.prop('scrollHeight') }, 1000)
