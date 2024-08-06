@@ -29,6 +29,7 @@
       console.error('Have you initialized Mus with "new" statement? (i.e. var mus = new Mus())')
       return
     }
+
     this.frames = []
     this.timeouts = []
     this.pos = 0
@@ -37,6 +38,10 @@
     this.startedAtISODate = null
     this.finishedAt = 0
     this.timePoint = false
+    this.recordMovement = true
+    this.recordClicks = true
+    this.recordScrolling = true
+    this.recordAttribChanges = true
     this.recordInputs = true
     this.recordCurrentElem = false
     this.curElemXPath = null
@@ -196,10 +201,12 @@
       }
 
       // Sets initial scroll position of the window
-      if (self.timePoint) {
-        self.frames.push(['s', document.scrollingElement.scrollLeft, document.scrollingElement.scrollTop, 0])
-      } else {
-        self.frames.push(['s', document.scrollingElement.scrollLeft, document.scrollingElement.scrollTop])
+      if (this.recordScrolling) {
+        if (self.timePoint) {
+          self.frames.push(['s', document.scrollingElement.scrollLeft, document.scrollingElement.scrollTop, 0])
+        } else {
+          self.frames.push(['s', document.scrollingElement.scrollLeft, document.scrollingElement.scrollTop])
+        }
       }
 
       // Sets initial value of inputs
@@ -237,18 +244,26 @@
       })
       window.addEventListener('resize', this.curWindowResizeEventListener, true)
 
-      window.onmousemove = this.moveListener(function (pos) {
-        self.frames.push(self.timePoint ? pos.concat(new Date().getTime() - (self.startedAt * 1000)) : pos)
-        if (onFrame instanceof Function) onFrame()
-      })
-      window.onmousedown = this.clickListener(function (click) {
-        self.frames.push(self.timePoint ? click.concat(new Date().getTime() - (self.startedAt * 1000)) : click)
-        if (onFrame instanceof Function) onFrame()
-      })
-      window.onscroll = this.scrollListener(function (scroll) {
-        self.frames.push(self.timePoint ? scroll.concat(new Date().getTime() - (self.startedAt * 1000)) : scroll)
-        if (onFrame instanceof Function) onFrame()
-      })
+      if (self.recordMovement) {
+        window.onmousemove = this.moveListener(function (pos) {
+          self.frames.push(self.timePoint ? pos.concat(new Date().getTime() - (self.startedAt * 1000)) : pos)
+          if (onFrame instanceof Function) onFrame()
+        })
+      }
+
+      if (self.recordClicks) {
+        window.onmousedown = this.clickListener(function (click) {
+          self.frames.push(self.timePoint ? click.concat(new Date().getTime() - (self.startedAt * 1000)) : click)
+          if (onFrame instanceof Function) onFrame()
+        })
+      }
+
+      if (self.recordScrolling) {
+        window.onscroll = this.scrollListener(function (scroll) {
+          self.frames.push(self.timePoint ? scroll.concat(new Date().getTime() - (self.startedAt * 1000)) : scroll)
+          if (onFrame instanceof Function) onFrame()
+        })
+      }
 
       if (self.recordInputs) {
         document.querySelectorAll('textarea, input[type=text], input[type=email], input[type=number], input[type=tel], input[type=search], input[type=url], input[type=search], input[type=week], input[type=month], input[type=datetime-local]').forEach(element => {
@@ -273,26 +288,28 @@
         })
 
         // Define mutation observer here
-        const targetNode = document.querySelector('body')
-        const config = { attributes: true, attributeOldValue: true, subtree: true }
+        if (self.recordAttribChanges) {
+          const targetNode = document.querySelector('body')
+          const config = { attributes: true, attributeOldValue: true, subtree: true }
 
-        const MutationObserver = window.MutationObserver || window.WebKitMutationObserver
-        this.observer = new MutationObserver(this.mutationObserver(function (mutations) {
-          for (const mutation of mutations) {
-            if (mutation.type === 'attributes') {
-              let mutationFrame = []
-              if (mutation.target.hasAttribute(mutation.attributeName)) {
-                mutationFrame = ['a', self.getXpathFromElement(mutation.target), self.getCSSPath(mutation.target), mutation.attributeName, mutation.target.getAttribute(mutation.attributeName), mutation.oldValue, 'M']
-              } else {
-                mutationFrame = ['a', self.getXpathFromElement(mutation.target), self.getCSSPath(mutation.target), mutation.attributeName, mutation.oldValue, 'D']
+          const MutationObserver = window.MutationObserver || window.WebKitMutationObserver
+          this.observer = new MutationObserver(this.mutationObserver(function (mutations) {
+            for (const mutation of mutations) {
+              if (mutation.type === 'attributes') {
+                let mutationFrame = []
+                if (mutation.target.hasAttribute(mutation.attributeName)) {
+                  mutationFrame = ['a', self.getXpathFromElement(mutation.target), self.getCSSPath(mutation.target), mutation.attributeName, mutation.target.getAttribute(mutation.attributeName), mutation.oldValue, 'M']
+                } else {
+                  mutationFrame = ['a', self.getXpathFromElement(mutation.target), self.getCSSPath(mutation.target), mutation.attributeName, mutation.oldValue, 'D']
+                }
+
+                self.frames.push(self.timePoint ? mutationFrame.concat(new Date().getTime() - (self.startedAt * 1000)) : mutationFrame)
+                if (onFrame instanceof Function) onFrame()
               }
-
-              self.frames.push(self.timePoint ? mutationFrame.concat(new Date().getTime() - (self.startedAt * 1000)) : mutationFrame)
-              if (onFrame instanceof Function) onFrame()
             }
-          }
-        }))
-        this.observer.observe(targetNode, config)
+          }))
+          this.observer.observe(targetNode, config)
+        }
       }
 
       // Sets our recording flag

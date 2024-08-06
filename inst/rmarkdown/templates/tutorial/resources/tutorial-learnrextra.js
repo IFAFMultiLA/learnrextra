@@ -30,10 +30,21 @@ const COOKIE_DEFAULT_OPTS = {
 };
 
 const TRACKING_CONFIG_DEFAULTS = {
-    'mouse': true,
-    'inputs': true,
-    'attribute_changes': false,
-    'chapters': true
+    "ip": true,
+    "user_agent": true,
+    "mouse": true,
+    "clicks": true,
+    "scrolling": true,
+    "inputs": true,
+    "attribute_changes": false,
+    "chapters": true,
+    "summary": true,
+    "visibility": true,
+    "exercise_hint": true,
+    "exercise_submitted": true,
+    "exercise_result": true,
+    "question_submission": true,
+    "video_progress": true
 };
 
 var config = null;  // document config (configuration from the Rmd document); will be set when it is loaded
@@ -408,16 +419,28 @@ function appSetup() {
     } else {
         // send "tracking session started" information and obtain a tracking session ID
         const main_content_elem = $('#learnr-tutorial-content').parent();
+        let device_info;
+        if (tracking_config.device_info) {
+            device_info = {
+                form_factor: detectFormFactor(),
+                window_size: getWindowSize(),
+                user_agent: tracking_config.user_agent ? navigator.userAgent : null,
+                main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
+                main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
+            };
+        } else {
+            device_info = {
+                form_factor: null,
+                window_size: null,
+                user_agent: tracking_config.user_agent ? navigator.userAgent : null,
+                main_content_viewsize: null,
+                main_content_scrollsize: null
+            };
+        }
         const start_data = {
             sess: sess,
             start_time: nowISO(),
-            device_info: {
-                form_factor: detectFormFactor(),
-                window_size: getWindowSize(),
-                user_agent: navigator.userAgent,
-                main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
-                main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
-            }
+            device_info: device_info
         }
 
         postJSON('start_tracking/', start_data, sessdata.user_code)
@@ -461,18 +484,22 @@ function setupTracking() {
     $(window).on('resize', _.debounce(function(event) {  // use "debounce" to prevent sending too much information
         const main_content_elem = $('#learnr-tutorial-content').parent();
 
-        postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {
-            window_size: getWindowSize(),
-            main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
-            main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
-        }, nowISO());
+        if (tracking_config.device_info) {
+            postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {
+                window_size: getWindowSize(),
+                main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
+                main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
+            }, nowISO());
+        }
     }, WINDOW_RESIZE_TRACKING_DEBOUNCE));
 
-    $(document).on('visibilitychange', function(event) {
-        postEvent(sess, tracking_session_id, sessdata.user_code, "visibility_change", {
-            state: document.visibilityState
-        }, nowISO());
-    });
+    if (tracking_config.visibility) {
+        $(document).on('visibilitychange', function(event) {
+            postEvent(sess, tracking_session_id, sessdata.user_code, "visibility_change", {
+                state: document.visibilityState
+            }, nowISO());
+        });
+    }
 
     let has_chapter_nav = $('#tutorial-topic ul li').length > 0;
 
@@ -573,19 +600,27 @@ function setupTracking() {
     }
 
     // mouse tracking
-    if (tracking_config.mouse && MOUSE_TRACK_UPDATE_INTERVAL > 0) {
+    if ((tracking_config.mouse || tracking_config.clicks || tracking_config.scrolling)
+            && MOUSE_TRACK_UPDATE_INTERVAL > 0) {
         mus = new Mus();
         mus.setTimePoint(true);  // records time elapsed for each point for a precise data recording
         mus.setRecordCurrentElem(true);
-        //mus.setRecordInputs(false);
+        mus.recordMovement = tracking_config.mouse;
+        mus.recordClicks = tracking_config.clicks;
+        mus.recordScrolling = tracking_config.scrolling;
+        mus.recordAttribChanges = tracking_config.attribute_changes;
+        mus.recordInputs = tracking_config.inputs;
+
         mus.record();  // start recording
 
         content_scroll_frames = [];   // initialize additional scroll data
-        $('#learnr-tutorial-content').parent().on("scroll", function() {   // set listener for content scroll
-            content_scroll_frames.push(
-                ["S", this.scrollLeft, this.scrollTop, new Date().getTime() - (mus.startedAt * 1000)]
-            );
-        });
+        if (tracking_config.scrolling) {
+            $('#learnr-tutorial-content').parent().on("scroll", function() {   // set listener for content scroll
+                content_scroll_frames.push(
+                    ["S", this.scrollLeft, this.scrollTop, new Date().getTime() - (mus.startedAt * 1000)]
+                );
+            });
+        }
 
         // send mouse tracking data collected within time chunks
         mouse_track_interval = setInterval(mouseTrackingUpdate, MOUSE_TRACK_UPDATE_INTERVAL);
@@ -595,18 +630,22 @@ function setupTracking() {
         $(window).on("hashchange", function() {        // also send mouse data update on chapter change
             mouseTrackingUpdate();
 
-            // content size may change on chapter change -> post update
-            postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {
-                main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
-                main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
-            });
+            if (tracking_config.device_info) {
+                // content size may change on chapter change -> post update
+                postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {
+                    main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
+                    main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
+                });
+            }
         });
 
-        // send initial main content sizes
-        postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {
-                main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
-                main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
-        });
+        if (tracking_config.device_info) {
+            // send initial main content sizes
+            postEvent(sess, tracking_session_id, sessdata.user_code, "device_info_update", {
+                    main_content_viewsize: [main_content_elem.width(), main_content_elem.height()],
+                    main_content_scrollsize: [main_content_elem.prop('scrollWidth'), main_content_elem.prop('scrollHeight')]
+            });
+        }
     }
 
     // user feedback
@@ -825,7 +864,9 @@ $(document).on("shiny:connected", function() {
         if (tracking_session_id !== null) {
             let etype = data.event_type;
             delete data.event_type;
-            postEvent(sess, tracking_session_id, sessdata.user_code, "learnr_event_" + etype, data);
+            if (_.get(tracking_config, etype, true) === true) {
+                postEvent(sess, tracking_session_id, sessdata.user_code, "learnr_event_" + etype, data);
+            }
         }
     });
 })
