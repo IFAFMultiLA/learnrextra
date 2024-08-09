@@ -47,6 +47,8 @@ const TRACKING_CONFIG_DEFAULTS = {
     "video_progress": true
 };
 
+const TRACKING_CONFIG_ALL_OFF = Object.fromEntries(Object.keys(TRACKING_CONFIG_DEFAULTS).map(k => [k, false]));
+
 var config = null;  // document config (configuration from the Rmd document); will be set when it is loaded
 var tr = null;      // translations as map `key` => `translated text`
 
@@ -192,10 +194,11 @@ function showPage() {
 /**
  * Prepare application session with obtained application session code `obtained_sess_code`.
  */
-async function prepareSession(obtained_sess_code, app_config_for_replay) {
+async function prepareSession(obtained_sess_code, app_config_for_replay, sess_active) {
+    sess_active = (sess_active === undefined) ? true : sess_active;
     sess = obtained_sess_code;
 
-    if (sess === undefined || replay) {
+    if (sess === undefined || !sess_active || replay) {
         // we continue showing the page – tracking will be disabled
         console.log("tracking disabled");
 
@@ -253,7 +256,8 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
             sessdata = {
                 user_code: null,
                 user_name: null,
-                app_config: null
+                app_config: null,
+                active: true
             }
         }
 
@@ -267,6 +271,7 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
                     .then((response_data) => {
                         sess_config = response_data;
                         sessdata.app_config = sess_config.config;
+                        sessdata.active = sess_config.active;
                     });
             } catch (err) {
                 console.error("fetch failed:", err);
@@ -275,6 +280,7 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
                     sess_code: sess,
                     user_code: null,
                     auth_mode: "none",
+                    active: true,
                     config: {}
                 }
             }
@@ -285,44 +291,68 @@ async function prepareSession(obtained_sess_code, app_config_for_replay) {
         }
 
         // handling tracking configuration
-        if (sessdata.app_config === undefined || sessdata.app_config === null) {
-            tracking_config = TRACKING_CONFIG_DEFAULTS;
+        if (sessdata.active) {
+            if (sessdata.app_config === undefined || sessdata.app_config === null) {
+                tracking_config = TRACKING_CONFIG_DEFAULTS;
+            } else {
+                tracking_config = _.defaults(sessdata.app_config.tracking, TRACKING_CONFIG_DEFAULTS);
+            }
         } else {
-            tracking_config = _.defaults(sessdata.app_config.tracking, TRACKING_CONFIG_DEFAULTS);
+            tracking_config = TRACKING_CONFIG_ALL_OFF;
         }
 
         if ($("#consentmodal").length > 0) {
             // show consent modal
             if (Cookies.get("consent") === undefined || Cookies.get("consent") !== "full-yes") {
-                $("#consent-btn").on("click", function() {
-                    $("#consentmodal").modal("hide");
-                    Cookies.set("consent", "full-yes", COOKIE_DEFAULT_OPTS);
-                    prepareSessionWithTracking(sess_config);
-                });
+                if (sessdata.active) {
+                    // application session is active -- show full consent modal
+                    $("#consent-btn").on("click", function() {
+                        $("#consentmodal").modal("hide");
+                        Cookies.set("consent", "full-yes", COOKIE_DEFAULT_OPTS);
+                        prepareSessionWithTracking(sess_config);
+                    });
 
-                $("#no-consent-btn").on("click", function() {
-                    $("#consentmodal").modal("hide");
-                    Cookies.set("consent", "full-no", COOKIE_DEFAULT_OPTS);
-                    console.log("tracking disabled");
-                    showPage();
-                });
+                    $("#no-consent-btn").on("click", function() {
+                        $("#consentmodal").modal("hide");
+                        Cookies.set("consent", "full-no", COOKIE_DEFAULT_OPTS);
+                        console.log("tracking disabled");
+                        showPage();
+                    });
 
-                // show/hide items in tracking data list depending on configuration
-                for (let k in tracking_config) {
-                    if (tracking_config.hasOwnProperty(k)) {
-                        let item = $("#consentmodal .trackingdata-" + k);
-                        if (tracking_config[k] === true) {
-                            item.show();
-                        } else {
-                            item.hide();
+                    // show/hide items in tracking data list depending on configuration
+                    for (let k in tracking_config) {
+                        if (tracking_config.hasOwnProperty(k)) {
+                            let item = $("#consentmodal .trackingdata-" + k);
+                            if (tracking_config[k] === true) {
+                                item.show();
+                            } else {
+                                item.hide();
+                            }
                         }
                     }
-                }
 
-                $("#consentmodal .text-full").show();
-                $("#consentmodal").modal('show');
+                    $("#consentmodal .text-full").show();
+                    $("#consentmodal").modal('show');
+                } else {
+                    // application session is inactive -- only inform about cookies
+                    $("#restricted-consent-btn").on("click", function() {
+                        $("#consentmodal").modal("hide");
+                        Cookies.set("consent", "restricted", COOKIE_DEFAULT_OPTS);
+                        console.log("application session inactive – tracking disabled");
+                        showPage();
+                    });
+
+                    $("#consentmodal .text-restricted").show();
+                    $("#consentmodal").modal('show');
+                }
             } else if (Cookies.get("consent") === "full-yes") {
-                prepareSessionWithTracking(sess_config);
+                // user already accepted
+                if (sessdata.active) {
+                    prepareSessionWithTracking(sess_config);
+                } else {
+                    console.log("application session inactive – tracking disabled");
+                    showPage();
+                }
             } else {   // consent is "full-no" -> disable tracking
                 console.log("tracking disabled");
                 showPage();
@@ -841,7 +871,7 @@ $(window).on("load", async function() {
             try {
                 await fetch(apiserver + 'session/')
                     .then((response) => response.json())
-                    .then((response) => prepareSession(response.sess_code));
+                    .then((response) => prepareSession(response.sess_code, null, response.active));
             } catch (err) {
                 console.error("fetch failed:", err);
                 console.log("preparing session without session code")
