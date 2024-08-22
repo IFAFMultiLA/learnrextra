@@ -2,3 +2,7 @@
 ^renv\.lock$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^node_modules$
+^learnrextra-js$
+^package.*\.json$
+^\.github$

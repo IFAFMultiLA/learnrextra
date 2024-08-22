@@ -30,8 +30,8 @@ answer_fn_with_env <- function(fn, label = NULL) {
 #' @param allowed_max_length allowed max. number of characters in user input
 #' @param tolerance maximum absolute difference between user's result and expected result
 #' @param min_value optional minimum value for user input
-#' @param min_value optional maximum value for user input
-#' @param rm_percentage_symbol if TRUE, remove all "%" from user's input
+#' @param max_value optional maximum value for user input
+#' @param rm_percentage_symbol if TRUE, remove all "\%" from user's input
 #' @param correct_repeat_result either logical or a printf format string; if TRUE or string, repeat the correct result
 #' @param incorrect_too_long message when the input is too long
 #' @param incorrect_invalid_chars message when the input contains invalid characters
@@ -54,7 +54,8 @@ question_mathexpression <- function(
         correct_repeat_result = FALSE,
         incorrect = "Incorrect",
         incorrect_too_long = "The provided answer is too long.",
-        incorrect_invalid_chars = "The provided answer contains invalid characters. Only the following characters are possible: ",
+        incorrect_invalid_chars =
+            "The provided answer contains invalid characters. Only the following characters are possible: ",
         incorrect_cannot_evaluate = "Your answer cannot be evaluated as mathematical expression.",
         incorrect_out_of_range = "The result is expected to be between %f and %f, but your answer is %f.",
         incorrect_out_of_range_min = "The result is expected to be %f or greater, but your answer is %f.",
@@ -99,7 +100,7 @@ question_mathexpression <- function(
         } else {
             if (abs(result - expected_result) <= tolerance) {
                 additional_msg <- character()
-                if (class(correct_repeat_result) == "character") {
+                if (inherits(correct_repeat_result, "character")) {
                     additional_msg <- sprintf(correct_repeat_result, result)
                 } else if (isTRUE(correct_repeat_result)) {
                     additional_msg <- sprintf("The result is %f.", result)
@@ -107,7 +108,7 @@ question_mathexpression <- function(
 
                 ret <- learnr::correct(paste(c(correct, additional_msg), collapse = "\n"))
             } else {
-                if (class(incorrect_out_of_range) == "character") {
+                if (inherits(incorrect_out_of_range, "character")) {
                     min_given <- !is.null(min_value)
                     max_given <- !is.null(max_value)
                     if ((min_given && result < min_value) || (max_given && result > max_value)) {
@@ -196,7 +197,7 @@ fn_text_with_envvars_injected <- function(fn) {
         } else {
             NA_character_
         }
-    }) |> na.omit() |> paste(collapse = "\n")
+    }) |> stats::na.omit() |> paste(collapse = "\n")
 
     # deparse the function to text and get the function head and body
     fn_text <- rlang::expr_text(fn)

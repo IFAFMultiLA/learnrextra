@@ -20,6 +20,8 @@ question_mathexpression(
   incorrect_too_long = "The provided answer is too long.",
   incorrect_invalid_chars =
     "The provided answer contains invalid characters. Only the following characters are possible: ",
+  incorrect_cannot_evaluate =
+    "Your answer cannot be evaluated as mathematical expression.",
   incorrect_out_of_range =
     "The result is expected to be between \%f and \%f, but your answer is \%f.",
   incorrect_out_of_range_min =
@@ -42,9 +44,11 @@ question_mathexpression(
 
 \item{tolerance}{maximum absolute difference between user's result and expected result}
 
-\item{min_value}{optional maximum value for user input}
+\item{min_value}{optional minimum value for user input}
 
-\item{rm_percentage_symbol}{if TRUE, remove all "%" from user's input}
+\item{max_value}{optional maximum value for user input}
+
+\item{rm_percentage_symbol}{if TRUE, remove all "\%" from user's input}
 
 \item{correct}{For \code{question}, text to print for a correct answer (defaults
 to "Correct!"). For \code{answer}, a boolean indicating whether this answer is
@@ -58,6 +62,8 @@ correct.}
 \item{incorrect_too_long}{message when the input is too long}
 
 \item{incorrect_invalid_chars}{message when the input contains invalid characters}
+
+\item{incorrect_cannot_evaluate}{message when the input cannot be evaluated}
 
 \item{incorrect_out_of_range}{message when the evaluated input is outside the [min_value, max_value] range}
 

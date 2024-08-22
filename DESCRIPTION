@@ -1,21 +1,23 @@
 Package: learnrextra
 Type: Package
-Title: An extension to the learnr package with improved layout and tracking functions for learning analytics.
+Title: An extension to the learnr package with improved layout and tracking functions for learning analytics
 Version: 0.13.0
 Author: Markus Konrad
 Maintainer: Markus Konrad <markus.konrad@htw-berlin.de>
 Description: A learnr extension package providing an improved layout with a summary pane and also tracking functions
    that interact with the MultiLA web API for learning analytics.
-License: Apache-2.0 license
+License: Apache License (>= 2.0)
 Encoding: UTF-8
 LazyData: true
 Imports:
-    fs (>= 1.6.0),
     htmltools (>= 0.5.0),
     here (>= 1.0.1),
     jsonlite (>= 1.8.0),
     learnr (>= 0.11.0),
     shiny (>= 1.7.0),
     rmarkdown (>= 2.27),
-    rcmdcheck (>= 1.4.0)
+    rcmdcheck (>= 1.4.0),
+    checkmate (>= 2.3.0),
+    rlang (>= 1.1.0),
+    testthat (>= 3.2.0)
 RoxygenNote: 7.3.2
