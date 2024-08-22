@@ -88,7 +88,7 @@ question_mathexpression <- function(
         }
 
         if (!is.null(allowed_chars) && grepl(paste0("[^ ", allowed_chars, "]"), input)) {
-            return(learnr::incorrect(paste(incorrect_invalid_chars, gsub("\\", "", allowed_chars, fixed = TRUE))))
+            return(learnr::incorrect(paste0(incorrect_invalid_chars, gsub("\\", "", allowed_chars, fixed = TRUE))))
         }
 
         result <- NULL
