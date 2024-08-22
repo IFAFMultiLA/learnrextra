@@ -69,8 +69,8 @@ tutorial <- function(
     }
 
     # highlight
-    rmarkdown_pandoc_html_highlight_args <- getFromNamespace("pandoc_html_highlight_args", "rmarkdown")
-    rmarkdown_is_highlightjs <- getFromNamespace("is_highlightjs", "rmarkdown")
+    rmarkdown_pandoc_html_highlight_args <- utils::getFromNamespace("pandoc_html_highlight_args", "rmarkdown")
+    rmarkdown_is_highlightjs <- utils::getFromNamespace("is_highlightjs", "rmarkdown")
     args <- c(args, rmarkdown_pandoc_html_highlight_args("default", highlight))
     # add highlight.js html_dependency if required
     if (rmarkdown_is_highlightjs(highlight)) {
@@ -79,7 +79,7 @@ tutorial <- function(
 
     # ace theme
     if (!identical(ace_theme, "textmate")) {
-        ace_theme <- match.arg(ace_theme, ACE_THEMES)
+        ace_theme <- match.arg(ace_theme, learnr:::ACE_THEMES)
         args <- c(args, "--variable", paste0("ace-theme=", ace_theme))
     }
 
@@ -113,7 +113,7 @@ tutorial <- function(
     # tutorial.js (and the API it provides) is always loaded prior to our
     # tutorial-format.js file.
     extra_dependencies <- append(extra_dependencies, list(
-        learnr:::tutorial_html_dependency(),
+        learnr::tutorial_html_dependency(),
         learnr:::tutorial_i18n_html_dependency(language),
         htmltools::htmlDependency(
             name = "learnrextra-tutorial-format",
