@@ -35,6 +35,7 @@ answer_fn_with_env <- function(fn, label = NULL) {
 #' @param correct_repeat_result either logical or a printf format string; if TRUE or string, repeat the correct result
 #' @param incorrect_too_long message when the input is too long
 #' @param incorrect_invalid_chars message when the input contains invalid characters
+#' @param incorrect_cannot_evaluate message when the input cannot be evaluated
 #' @param incorrect_out_of_range message when the evaluated input is outside the [min_value, max_value] range
 #' @param incorrect_out_of_range_min message when the evaluated input is smaller than `min_value`
 #' @param incorrect_out_of_range_max message when the evaluated input is greater than `max_value`
@@ -54,6 +55,7 @@ question_mathexpression <- function(
         incorrect = "Incorrect",
         incorrect_too_long = "The provided answer is too long.",
         incorrect_invalid_chars = "The provided answer contains invalid characters. Only the following characters are possible: ",
+        incorrect_cannot_evaluate = "Your answer cannot be evaluated as mathematical expression.",
         incorrect_out_of_range = "The result is expected to be between %f and %f, but your answer is %f.",
         incorrect_out_of_range_min = "The result is expected to be %f or greater, but your answer is %f.",
         incorrect_out_of_range_max = "The result is expected to be %f or smaller, but your answer is %f.",
@@ -61,6 +63,16 @@ question_mathexpression <- function(
         trim = TRUE,
         ...
 ) {
+    if (!is.null(min_value) && expected_result < min_value) {
+        rlang::abort(sprintf("`expected_result` is less than `min_value` (`min_value` argument is set to %f, but
+                             `expected_result` is %f)", min_value, expected_result))
+    }
+
+    if (!is.null(max_value) && expected_result > max_value) {
+        rlang::abort(sprintf("`expected_result` is greater than `max_value` (`max_value` argument is set to %f, but
+                             `expected_result` is %f)", max_value, expected_result))
+    }
+
     answ <- answer_fn_with_env(function(input) {
         if (trim) {
             input <- trimws(input)
@@ -82,15 +94,18 @@ question_mathexpression <- function(
         try({ result <- eval(parse(text = input), envir = new.env()) }, silent = TRUE)
 
         ret <- NULL
-        if (!is.null(result)) {
+        if (is.null(result)) {
+            ret <- learnr::incorrect(incorrect_cannot_evaluate)
+        } else {
             if (abs(result - expected_result) <= tolerance) {
+                additional_msg <- character()
                 if (class(correct_repeat_result) == "character") {
-                    ret <- learnr::correct(sprintf(correct_repeat_result, result))
-                } else if (class(correct_repeat_result) == "logical" && correct_repeat_result) {
-                    ret <- learnr::correct(sprintf("The result is %f.", result))
-                } else {
-                    ret <- learnr::correct(correct)
+                    additional_msg <- sprintf(correct_repeat_result, result)
+                } else if (isTRUE(correct_repeat_result)) {
+                    additional_msg <- sprintf("The result is %f.", result)
                 }
+
+                ret <- learnr::correct(paste(c(correct, additional_msg), collapse = "\n"))
             } else {
                 if (class(incorrect_out_of_range) == "character") {
                     min_given <- !is.null(min_value)
@@ -189,9 +204,15 @@ fn_text_with_envvars_injected <- function(fn) {
     checkmate::assert_true(length(fn_text_split) > 1)
     fn_head <- fn_text_split[1]
     checkmate::assert_true(startsWith(fn_head, "function"))
+    fn_nlines <- length(fn_text_split)
 
-    if (length(fn_text_split) > 2) {
-        fn_body <- fn_text_split[3:(length(fn_text_split)-1)]   # discard curly brackets
+    if (fn_nlines > 2) {
+        if (fn_nlines == 3) {   # empty function body
+            checkmate::assert_true(all(fn_text_split[2:3] == c("{", "}")))
+            fn_body <- "NULL"
+        } else {
+            fn_body <- fn_text_split[3:(fn_nlines-1)]   # discard curly brackets
+        }
     } else {
         fn_body <- fn_text_split[2]
     }
