@@ -62,6 +62,29 @@ test_that("fn_text_with_envvars_injected() works with function without arguments
     expect_null(res)
 })
 
+test_that("answer_fn_with_env() works", {
+    a <- 1L
+    foo <- function(x) { x }
+
+    fn <- function(j, k = 1) {
+        a <- a + 1
+        k * (j + a)
+    }
+
+    answ <- answer_fn_with_env(fn)
+    expect_type(answ, "list")
+    expect_setequal(class(answ), c("tutorial_question_answer", "tutorial_quiz_answer"))
+    expect_equal(answ$type, "function")
+
+    expect_type(answ$value, "character")
+
+    res <- eval(parse(text = answ$value), envir = rlang::base_env())(2, 3)
+    expect_equal(res, 12)
+
+    res <- eval(parse(text = answ$value), envir = rlang::base_env())(2)
+    expect_equal(res, 4)
+})
+
 getval <- function(l, k, default) {
     v <- l[[k]]
     if (is.null(v)) {
@@ -71,7 +94,14 @@ getval <- function(l, k, default) {
     }
 }
 
-check_question_mathexpression_result <- function(res, args) {
+check_question_mathexpression_result <- function(
+        res,
+        args,
+        placeholder_default = "Enter a mathematical expression or number ...",
+        min_value_default = NULL,
+        max_value_default = NULL,
+        rm_percentage_symbol_default = FALSE
+) {
     expect_type(res, "list")
     expect_setequal(class(res), c("learnr_text", "tutorial_question"))
     expect_equal(res$type, "learnr_text")
@@ -95,13 +125,18 @@ check_question_mathexpression_result <- function(res, args) {
     expect_true(grepl(sprintf("tolerance <- %s", as.character(getval(args, "tolerance", 1e-4))),
                       res$answers[[1]]$value,
                       fixed = TRUE))
-    expect_true(grepl(sprintf("min_value <- %s", as.character(getval(args, "min_value", "NULL"))),
+    expect_true(grepl(sprintf("min_value <- %s",
+                              as.character(getval(args, "min_value",
+                                                  ifelse(is.null(min_value_default), "NULL", min_value_default)))),
                       res$answers[[1]]$value,
                       fixed = TRUE))
-    expect_true(grepl(sprintf("max_value <- %s", as.character(getval(args, "max_value", "NULL"))),
+    expect_true(grepl(sprintf("max_value <- %s",
+                              as.character(getval(args, "max_value",
+                                                  ifelse(is.null(max_value_default), "NULL", max_value_default)))),
                       res$answers[[1]]$value,
                       fixed = TRUE))
-    expect_true(grepl(sprintf("rm_percentage_symbol <- %s", as.character(getval(args, "rm_percentage_symbol", FALSE))),
+    expect_true(grepl(sprintf("rm_percentage_symbol <- %s", as.character(getval(args, "rm_percentage_symbol",
+                                                                                rm_percentage_symbol_default))),
                       res$answers[[1]]$value,
                       fixed = TRUE))
 
@@ -143,7 +178,7 @@ check_question_mathexpression_result <- function(res, args) {
 
     expect_equal(res$random_answer_order, getval(args, "random_answer_order", FALSE))
     expect_equal(res$allow_retry, getval(args, "allow_retry", FALSE))
-    expect_equal(res$options$placeholder, getval(args, "allow_retry", "Enter a mathematical expression or number ..."))
+    expect_equal(res$options$placeholder, getval(args, "placeholder", placeholder_default))
     expect_equal(res$options$trim, getval(args, "trim", TRUE))
 
     answ_check_fn <- eval(parse(text = res$answers[[1]]$value), envir = rlang::base_env())
@@ -192,6 +227,7 @@ check_question_mathexpression_evaluation <- function(res, args, input) {
 test_that("question_mathexpression() returns correct result list depending on passed arguments", {
     list_of_args <- list(
         list(text = "foo1", expected_result = 3.14),
+        list(text = "foo1b", expected_result = 3.14, placeholder = "foo"),
         list(text = "foo2", expected_result = 3.14, allowed_chars = "134\\."),
         list(text = "foo3", expected_result = -3, allowed_max_length = 30),
         list(text = "foo4", expected_result = -3, tolerance = 0.1),
@@ -214,14 +250,13 @@ test_that("question_mathexpression() returns correct result list depending on pa
     }
 })
 
-
 test_that("question_mathexpression() aborts when expected result is not within min_value / max_value bounds", {
     list_of_args <- list(
-        list(text = "foo5", expected_result = 122, min_value = 123,
+        list(text = "foo1", expected_result = 122, min_value = 123,
              expect_error = "`expected_result` is less than `min_value`"),
-        list(text = "foo6", expected_result = 457, max_value = 456.78,
+        list(text = "foo2", expected_result = 457, max_value = 456.78,
              expect_error = "`expected_result` is greater than `max_value`"),
-        list(text = "foo6", expected_result = -10.01, min_value = -10, max_value = 100,
+        list(text = "foo3", expected_result = -10.01, min_value = -10, max_value = 100,
              expect_error = "`expected_result` is less than `min_value`")
     )
 
@@ -295,6 +330,118 @@ test_that("question_mathexpression() correctly evaluates inputs", {
 
     for (args_and_input in list_of_args) {
         res <- do.call(question_mathexpression, args_and_input$args)
+        check_question_mathexpression_evaluation(res, args_and_input$args, args_and_input$input)
+    }
+})
+
+test_that("question_mathexpression_probability() returns correct result list depending on passed arguments", {
+    placeholder_default = "Enter a mathematical expression that evaluates to a probability ..."
+
+    list_of_args <- list(
+        list(text = "foo1", expected_result = 0.1),
+        list(text = "foo2", expected_result = 1.0),
+        list(text = "foo3", expected_result = 0),
+        list(text = "foo4", expected_result = 0, placeholder = "foo")
+    )
+
+    for (args in list_of_args) {
+        res <- do.call(question_mathexpression_probability, args)
+        check_question_mathexpression_result(res,
+                                             args,
+                                             placeholder_default = placeholder_default,
+                                             min_value_default = 0,
+                                             max_value_default = 1)
+    }
+})
+
+test_that("question_mathexpression_probability() aborts when expected result is not within min_value / max_value bounds", {
+    list_of_args <- list(
+        list(text = "foo1", expected_result = -0.1, expect_error = "`expected_result` is less than `min_value`"),
+        list(text = "foo2", expected_result = 1.1, expect_error = "`expected_result` is greater than `max_value`")
+    )
+
+    for (args in list_of_args) {
+        expect_msg <- args$expect_error
+        args$expect_error <- NULL
+        expect_error(do.call(question_mathexpression_probability, args), expect_msg)
+    }
+})
+
+test_that("question_mathexpression_percentage() returns correct result list depending on passed arguments", {
+    placeholder_default = "Enter a mathematical expression that evaluates to a percentage ..."
+
+    list_of_args <- list(
+        list(text = "foo1", expected_result = 0.1),
+        list(text = "foo2", expected_result = 1.0),
+        list(text = "foo3", expected_result = 0),
+        list(text = "foo4", expected_result = 0, placeholder = "foo")
+    )
+
+    for (args in list_of_args) {
+        res <- do.call(question_mathexpression_percentage, args)
+        check_question_mathexpression_result(res,
+                                             args,
+                                             placeholder_default = placeholder_default,
+                                             min_value_default = 0,
+                                             max_value_default = 100,
+                                             rm_percentage_symbol_default = TRUE)
+    }
+})
+
+test_that("question_mathexpression_percentage() aborts when expected result is not within
+          min_value / max_value bounds", {
+    list_of_args <- list(
+        list(text = "foo1", expected_result = -0.1, expect_error = "`expected_result` is less than `min_value`"),
+        list(text = "foo2", expected_result = 100.001, expect_error = "`expected_result` is greater than `max_value`")
+    )
+
+    for (args in list_of_args) {
+        expect_msg <- args$expect_error
+        args$expect_error <- NULL
+        expect_error(do.call(question_mathexpression_percentage, args), expect_msg)
+    }
+})
+
+test_that("question_mathexpression_percentage() correctly evaluates inputs", {
+    list_of_args <- list(
+        # inputs are fine
+        list(
+            args = list(text = "foo1", expected_result = 3.14),
+            input = list(str = "3.14", correct = TRUE)
+        ),
+        list(
+            args = list(text = "foo2", expected_result = 3.14),
+            input = list(str = "3.14%", correct = TRUE)
+        ),
+        list(
+            args = list(text = "foo3", expected_result = 3.14),
+            input = list(str = "314/200% *2.0000001", correct = TRUE)   # tolerance
+        ),
+        # inputs are not valid
+        list(
+            args = list(text = "foo6", expected_result = 0),
+            input = list(str = "system('echo \"test\"')", correct = FALSE,
+                         failmsg_regexp = "^The provided answer contains invalid characters.")
+        ),
+        list(
+            args = list(text = "foo7", expected_result = 0),
+            input = list(str = "*%", correct = FALSE,
+                         failmsg_regexp = "^Your answer cannot be evaluated as mathematical expression.$")
+        ),
+        list(
+            args = list(text = "foo9", expected_result = 0),
+            input = list(str = "-2", correct = FALSE,
+                         failmsg_regexp = "^The result is expected to be between ")
+        ),
+        list(
+            args = list(text = "foo10", expected_result = 0),
+            input = list(str = "102%", correct = FALSE,
+                         failmsg_regexp = "^The result is expected to be between ")
+        )
+    )
+
+    for (args_and_input in list_of_args) {
+        res <- do.call(question_mathexpression_percentage, args_and_input$args)
         check_question_mathexpression_evaluation(res, args_and_input$args, args_and_input$input)
     }
 })
