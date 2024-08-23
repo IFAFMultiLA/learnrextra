@@ -445,3 +445,54 @@ test_that("question_mathexpression_percentage() correctly evaluates inputs", {
         check_question_mathexpression_evaluation(res, args_and_input$args, args_and_input$input)
     }
 })
+
+
+test_that("question_text_custom_answer_fn() returns correct result list depending on passed arguments", {
+    placeholder_default = "Provide your answer here ..."
+
+    check_fn_wrapper <- function(expected_result, correct_msg, incorrect_msg) {
+        check_fn <- function(input) {
+            if (input == expected_result) {
+                learnr::correct(correct_msg)
+            } else {
+                learnr::incorrect(incorrect_msg)
+            }
+        }
+    }
+
+    list_of_args <- list(
+        list(text = "foo1", answer_fn = check_fn_wrapper(1, "yeah", "booh")),
+        list(text = "foo2", answer_fn = check_fn_wrapper(1, "yeah", "booh"), placeholder = "foo"),
+        list(text = "foo3", answer_fn = check_fn_wrapper(1, "yeah", "booh"), trim = FALSE),
+        list(text = "foo4", answer_fn = check_fn_wrapper(2, "yeah", "booh"))
+    )
+
+    for (args in list_of_args) {
+        res <- do.call(question_text_custom_answer_fn, args)
+
+        expect_type(res, "list")
+        expect_setequal(class(res), c("learnr_text", "tutorial_question"))
+        expect_equal(res$type, "learnr_text")
+        expect_equal(res$label, NULL)
+        expect_equal(as.character(res$question), args$text)
+        expect_length(res$answers, 1)
+        expect_equal(res$answers[[1]]$type, "function")
+        expect_true(startsWith(res$answers[[1]]$value, "function (input)"))
+        expect_equal(res$options$placeholder, getval(args, "placeholder", placeholder_default))
+        expect_equal(res$options$trim, getval(args, "trim", TRUE))
+
+        answ_check_fn <- eval(parse(text = res$answers[[1]]$value), envir = rlang::base_env())
+        answ <- answ_check_fn("1")
+        expect_type(answ, "list")
+        expect_equal(class(answ), "learnr_mark_as")
+        if (args$text == "foo4") {
+            expect_false(answ$correct)
+            expect_length(answ$messages, 1)
+            expect_equal(answ$messages, "booh")
+        } else {
+            expect_true(answ$correct)
+            expect_length(answ$messages, 1)
+            expect_equal(answ$messages, "yeah")
+        }
+    }
+})
