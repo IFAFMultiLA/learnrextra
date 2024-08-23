@@ -174,6 +174,31 @@ question_mathexpression_percentage <- function(
                             placeholder = placeholder, ...)
 }
 
+#' Text-based quiz question that allows to check the answer using a custom answer function `answer_fn`.
+#' Contrary to `learnr::question_text`, all atomic objects in `answer_fn`'s environment are retained.
+#'
+#' @param answer_fn function for checking the user's input; must provide one argument (user input)
+#' @inheritParams learnr::question_text
+#'
+#' @export
+question_text_custom_answer_fn <- function(
+        text,
+        answer_fn,
+        placeholder = "Provide your answer here ...",
+        trim = TRUE,
+        ...
+) {
+    learnr::question_text(
+        text,
+        answer_fn_with_env(answer_fn),
+        ...,
+        trim = trim,
+        placeholder = placeholder,
+        correct = NULL,
+        incorrect = NULL
+    )
+}
+
 #' Helper function to inject variables of `fn`'s environment directly into the function body of `fn`
 #' and return the function's code as text. Only atomic objects from `fn`'s environment are
 #' considered.
