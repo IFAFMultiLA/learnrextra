@@ -9,10 +9,10 @@ considered.}
 fn_text_with_envvars_injected(fn)
 }
 \arguments{
-\item{fn}{function to turn into code text}
+\item{fn}{Function to turn into code text.}
 }
 \value{
-code of `fn` injected with the function's environment variables.
+Code of `fn` injected with the function's environment variables.
 }
 \description{
 Helper function to inject variables of `fn`'s environment directly into the function body of `fn`

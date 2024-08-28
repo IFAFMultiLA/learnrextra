@@ -1,10 +1,25 @@
+#' Generate a survey from survey item definitions passed as list `items`.
+#'
+#' @param items Item definitions. Must be a list, where each list element in turn is a list that defines a survey item.
+#'              The survey item list must contain a `text` key (question text) and the following optional keys:
+#'              `label` for an item identifier; `type` for the answer type (one of
+#'              `"learnr_radio", "learnr_checkbox", "learnr_text", "learnr_numeric"`); `question_args` as list of
+#'              optional arguments passed to `learnr::question`; `answer_fn` as answer function (only considered
+#'              in case of `"learnr_numeric"` type); `answers` as list of answer options (only considered in case of
+#'              `"learnr_radio"` or `"learnr_checkbox"` type) – each answer option must in turn be a list with the key
+#'              `text` (answer option text) an the optional key `label` (answer option identifier).
+#' @param caption Optional survey caption (defaults to "Survey")
+#' @param message Optional message to display when survey item was submitted (defaults to "Thank you.")
+#' @return A survey as `tutorial_quiz` class list.
+#'
 #' @export
 survey <- function(items, caption = "Survey", message = "Thank you.") {
     checkmate::assert_list(items)
 
-    quiz_args <- lapply(items, function (it) {
+    index <- 1
+    questions <- lapply(items, function (it) {
         checkmate::assert_list(it)
-        #checkmate::assert_string(it$label, null.ok = TRUE)
+        checkmate::assert_string(it$label, null.ok = TRUE)
         checkmate::assert_string(it$text)
         checkmate::assert_choice(it$type, c("learnr_radio", "learnr_checkbox", "learnr_text", "learnr_numeric"),
                                  null.ok = TRUE)
@@ -13,8 +28,6 @@ survey <- function(items, caption = "Survey", message = "Thank you.") {
         itemtype <- if (is.null(it$type)) "learnr_radio" else it$type
 
         if (itemtype == "learnr_text") {
-            checkmate::assert_string(it$label, null.ok = TRUE)
-
             question_args <- c(list(
                 it$text,
                 learnr::answer_fn(learnr::correct, label = it$label),
@@ -24,7 +37,6 @@ survey <- function(items, caption = "Survey", message = "Thank you.") {
             ), it$question_args)
             question_fn <- learnr::question_text
         } else if (itemtype == "learnr_numeric") {
-            checkmate::assert_string(it$label, null.ok = TRUE)
             checkmate::assert_function(it$answer_fn, nargs = 1, null.ok = TRUE)
 
             answer_fn <- if (is.null(it$answer_fn))
@@ -51,21 +63,57 @@ survey <- function(items, caption = "Survey", message = "Thank you.") {
             question_args <- c(answ_args, list(
                 text = it$text,
                 correct = message,
+                incorrect = message,
                 type = itemtype,
                 allow_retry = FALSE
             ), it$question_args)
             question_fn <- learnr::question
         }
 
-        do.call(question_fn, question_args)
+        q <- do.call(question_fn, question_args)
+
+        if (!is.null(it$label)) {
+            q$label <- it$label
+            q$ids <- list(
+                answer = paste0(it$label, "-answer"),
+                question = it$label
+            )
+        } else if (!is.null(q$label)) {
+            label <- paste(q$label, index, sep="-")
+            q$label <- label
+            q$ids$answer <- NS(label)("answer")
+            q$ids$question <- label
+            index <<- index + 1
+        }
+
+        q
     })
 
-    do.call(learnr::quiz, c(
-        quiz_args,
-        list(caption = caption)
-    ))
+    caption <-
+        if (rlang::is_missing(caption)) {
+            i18n_span("text.quiz", "Survey")
+        } else if (!is.null(caption)) {
+            learnr:::quiz_text(caption)
+        }
+
+    ret <- list(caption = caption, questions = questions)
+    class(ret) <- "tutorial_quiz"
+    ret
 }
 
+#' Generate a survey with Likert scale type answers.
+#'
+#' @param items A character vector with item questions. Can be a named vector – in this case the names are taken as
+#'              labels (identifiers) for the survey items.
+#' @param levels Likert scale levels. Can be a character vector or list. If it is a character vector, we assume that
+#'               `levels` defines the same Likert scale levels for *all* survey items. Then this vector represents
+#'               the answer options. It can be a named vector, in which case the names represent the answer values.
+#'               If no names are given, values from 1 to `length(levels)` are generated. If this parameter is a list
+#'               it must have the same length as `items` and hence represents the answer options *per survey item*.
+#'               In this case each list entry must be a (optionally named) character vector.
+#' @inheritParams survey
+#' @return A survey as `tutorial_quiz` class list.
+#'
 #' @export
 survey_likert <- function(items, levels, caption = "Survey", message = "Thank you.") {
     checkmate::assert_character(items)
@@ -89,9 +137,13 @@ survey_likert <- function(items, levels, caption = "Survey", message = "Thank yo
         NULL
     }
 
+    item_labels <- names(items)
+    chunk_label <- knitr::opts_current$get('label')
+    chunk_label <- if (is.null(chunk_label)) "" else paste0(chunk_label, "-")
 
     itemdefs <- lapply(1:n_items, function (i) {
-        it <- items[[i]]
+        it <- items[i]
+
         if (same_levels_for_all_items) {
             lvls <- levels
             lvl_lbls <- level_lbls
@@ -109,6 +161,7 @@ survey_likert <- function(items, levels, caption = "Survey", message = "Thank yo
 
         list(
             text = it,
+            label = if (is.null(item_labels)) NULL else paste0(chunk_label, item_labels[i]),
             answers = answers
         )
     })
