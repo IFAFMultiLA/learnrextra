@@ -5,9 +5,9 @@
 #'              `label` for an item identifier; `type` for the answer type (one of
 #'              `"learnr_radio", "learnr_checkbox", "learnr_text", "learnr_numeric"`); `question_args` as list of
 #'              optional arguments passed to `learnr::question`; `answer_fn` as answer function (only considered
-#'              in case of `"learnr_numeric"` type); `answers` as list of answer options (only considered in case of
-#'              `"learnr_radio"` or `"learnr_checkbox"` type) – each answer option must in turn be a list with the key
-#'              `text` (answer option text) an the optional key `label` (answer option identifier).
+#'              in case of `"learnr_numeric"` type); `answers` as character vector of answer options (only considered
+#'              in case of `"learnr_radio"` or `"learnr_checkbox"` type). The `answers` vector can be named so that the
+#'              vector names represent the answer option value.
 #' @param caption Optional survey caption (defaults to "Survey")
 #' @param message Optional message to display when survey item was submitted (defaults to "Thank you.")
 #' @return A survey as `tutorial_quiz` class list.
@@ -28,13 +28,13 @@ survey <- function(items, caption = "Survey", message = "Thank you.") {
         itemtype <- if (is.null(it$type)) "learnr_radio" else it$type
 
         if (itemtype == "learnr_text") {
-            question_args <- c(list(
+            question_args <- list(
                 it$text,
                 learnr::answer_fn(learnr::correct, label = it$label),
                 allow_retry = FALSE,
                 placeholder = "",
                 correct = message
-            ), it$question_args)
+            )
             question_fn <- learnr::question_text
         } else if (itemtype == "learnr_numeric") {
             checkmate::assert_function(it$answer_fn, nargs = 1, null.ok = TRUE)
@@ -43,34 +43,35 @@ survey <- function(items, caption = "Survey", message = "Thank you.") {
                 learnr::answer_fn(learnr::correct, label = it$label)
                 else it$answer_fn
 
-            question_args <- c(list(
+            question_args <- list(
                 it$text,
                 answer_fn,
                 allow_retry = TRUE,
                 correct = message
-            ), it$question_args)
+            )
             question_fn <- learnr::question_numeric
         } else {
             # itemtype %in% c("learnr_radio", "learnr_checkbox")
-            checkmate::assert_list(it$answers)
+            checkmate::assert_character(it$answers, min.len = 1)
+            answ_values <- names(it$answers)
 
-            answ_args <- lapply(it$answers, function(answ) {
-                checkmate::assert_string(it$text)
-                checkmate::assert_string(it$label, null.ok = TRUE)
-                learnr::answer(answ$text, correct = TRUE, label = if (is.null(answ$label)) answ$text else answ$label)
+            answ_args <- lapply(1:length(it$answers), function(i) {
+                learnr::answer(text = if (is.null(answ_values)) it$answers[i] else answ_values[i],
+                               correct = TRUE,
+                               label = it$answers[i])
             })
 
-            question_args <- c(answ_args, list(
+            question_args <- modifyList(answ_args, list(
                 text = it$text,
                 correct = message,
                 incorrect = message,
                 type = itemtype,
                 allow_retry = FALSE
-            ), it$question_args)
+            ))
             question_fn <- learnr::question
         }
 
-        q <- do.call(question_fn, question_args)
+        q <- do.call(question_fn, modifyList(question_args, it$question_args %||% list()))
 
         if (!is.null(it$label)) {
             q$label <- it$label
@@ -145,19 +146,12 @@ survey_likert <- function(items, levels, caption = "Survey", message = "Thank yo
         it <- items[i]
 
         if (same_levels_for_all_items) {
-            lvls <- levels
-            lvl_lbls <- level_lbls
+            answers <- levels
+            names(answers) <- level_lbls
         } else {
-            lvls <- levels[[i]]
-            lvl_lbls <- get_level_labels(lvls)
+            answers <- levels[[i]]
+            names(answers) <- get_level_labels(levels[[i]])
         }
-
-        answers <- lapply(1:length(lvls), function(j) {
-            list(
-                text = lvl_lbls[j],
-                label = lvls[j]
-            )
-        })
 
         list(
             text = it,
