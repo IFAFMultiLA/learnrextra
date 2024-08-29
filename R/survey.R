@@ -117,7 +117,7 @@ survey <- function(items, caption = "Survey", message = "Thank you.") {
 #'
 #' @export
 survey_likert <- function(items, levels, caption = "Survey", message = "Thank you.") {
-    checkmate::assert_character(items)
+    checkmate::assert_character(items, min.len = 1)
 
     get_level_labels <- function(levels) {
         level_labels <- names(levels)
@@ -131,10 +131,11 @@ survey_likert <- function(items, levels, caption = "Survey", message = "Thank yo
     same_levels_for_all_items <- inherits(levels, "character")
 
     level_lbls <- if (same_levels_for_all_items) {
+        checkmate::expect_character(levels, min.len = 1)
         get_level_labels(levels)
     } else {
         checkmate::assert_list(levels)
-        if (length(levels) != n_items) stop("number of levels must much number of items if `levels` is passed as list")
+        if (length(levels) != n_items) stop("number of levels must match number of items if `levels` is passed as list")
         NULL
     }
 
@@ -152,6 +153,8 @@ survey_likert <- function(items, levels, caption = "Survey", message = "Thank yo
             answers <- levels[[i]]
             names(answers) <- get_level_labels(levels[[i]])
         }
+
+        checkmate::expect_character(answers, min.len = 1)
 
         list(
             text = it,
