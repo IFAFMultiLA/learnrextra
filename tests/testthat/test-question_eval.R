@@ -1,3 +1,6 @@
+source("helpers.R")
+
+
 test_that("fn_text_with_envvars_injected() works with one-liner function", {
     a <- 1L
     b <- TRUE
@@ -84,15 +87,6 @@ test_that("answer_fn_with_env() works", {
     res <- eval(parse(text = answ$value), envir = rlang::base_env())(2)
     expect_equal(res, 4)
 })
-
-getval <- function(l, k, default) {
-    v <- l[[k]]
-    if (is.null(v)) {
-        default
-    } else {
-        v
-    }
-}
 
 check_question_mathexpression_result <- function(
         res,

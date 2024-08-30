@@ -9,9 +9,12 @@ retained.}
 answer_fn_with_env(fn, label = NULL)
 }
 \arguments{
-\item{fn}{function for checking the user's input; must provide one argument (user input)}
+\item{fn}{Function for checking the user's input; must provide one argument (user input).}
 
-\item{label}{optional answer label}
+\item{label}{Optional answer label.}
+}
+\value{
+Object of class `tutorial_question_answer` with the answer function's code as `value`.
 }
 \description{
 Evaluate the users's submission to determine correctness and to return feedback using a function `fn` which

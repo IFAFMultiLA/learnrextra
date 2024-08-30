@@ -16,7 +16,7 @@ question_text_custom_answer_fn(
 \arguments{
 \item{text}{Question or option text}
 
-\item{answer_fn}{function for checking the user's input; must provide one argument (user input)}
+\item{answer_fn}{Function for checking the user's input; must provide one argument (user input).}
 
 \item{placeholder}{A character string giving the user a hint as to what can
 be entered into the control. Internet Explorer 8 and 9 do not support this
@@ -27,6 +27,9 @@ should be removed.  Defaults to \code{TRUE}.}
 
 \item{...}{Answers created with \code{\link[learnr:answer]{answer()}} or \code{\link[learnr:answer_fn]{answer_fn()}}, or extra
 parameters passed onto \code{\link[learnr:question]{question()}}. Answers with custom function checking}
+}
+\value{
+Returns a learnr question of type \code{"learnr_text"}.
 }
 \description{
 Text-based quiz question that allows to check the answer using a custom answer function `answer_fn`.

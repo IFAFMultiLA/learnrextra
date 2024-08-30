@@ -15,7 +15,7 @@ question_mathexpression_percentage(
 \arguments{
 \item{text}{Question or option text}
 
-\item{expected_result}{expected result (numeric)}
+\item{expected_result}{Expected result (numeric).}
 
 \item{placeholder}{A character string giving the user a hint as to what can
 be entered into the control. Internet Explorer 8 and 9 do not support this
@@ -23,6 +23,9 @@ option.}
 
 \item{...}{Answers created with \code{\link[learnr:answer]{answer()}} or \code{\link[learnr:answer_fn]{answer_fn()}}, or extra
 parameters passed onto \code{\link[learnr:question]{question()}}. Answers with custom function checking}
+}
+\value{
+Returns a learnr question of type \code{"learnr_text"}.
 }
 \description{
 Quiz question that allows to provide an answer with a simple mathematical expression

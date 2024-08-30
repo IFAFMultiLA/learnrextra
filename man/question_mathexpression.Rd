@@ -36,40 +36,40 @@ question_mathexpression(
 \arguments{
 \item{text}{Question or option text}
 
-\item{expected_result}{expected result (numeric)}
+\item{expected_result}{Expected result (numeric).}
 
-\item{allowed_chars}{allowed characters in user input}
+\item{allowed_chars}{Allowed characters in user input.}
 
-\item{allowed_max_length}{allowed max. number of characters in user input}
+\item{allowed_max_length}{Allowed max. number of characters in user input.}
 
-\item{tolerance}{maximum absolute difference between user's result and expected result}
+\item{tolerance}{Maximum absolute difference between user's result and expected result.}
 
-\item{min_value}{optional minimum value for user input}
+\item{min_value}{Optional minimum value for user input.}
 
-\item{max_value}{optional maximum value for user input}
+\item{max_value}{Optional maximum value for user input.}
 
-\item{rm_percentage_symbol}{if TRUE, remove all "\%" from user's input}
+\item{rm_percentage_symbol}{If TRUE, remove all "\%" from user's input.}
 
 \item{correct}{For \code{question}, text to print for a correct answer (defaults
 to "Correct!"). For \code{answer}, a boolean indicating whether this answer is
 correct.}
 
-\item{correct_repeat_result}{either logical or a printf format string; if TRUE or string, repeat the correct result}
+\item{correct_repeat_result}{Either logical or a printf format string; if TRUE or string, repeat the correct result.}
 
 \item{incorrect}{Text to print for an incorrect answer (defaults to
 "Incorrect") when \code{allow_retry} is \code{FALSE}.}
 
-\item{incorrect_too_long}{message when the input is too long}
+\item{incorrect_too_long}{Message when the input is too long.}
 
-\item{incorrect_invalid_chars}{message when the input contains invalid characters}
+\item{incorrect_invalid_chars}{Message when the input contains invalid characters.}
 
-\item{incorrect_cannot_evaluate}{message when the input cannot be evaluated}
+\item{incorrect_cannot_evaluate}{Message when the input cannot be evaluated.}
 
-\item{incorrect_out_of_range}{message when the evaluated input is outside the [min_value, max_value] range}
+\item{incorrect_out_of_range}{Message when the evaluated input is outside the [min_value, max_value] range.}
 
-\item{incorrect_out_of_range_min}{message when the evaluated input is smaller than `min_value`}
+\item{incorrect_out_of_range_min}{Message when the evaluated input is smaller than `min_value`.}
 
-\item{incorrect_out_of_range_max}{message when the evaluated input is greater than `max_value`}
+\item{incorrect_out_of_range_max}{Message when the evaluated input is greater than `max_value`.}
 
 \item{placeholder}{A character string giving the user a hint as to what can
 be entered into the control. Internet Explorer 8 and 9 do not support this
@@ -80,6 +80,9 @@ should be removed.  Defaults to \code{TRUE}.}
 
 \item{...}{Answers created with \code{\link[learnr:answer]{answer()}} or \code{\link[learnr:answer_fn]{answer_fn()}}, or extra
 parameters passed onto \code{\link[learnr:question]{question()}}. Answers with custom function checking}
+}
+\value{
+Returns a learnr question of type \code{"learnr_text"}.
 }
 \description{
 Quiz question that allows to provide an answer with a simple mathematical expression

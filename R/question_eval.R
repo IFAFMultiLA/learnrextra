@@ -2,8 +2,9 @@
 #' expects as only argument the user's input as character string. Any atomic objects from `fn`'s environment are
 #' retained.
 #'
-#' @param fn function for checking the user's input; must provide one argument (user input)
-#' @param label optional answer label
+#' @param fn Function for checking the user's input; must provide one argument (user input).
+#' @param label Optional answer label.
+#' @return Object of class `tutorial_question_answer` with the answer function's code as `value`.
 #'
 #' @export
 answer_fn_with_env <- function(fn, label = NULL) {
@@ -25,20 +26,21 @@ answer_fn_with_env <- function(fn, label = NULL) {
 #' that is being evaluated and checked against `expected_result`.
 #'
 #' @inheritParams learnr::question_text
-#' @param expected_result expected result (numeric)
-#' @param allowed_chars allowed characters in user input
-#' @param allowed_max_length allowed max. number of characters in user input
-#' @param tolerance maximum absolute difference between user's result and expected result
-#' @param min_value optional minimum value for user input
-#' @param max_value optional maximum value for user input
-#' @param rm_percentage_symbol if TRUE, remove all "\%" from user's input
-#' @param correct_repeat_result either logical or a printf format string; if TRUE or string, repeat the correct result
-#' @param incorrect_too_long message when the input is too long
-#' @param incorrect_invalid_chars message when the input contains invalid characters
-#' @param incorrect_cannot_evaluate message when the input cannot be evaluated
-#' @param incorrect_out_of_range message when the evaluated input is outside the [min_value, max_value] range
-#' @param incorrect_out_of_range_min message when the evaluated input is smaller than `min_value`
-#' @param incorrect_out_of_range_max message when the evaluated input is greater than `max_value`
+#' @param expected_result Expected result (numeric).
+#' @param allowed_chars Allowed characters in user input.
+#' @param allowed_max_length Allowed max. number of characters in user input.
+#' @param tolerance Maximum absolute difference between user's result and expected result.
+#' @param min_value Optional minimum value for user input.
+#' @param max_value Optional maximum value for user input.
+#' @param rm_percentage_symbol If TRUE, remove all "\%" from user's input.
+#' @param correct_repeat_result Either logical or a printf format string; if TRUE or string, repeat the correct result.
+#' @param incorrect_too_long Message when the input is too long.
+#' @param incorrect_invalid_chars Message when the input contains invalid characters.
+#' @param incorrect_cannot_evaluate Message when the input cannot be evaluated.
+#' @param incorrect_out_of_range Message when the evaluated input is outside the [min_value, max_value] range.
+#' @param incorrect_out_of_range_min Message when the evaluated input is smaller than `min_value`.
+#' @param incorrect_out_of_range_max Message when the evaluated input is greater than `max_value`.
+#' @inherit learnr::question_text return
 #'
 #' @export
 question_mathexpression <- function(
@@ -147,6 +149,7 @@ question_mathexpression <- function(
 #' that is being evaluated and checked against `expected_result`. Expect a probability as answer.
 #'
 #' @inheritParams question_mathexpression
+#' @inherit question_mathexpression return
 #'
 #' @export
 question_mathexpression_probability <- function(
@@ -162,6 +165,7 @@ question_mathexpression_probability <- function(
 #' that is being evaluated and checked against `expected_result`. Expect a percentage as answer.
 #'
 #' @inheritParams question_mathexpression
+#' @inherit question_mathexpression return
 #'
 #' @export
 question_mathexpression_percentage <- function(
@@ -177,8 +181,9 @@ question_mathexpression_percentage <- function(
 #' Text-based quiz question that allows to check the answer using a custom answer function `answer_fn`.
 #' Contrary to `learnr::question_text`, all atomic objects in `answer_fn`'s environment are retained.
 #'
-#' @param answer_fn function for checking the user's input; must provide one argument (user input)
+#' @param answer_fn Function for checking the user's input; must provide one argument (user input).
 #' @inheritParams learnr::question_text
+#' @inherit learnr::question_text return
 #'
 #' @export
 question_text_custom_answer_fn <- function(
@@ -203,9 +208,9 @@ question_text_custom_answer_fn <- function(
 #' and return the function's code as text. Only atomic objects from `fn`'s environment are
 #' considered.
 #'
-#' @param fn function to turn into code text
+#' @param fn Function to turn into code text.
 #'
-#' @return code of `fn` injected with the function's environment variables.
+#' @return Code of `fn` injected with the function's environment variables.
 fn_text_with_envvars_injected <- function(fn) {
     fn_env <- environment(fn)
     fn_envvars <- as.list(fn_env)
