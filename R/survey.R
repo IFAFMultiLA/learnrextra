@@ -71,7 +71,8 @@ survey <- function(items, caption = "Survey", message = "Thank you.") {
             question_fn <- learnr::question
         }
 
-        q <- do.call(question_fn, modifyList(question_args, it$question_args %||% list()))
+        q <- do.call(question_fn,
+                     modifyList(question_args, if (is.null(it$question_args)) list() else it$question_args))
 
         if (!is.null(it$label)) {
             q$label <- it$label
