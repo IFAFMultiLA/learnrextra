@@ -65,15 +65,31 @@ check_survey_result <- function(res, args, likert = FALSE) {
             } else {
                 expect_equal(as.character(q$messages$incorrect), getval(args, "message", "Thank you."))
 
+                qlabel <- NULL
                 if (likert) {
+                    if (!is.null(names(args$items))) {
+                        qlabel <- names(args$items)[i]
+                    }
+
                     alabels <- if (is.list(args$levels)) args$levels[[i]] else args$levels
                     avalues <- names(alabels)
                     if (is.null(avalues)) {
                         avalues <- as.character(1:length(alabels))
                     }
                 } else {
+                    if (!is.null(qdef$label)) {
+                        qlabel <- qdef$label
+                    }
                     alabels <- qdef$answers
                     avalues <- names(alabels)
+                }
+
+                if (!is.null(qlabel)) {
+                    expect_equal(q$label, qlabel)
+                    expect_equal(q$ids, list(
+                        answer = paste0(qlabel, "-answer"),
+                        question = qlabel
+                    ))
                 }
 
                 expect_equal(length(q$answers), length(alabels))
@@ -137,6 +153,11 @@ test_that("survey_likert() generates correct output object for different paramet
             )
         ),
         list(items = c("item 1", "item 2"), levels = list(
+                c("level 1", "level 2", "level 3"),
+                c("F" = "foo", "B" = "bar")
+            )
+        ),
+        list(items = c("it1" = "item 1", "it2" = "item 2"), levels = list(
                 c("level 1", "level 2", "level 3"),
                 c("F" = "foo", "B" = "bar")
             )

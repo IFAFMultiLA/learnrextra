@@ -61,7 +61,7 @@ survey <- function(items, caption = "Survey", message = "Thank you.") {
                                label = it$answers[i])
             })
 
-            question_args <- modifyList(answ_args, list(
+            question_args <- utils::modifyList(answ_args, list(
                 text = it$text,
                 correct = message,
                 incorrect = message,
@@ -72,7 +72,7 @@ survey <- function(items, caption = "Survey", message = "Thank you.") {
         }
 
         q <- do.call(question_fn,
-                     modifyList(question_args, if (is.null(it$question_args)) list() else it$question_args))
+                     utils::modifyList(question_args, if (is.null(it$question_args)) list() else it$question_args))
 
         if (!is.null(it$label)) {
             q$label <- it$label
@@ -83,7 +83,7 @@ survey <- function(items, caption = "Survey", message = "Thank you.") {
         } else if (!is.null(q$label)) {
             label <- paste(q$label, index, sep="-")
             q$label <- label
-            q$ids$answer <- NS(label)("answer")
+            q$ids$answer <- shiny::NS(label)("answer")
             q$ids$question <- label
             index <<- index + 1
         }
@@ -93,7 +93,7 @@ survey <- function(items, caption = "Survey", message = "Thank you.") {
 
     caption <-
         if (rlang::is_missing(caption)) {
-            i18n_span("text.quiz", "Survey")
+            learnr:::i18n_span("text.quiz", "Survey")
         } else if (!is.null(caption)) {
             learnr:::quiz_text(caption)
         }
@@ -132,7 +132,7 @@ survey_likert <- function(items, levels, caption = "Survey", message = "Thank yo
     same_levels_for_all_items <- inherits(levels, "character")
 
     level_lbls <- if (same_levels_for_all_items) {
-        checkmate::expect_character(levels, min.len = 1)
+        checkmate::assert_character(levels, min.len = 1)
         get_level_labels(levels)
     } else {
         checkmate::assert_list(levels)
@@ -155,7 +155,7 @@ survey_likert <- function(items, levels, caption = "Survey", message = "Thank yo
             names(answers) <- get_level_labels(levels[[i]])
         }
 
-        checkmate::expect_character(answers, min.len = 1)
+        checkmate::assert_character(answers, min.len = 1)
 
         list(
             text = it,
