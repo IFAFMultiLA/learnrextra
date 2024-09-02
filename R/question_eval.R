@@ -32,6 +32,10 @@ answer_fn_with_env <- function(fn, label = NULL) {
 #' @param tolerance Maximum absolute difference between user's result and expected result.
 #' @param min_value Optional minimum value for user input.
 #' @param max_value Optional maximum value for user input.
+#' @param handle_comma_in_input Options to handle commas in input (important for languages where comma is used for
+#'                              decimal point). `FALSE`: No special behavior (will trigger `incorrect_invalid_chars`
+#'                              message); `TRUE`: Replace comma by decimal point; character string: message to display
+#'                              when input contains a comma.
 #' @param rm_percentage_symbol If TRUE, remove all "\%" from user's input.
 #' @param correct_repeat_result Either logical or a printf format string; if TRUE or string, repeat the correct result.
 #' @param incorrect_too_long Message when the input is too long.
@@ -51,6 +55,7 @@ question_mathexpression <- function(
         tolerance = 1e-4,
         min_value = NULL,
         max_value = NULL,
+        handle_comma_in_input = FALSE,
         rm_percentage_symbol = FALSE,
         correct = "Correct!",
         correct_repeat_result = FALSE,
@@ -79,6 +84,15 @@ question_mathexpression <- function(
     answ <- answer_fn_with_env(function(input) {
         if (trim) {
             input <- trimws(input)
+        }
+
+        if (isTRUE(handle_comma_in_input)) {
+            input <- gsub(",", ".", input, fixed = TRUE)
+        } else if (is.character(handle_comma_in_input)) {
+            checkmate::assert_string(handle_comma_in_input)   # check that it's a scalar
+            if (grepl(",", input, fixed = TRUE)) {
+                return(learnr::incorrect(handle_comma_in_input))
+            }
         }
 
         if (rm_percentage_symbol) {
@@ -174,8 +188,7 @@ question_mathexpression_percentage <- function(
         placeholder = "Enter a mathematical expression that evaluates to a percentage ...",
         ...
 ) {
-    question_mathexpression(text, expected_result, min_value = 0, max_value = 100, rm_percentage_symbol = TRUE,
-                            placeholder = placeholder, ...)
+    question_mathexpression(text, expected_result, rm_percentage_symbol = TRUE, placeholder = placeholder, ...)
 }
 
 #' Text-based quiz question that allows to check the answer using a custom answer function `answer_fn`.
