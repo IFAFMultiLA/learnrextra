@@ -133,6 +133,11 @@ check_question_mathexpression_result <- function(
                                                                                 rm_percentage_symbol_default))),
                       res$answers[[1]]$value,
                       fixed = TRUE))
+    handle_comma_in_input <- getval(args, "handle_comma_in_input", FALSE)
+    handle_comma_in_input_str <- if (is.logical(handle_comma_in_input))
+        sprintf("handle_comma_in_input <- %s", as.character(handle_comma_in_input)) else
+            sprintf("handle_comma_in_input <- \"%s\"", handle_comma_in_input)
+    expect_true(grepl(handle_comma_in_input_str, res$answers[[1]]$value, fixed = TRUE))
 
     correct_repeat_result <- getval(args, "correct_repeat_result", FALSE)
     if (typeof(correct_repeat_result) == "character") {
@@ -227,7 +232,9 @@ test_that("question_mathexpression() returns correct result list depending on pa
         list(text = "foo4", expected_result = -3, tolerance = 0.1),
         list(text = "foo5", expected_result = 123, min_value = 123),
         list(text = "foo6", expected_result = 456.78, max_value = 456.78),
-        list(text = "foo7", expected_result = 1e-3, rm_percentage_symbol = TRUE),
+        list(text = "foo7", expected_result = 1e-3, handle_comma_in_input = TRUE),
+        list(text = "foo7b", expected_result = 1e-3, handle_comma_in_input = "oops, comma in input"),
+        list(text = "foo7c", expected_result = 1e-3, rm_percentage_symbol = TRUE),
         list(text = "foo8", expected_result = 1e-3, correct_repeat_result = TRUE),
         list(text = "foo9", expected_result = 1e-3, correct_repeat_result = "yeah %f"),
         list(text = "foo10", expected_result = 1e-3, incorrect_too_long = "too long"),
@@ -284,10 +291,19 @@ test_that("question_mathexpression() correctly evaluates inputs", {
             args = list(text = "foo5", expected_result = 0, incorrect = "boooh!"),
             input = list(str = "-3 + 3.14", correct = FALSE)
         ),
+        list(
+            args = list(text = "foo5b", expected_result = 3.1415, handle_comma_in_input = TRUE),
+            input = list(str = "3,1415", correct = TRUE)
+        ),
         # inputs are not valid
         list(
             args = list(text = "foo6", expected_result = 0),
             input = list(str = "system('echo \"test\"')", correct = FALSE,
+                         failmsg_regexp = "^The provided answer contains invalid characters.")
+        ),
+        list(
+            args = list(text = "foo6b", expected_result = 3.14),
+            input = list(str = "3,14", correct = FALSE,
                          failmsg_regexp = "^The provided answer contains invalid characters.")
         ),
         list(
@@ -319,6 +335,11 @@ test_that("question_mathexpression() correctly evaluates inputs", {
             args = list(text = "foo11", expected_result = -100, max_value = -100),
             input = list(str = "0", correct = FALSE,
                          failmsg_regexp = " or smaller, but your answer is ")
+        ),
+        list(
+            args = list(text = "foo12", expected_result = 3.1415, handle_comma_in_input = "oops, comma in input"),
+            input = list(str = "3,1415", correct = FALSE,
+                         failmsg_regexp = "oops, comma in input")
         )
     )
 
@@ -376,8 +397,6 @@ test_that("question_mathexpression_percentage() returns correct result list depe
         check_question_mathexpression_result(res,
                                              args,
                                              placeholder_default = placeholder_default,
-                                             min_value_default = 0,
-                                             max_value_default = 100,
                                              rm_percentage_symbol_default = TRUE)
     }
 })
@@ -385,8 +404,10 @@ test_that("question_mathexpression_percentage() returns correct result list depe
 test_that("question_mathexpression_percentage() aborts when expected result is not within
           min_value / max_value bounds", {
     list_of_args <- list(
-        list(text = "foo1", expected_result = -0.1, expect_error = "`expected_result` is less than `min_value`"),
-        list(text = "foo2", expected_result = 100.001, expect_error = "`expected_result` is greater than `max_value`")
+        list(text = "foo1", expected_result = -0.1, min_value = 0, max_value = 100,
+             expect_error = "`expected_result` is less than `min_value`"),
+        list(text = "foo2", expected_result = 100.001, min_value = 0, max_value = 100,
+             expect_error = "`expected_result` is greater than `max_value`")
     )
 
     for (args in list_of_args) {
@@ -408,6 +429,14 @@ test_that("question_mathexpression_percentage() correctly evaluates inputs", {
             input = list(str = "3.14%", correct = TRUE)
         ),
         list(
+            args = list(text = "foo2b", expected_result = 314),
+            input = list(str = "314%", correct = TRUE)
+        ),
+        list(
+            args = list(text = "foo2c", expected_result = 3.14, handle_comma_in_input = TRUE),
+            input = list(str = "3,14%", correct = TRUE)
+        ),
+        list(
             args = list(text = "foo3", expected_result = 3.14),
             input = list(str = "314/200% *2.0000001", correct = TRUE)   # tolerance
         ),
@@ -423,12 +452,12 @@ test_that("question_mathexpression_percentage() correctly evaluates inputs", {
                          failmsg_regexp = "^Your answer cannot be evaluated as mathematical expression.$")
         ),
         list(
-            args = list(text = "foo9", expected_result = 0),
+            args = list(text = "foo9", expected_result = 0, min_value = 0, max_value = 100),
             input = list(str = "-2", correct = FALSE,
                          failmsg_regexp = "^The result is expected to be between ")
         ),
         list(
-            args = list(text = "foo10", expected_result = 0),
+            args = list(text = "foo10", expected_result = 0, min_value = 0, max_value = 100),
             input = list(str = "102%", correct = FALSE,
                          failmsg_regexp = "^The result is expected to be between ")
         )
