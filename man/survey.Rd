@@ -12,9 +12,9 @@ The survey item list must contain a `text` key (question text) and the following
 `label` for an item identifier; `type` for the answer type (one of
 `"learnr_radio", "learnr_checkbox", "learnr_text", "learnr_numeric"`); `question_args` as list of
 optional arguments passed to `learnr::question`; `answer_fn` as answer function (only considered
-in case of `"learnr_numeric"` type); `answers` as list of answer options (only considered in case of
-`"learnr_radio"` or `"learnr_checkbox"` type) – each answer option must in turn be a list with the key
-`text` (answer option text) an the optional key `label` (answer option identifier).}
+in case of `"learnr_numeric"` type); `answers` as character vector of answer options (only considered
+in case of `"learnr_radio"` or `"learnr_checkbox"` type). The `answers` vector can be named so that the
+vector names represent the answer option value.}
 
 \item{caption}{Optional survey caption (defaults to "Survey")}
 

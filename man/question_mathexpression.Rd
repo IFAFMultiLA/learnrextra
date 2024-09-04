@@ -13,6 +13,7 @@ question_mathexpression(
   tolerance = 1e-04,
   min_value = NULL,
   max_value = NULL,
+  handle_comma_in_input = FALSE,
   rm_percentage_symbol = FALSE,
   correct = "Correct!",
   correct_repeat_result = FALSE,
@@ -47,6 +48,11 @@ question_mathexpression(
 \item{min_value}{Optional minimum value for user input.}
 
 \item{max_value}{Optional maximum value for user input.}
+
+\item{handle_comma_in_input}{Options to handle commas in input (important for languages where comma is used for
+decimal point). `FALSE`: No special behavior (will trigger `incorrect_invalid_chars`
+message); `TRUE`: Replace comma by decimal point; character string: message to display
+when input contains a comma.}
 
 \item{rm_percentage_symbol}{If TRUE, remove all "\%" from user's input.}
 
