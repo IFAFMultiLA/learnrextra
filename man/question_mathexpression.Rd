@@ -2,8 +2,9 @@
 % Please edit documentation in R/question_eval.R
 \name{question_mathexpression}
 \alias{question_mathexpression}
-\title{Quiz question that allows to provide an answer with a simple mathematical expression
-that is being evaluated and checked against `expected_result`.}
+\alias{question_mathexpression_probability}
+\alias{question_mathexpression_percentage}
+\title{Quiz questions accepting mathematical expressions}
 \usage{
 question_mathexpression(
   text,
@@ -33,6 +34,20 @@ question_mathexpression(
   trim = TRUE,
   ...
 )
+
+question_mathexpression_probability(
+  text,
+  expected_result,
+  placeholder = "Enter a mathematical expression that evaluates to a probability ...",
+  ...
+)
+
+question_mathexpression_percentage(
+  text,
+  expected_result,
+  placeholder = "Enter a mathematical expression that evaluates to a percentage ...",
+  ...
+)
 }
 \arguments{
 \item{text}{Question or option text}
@@ -50,8 +65,8 @@ question_mathexpression(
 \item{max_value}{Optional maximum value for user input.}
 
 \item{handle_comma_in_input}{Options to handle commas in input (important for languages where comma is used for
-decimal point). `FALSE`: No special behavior (will trigger `incorrect_invalid_chars`
-message); `TRUE`: Replace comma by decimal point; character string: message to display
+decimal point). \code{FALSE}: No special behavior (will trigger \code{incorrect_invalid_chars}
+message); \code{TRUE}: Replace comma by decimal point; character string: message to display
 when input contains a comma.}
 
 \item{rm_percentage_symbol}{If TRUE, remove all "\%" from user's input.}
@@ -71,11 +86,11 @@ correct.}
 
 \item{incorrect_cannot_evaluate}{Message when the input cannot be evaluated.}
 
-\item{incorrect_out_of_range}{Message when the evaluated input is outside the [min_value, max_value] range.}
+\item{incorrect_out_of_range}{Message when the evaluated input is outside the \verb{[min_value, max_value]} range.}
 
-\item{incorrect_out_of_range_min}{Message when the evaluated input is smaller than `min_value`.}
+\item{incorrect_out_of_range_min}{Message when the evaluated input is smaller than \code{min_value}.}
 
-\item{incorrect_out_of_range_max}{Message when the evaluated input is greater than `max_value`.}
+\item{incorrect_out_of_range_max}{Message when the evaluated input is greater than \code{max_value}.}
 
 \item{placeholder}{A character string giving the user a hint as to what can
 be entered into the control. Internet Explorer 8 and 9 do not support this
@@ -91,6 +106,36 @@ parameters passed onto \code{\link[learnr:question]{question()}}. Answers with c
 Returns a learnr question of type \code{"learnr_text"}.
 }
 \description{
-Quiz question that allows to provide an answer with a simple mathematical expression
-that is being evaluated and checked against `expected_result`.
+Create a quiz question that allows to provide an answer with a simple mathematical expression
+that is being evaluated and checked against \code{expected_result}.
+}
+\details{
+By default, only summation, difference, multiplication, division and power operators are allowed, along with
+parentheses. This can be controlled via \code{allowed_chars}. The default behavior allows users to provide answers
+like \code{3 * 1.14 + 1/(2^3)} being evaluated and check against the correct result. At the same time, this prevents
+possible security issues as it is not possible to call any R functions besides the mentioned algebraic operators.
+
+When expecting the input to be a probability, you can use \code{question_mathexpression_probability}. This function
+additional checks for the entered result being in range \eqn{[0, 1]} and gives respective hints if not.
+The function \code{question_mathexpression_percentage()} also allows users to use the "\%" character in the input.
+}
+\examples{
+question_mathexpression(
+    "What's the sum of the first 5 natural numbers?",
+    15
+)
+
+question_mathexpression_probability(
+    "What's the probability of getting two times \"head\" when flipping a fair coin twice?",
+    1/4
+)
+
+question_mathexpression_percentage(
+    "What's the probability of getting two times \"head\" when flipping a fair coin twice? Give the answer in per cent.",
+    25,
+    min_value = 0,
+    max_value = 100
+)
+
+
 }

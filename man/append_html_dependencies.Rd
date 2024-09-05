@@ -24,6 +24,6 @@ updated list of HTML dependencies
 }
 \description{
 Appends all necessary HTML dependencies (JS libraries, CSS, etc.) to the list of existing HTML dependencies
-given as `html_dependencies`.
+given as \code{html_dependencies}.
 }
 \keyword{internal}

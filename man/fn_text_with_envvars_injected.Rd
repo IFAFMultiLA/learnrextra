@@ -2,9 +2,7 @@
 % Please edit documentation in R/question_eval.R
 \name{fn_text_with_envvars_injected}
 \alias{fn_text_with_envvars_injected}
-\title{Helper function to inject variables of `fn`'s environment directly into the function body of `fn`
-and return the function's code as text. Only atomic objects from `fn`'s environment are
-considered.}
+\title{Helper function to inject variables of \code{fn}'s environment into function body text}
 \usage{
 fn_text_with_envvars_injected(fn)
 }
@@ -12,10 +10,10 @@ fn_text_with_envvars_injected(fn)
 \item{fn}{Function to turn into code text.}
 }
 \value{
-Code of `fn` injected with the function's environment variables.
+Code of \code{fn} injected with the function's environment variables.
 }
 \description{
-Helper function to inject variables of `fn`'s environment directly into the function body of `fn`
-and return the function's code as text. Only atomic objects from `fn`'s environment are
+This function is used to inject variables of \code{fn}'s environment directly into the function body of \code{fn}
+and return the function's code as text. Only atomic objects from \code{fn}'s environment are
 considered.
 }

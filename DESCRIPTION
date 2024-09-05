@@ -24,3 +24,4 @@ Suggests:
     testthat (>= 3.2.0),
     rcmdcheck (>= 1.4.0)
 RoxygenNote: 7.3.2
+Roxygen: list(markdown = TRUE)

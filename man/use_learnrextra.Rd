@@ -2,18 +2,57 @@
 % Please edit documentation in R/shiny.R
 \name{use_learnrextra}
 \alias{use_learnrextra}
-\title{Use this package in a shiny app}
+\alias{info_display}
+\title{Use learnrextra in a shiny app}
 \usage{
 use_learnrextra(consentmodal = TRUE, dataprotectmodal = TRUE)
+
+info_display(login = TRUE, dataprotection_label = "Data protection notice")
 }
 \arguments{
-\item{consentmodal}{either logical value or string pointing to an HTML file for a "data protection consent" modal}
+\item{consentmodal}{Either logical value or string pointing to an HTML file for a "data protection consent" modal}
 
-\item{dataprotectmodal}{either logical value or string pointing to an HTML file for a "data protection license" modal}
+\item{dataprotectmodal}{Either logical value or string pointing to an HTML file for a "data protection license" modal}
+
+\item{login}{Show login information}
+
+\item{dataprotection_label}{Label for link to data protection notice; if empty/NULL, don't show the link}
 }
 \value{
-tag list with sources to include
+Tag list with sources to include
+
+Tag list with HTML elements
 }
 \description{
-Enables the tracking functionality in a shiny app.
+Enables the tracking functionality in a shiny app via \code{use_learnrextra()} function. Add \code{info_display()} to
+display information such as login state and a data protection information button.
+}
+\details{
+You should also set the \code{"learnrextra.apiserver"} and the \code{"learnrextra.language"} options as shown in the
+example. The former must be an URL pointing to the MultiLA backend API, the latter a language ISO code (only "en"
+and "de" are supported so far). For details about how to create a learning application with the MultiLA software
+plattform, see the \href{https://ifafmultila.github.io/learning_apps.html}{MultiLA documentation}.
+}
+\examples{
+\dontrun{
+library(Shiny)
+library(learnrextra)
+options("learnrextra.apiserver" = "http://localhost:8000")
+options("learnrextra.language" = "en")
+
+ui <- fluidPage(
+    # set up learnrextra; optionally point to HTML files with tracking consent and data protection notes
+    use_learnrextra(consentmodal = "www/trackingconsent.html", dataprotectmodal = "www/dataprotect.html"),
+
+    fluidRow(
+        column(
+            width = 12,
+            info_display()   # show link for data protection and optional login information
+        )
+    ),
+
+    # ... all other UI code
+)
+}
+
 }
