@@ -32,6 +32,6 @@ Returns a learnr question of type \code{"learnr_text"}.
 }
 \description{
 Create a text-based quiz question that allows to check the answer using a custom answer checking
-function `answer_fn`. Contrary to `learnr::question_text`, all atomic objects in `answer_fn`'s environment
+function \code{answer_fn}. Contrary to \code{\link[learnr:question_text]{learnr::question_text()}}, all atomic objects in \code{answer_fn}'s environment
 are retained.
 }

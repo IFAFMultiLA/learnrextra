@@ -68,12 +68,12 @@ answer_fn_with_env <- function(fn, label = NULL) {
 #'                              decimal point). `FALSE`: No special behavior (will trigger `incorrect_invalid_chars`
 #'                              message); `TRUE`: Replace comma by decimal point; character string: message to display
 #'                              when input contains a comma.
-#' @param rm_percentage_symbol If TRUE, remove all "\%" from user's input.
+#' @param rm_percentage_symbol If TRUE, remove all "%" from user's input.
 #' @param correct_repeat_result Either logical or a printf format string; if TRUE or string, repeat the correct result.
 #' @param incorrect_too_long Message when the input is too long.
 #' @param incorrect_invalid_chars Message when the input contains invalid characters.
 #' @param incorrect_cannot_evaluate Message when the input cannot be evaluated.
-#' @param incorrect_out_of_range Message when the evaluated input is outside the [min_value, max_value] range.
+#' @param incorrect_out_of_range Message when the evaluated input is outside the `[min_value, max_value]` range.
 #' @param incorrect_out_of_range_min Message when the evaluated input is smaller than `min_value`.
 #' @param incorrect_out_of_range_max Message when the evaluated input is greater than `max_value`.
 #' @inherit learnr::question_text return
@@ -216,7 +216,7 @@ question_mathexpression_percentage <- function(
 #' Quiz questions with custom answer checking function that retains its environment
 #'
 #' Create a text-based quiz question that allows to check the answer using a custom answer checking
-#' function `answer_fn`. Contrary to `learnr::question_text`, all atomic objects in `answer_fn`'s environment
+#' function `answer_fn`. Contrary to [learnr::question_text()], all atomic objects in `answer_fn`'s environment
 #' are retained.
 #'
 #' @param answer_fn Function for checking the user's input; must provide one argument (user input).

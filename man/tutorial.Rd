@@ -119,7 +119,7 @@ bootstrap, etc.) into. By default this will be the name of the document with
 \item{...}{Forward parameters to html_document}
 }
 \value{
-An [rmarkdown::output_format()] for \pkg{learnrextra} tutorials.
+An \code{\link[rmarkdown:output_format]{rmarkdown::output_format()}} for \pkg{learnrextra} tutorials.
 }
 \description{
 Extended tutorial document format derived from learnr tutorial format.

@@ -1,13 +1,106 @@
-#' Generate a survey from survey item definitions passed as list `items`.
+#' Generate a survey to be used inside a learnr tutorial
 #'
-#' @param items Item definitions. Must be a list, where each list element in turn is a list that defines a survey item.
-#'              The survey item list must contain a `text` key (question text) and the following optional keys:
-#'              `label` for an item identifier; `type` for the answer type (one of
-#'              `"learnr_radio", "learnr_checkbox", "learnr_text", "learnr_numeric"`); `question_args` as list of
-#'              optional arguments passed to `learnr::question`; `answer_fn` as answer function (only considered
-#'              in case of `"learnr_numeric"` type); `answers` as character vector of answer options (only considered
-#'              in case of `"learnr_radio"` or `"learnr_checkbox"` type). The `answers` vector can be named so that the
-#'              vector names represent the answer option value.
+#' Create a survey via `survey()` from item definitions passed as nested list `items` or use the
+#' helper function `survey_likert()` for items with Likert scale answers.
+#'
+#' Item definitions `items` for `survey()` must be a list, where each list element in turn is a
+#' list that defines a survey item. The survey item list must contain a `text` key (question text)
+#' and the following optional keys:
+#'
+#' - `label` for an item identifier
+#' - `type` for the answer type (one of `"learnr_radio", "learnr_checkbox", "learnr_text", "learnr_numeric"`)
+#' - `question_args` as list of optional arguments passed to `learnr::question`
+#' - `answer_fn` as answer function (only considered in case of `"learnr_numeric"` type)
+#' - `answers` as character vector of answer options (only considered in case of `"learnr_radio"` or
+#'    `"learnr_checkbox"` type).
+#'
+#' The `answers` vector can be named so that the vector names represent the answer option value.
+#'
+#' Item definitions `items` for `survey_likert()` must be a character vector with item questions.
+#' It can be a named vector – in this case the names are taken as labels (identifiers) for the survey items.
+#' The item levels `levels` can be a character vector or a list. If it is a character vector, we assume that
+#' `levels` defines the same Likert scale levels for *all* survey items. Then this vector represents
+#' the answer options. It can be a named vector, in which case the names represent the answer values.
+#' If no names are given, values from 1 to `length(levels)` are generated. If this parameter is a list
+#' it must have the same length as `items` and hence represents the answer options *per survey item*.
+#' In this case each list entry must be a (optionally named) character vector.
+#'
+#' @examples
+#' # The following code shows an example code chunk with the four types of
+#' # survey items that can be created with the survey() function: single-choice, multiple-choice,
+#' # numeric input and free text input. The survey items definition must be passed as a nested
+#' # list, where each list entry corresponds to an item.
+#'
+#' survey(
+#'     list(
+#'         list(
+#'             text = "Is this just a test?",
+#'             answers = c("Yes", "No")
+#'         ),
+#'         list(
+#'             text = "Here comes a question with labelled answers:",
+#'             answers = c("a" = "Option 1",     #' use named vectors
+#'                         "b" = "Option 2",     #' to denote
+#'                         "c" = "Option 2")     #' answer labels
+#'         ),
+#'         list(
+#'             text = "This is a multiple choice question:",
+#'             answers = c("a" = "Option A",
+#'                         "b" = "Option B",
+#'                         "c" = "Option C"),
+#'             type = "learnr_checkbox"
+#'         ),
+#'         list(
+#'             text = "What's your age?",
+#'             label = "survey-age",    #' you can also set custom labels for questions
+#'             type = "learnr_numeric",
+#'             question_args = list(    #' pass additional options
+#'                 min = 18,
+#'                 max = 100,
+#'                 step = 1
+#'             )
+#'         ),
+#'         list(
+#'             text = "What do you think about this app?",
+#'             label = "survey-comment",
+#'             type = "learnr_text"
+#'         )
+#'     ),
+#'     caption = "Survey",
+#'     message = "Thank you."
+#' )
+#'
+#' # The following code shows how to use the survey_likert() function. You pass a (named) character
+#' # vector of questions and, corresponding to each question, a list of answer options:
+#'
+#' survey_likert(
+#'     items = c(
+#'         "use_during_lessons" = "We should use such apps more during the lessons.",
+#'         "app_general" = "In general, I find this app ...",
+#'         "recommend" = "I would recommend this app to others."
+#'     ),
+#'     levels = list(
+#'         c("fully disagree", "rather disagree", "neutral", "rather agree", "fully agree"),
+#'         paste0("... ", c("very bad", "rather bad", "mediocre", "rather good", "very good"), "."),
+#'         c("yes", "no", "don't know")
+#'     ),
+#'     caption = "Survey",
+#'     message = "Thank you."
+#' )
+#'
+#' # If all items should have the same answer options, you can simplify the levels parameter:
+#'
+#' survey_likert(
+#'     items = c(
+#'         "use_during_lessons" = "We should use such apps more during the lessons.",
+#'         "app_general" = "In general, I find this app really good.",
+#'         "recommend" = "I would recommend this app to others."
+#'     ),
+#'     levels = c("fully disagree", "rather disagree", "neutral", "rather agree", "fully agree")
+#' )
+#'
+#'
+#' @param items Item definitions. See details section.
 #' @param caption Optional survey caption (defaults to "Survey")
 #' @param message Optional message to display when survey item was submitted (defaults to "Thank you.")
 #' @return A survey as `tutorial_quiz` class list.
@@ -103,18 +196,8 @@ survey <- function(items, caption = "Survey", message = "Thank you.") {
     ret
 }
 
-#' Generate a survey with Likert scale type answers.
-#'
-#' @param items A character vector with item questions. Can be a named vector – in this case the names are taken as
-#'              labels (identifiers) for the survey items.
-#' @param levels Likert scale levels. Can be a character vector or list. If it is a character vector, we assume that
-#'               `levels` defines the same Likert scale levels for *all* survey items. Then this vector represents
-#'               the answer options. It can be a named vector, in which case the names represent the answer values.
-#'               If no names are given, values from 1 to `length(levels)` are generated. If this parameter is a list
-#'               it must have the same length as `items` and hence represents the answer options *per survey item*.
-#'               In this case each list entry must be a (optionally named) character vector.
-#' @inheritParams survey
-#' @return A survey as `tutorial_quiz` class list.
+#' @rdname survey
+#' @param levels Likert scale levels. Can be a character vector or list. See details section.
 #'
 #' @export
 survey_likert <- function(items, levels, caption = "Survey", message = "Thank you.") {

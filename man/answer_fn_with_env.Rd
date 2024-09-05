@@ -12,10 +12,10 @@ answer_fn_with_env(fn, label = NULL)
 \item{label}{Optional answer label.}
 }
 \value{
-Object of class `tutorial_question_answer` with the answer function's code as `value`.
+Object of class \code{tutorial_question_answer} with the answer function's code as \code{value}.
 }
 \description{
-Evaluate the users's submission to determine correctness and to return feedback using a function `fn` which
-expects as only argument the user's input as character string. Any atomic objects from `fn`'s environment are
+Evaluate the users's submission to determine correctness and to return feedback using a function \code{fn} which
+expects as only argument the user's input as character string. Any atomic objects from \code{fn}'s environment are
 retained.
 }
