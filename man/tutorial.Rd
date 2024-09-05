@@ -2,7 +2,7 @@
 % Please edit documentation in R/tutorial-format.R
 \name{tutorial}
 \alias{tutorial}
-\title{Extended tutorial document format derived from learnr tutorial format.}
+\title{learnrextra tutorial document format}
 \usage{
 tutorial(
   fig_width = 6.5,
@@ -122,5 +122,37 @@ bootstrap, etc.) into. By default this will be the name of the document with
 An \code{\link[rmarkdown:output_format]{rmarkdown::output_format()}} for \pkg{learnrextra} tutorials.
 }
 \description{
-Extended tutorial document format derived from learnr tutorial format.
+Extended tutorial document format derived from learnr tutorial format. Enables user interaction tracking with the
+MultiLA backend API which must be provided with the \code{apiserver} option. Optionally provides a dynamic summary panel.
+}
+\details{
+For details about how to create a learning application with the MultiLA software plattform, see the
+\href{https://ifafmultila.github.io/learning_apps.html}{MultiLA documentation}.
+}
+\examples{
+# The following shows an RMarkdown preamble and setup chunk for using the learnrextra tutorial output type:
+\dontrun{
+---
+title: "Test tutorial for the learnrextra package"
+runtime: shiny_prerendered
+author: Jane Doe
+email: jane.doe@doe.industries.com
+date: "`r format(Sys.time(), '\%d.\%m.\%Y')`"
+output:
+    learnrextra::tutorial:
+        language: en
+        apiserver: http://localhost:8000/
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(learnrextra)
+library(gradethis)
+library(shiny)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+}
+
+
 }
