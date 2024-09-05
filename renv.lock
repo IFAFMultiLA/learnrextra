@@ -148,16 +148,6 @@
       ],
       "Hash": "859d96e65ef198fd43e82b9628d593ef"
     },
-    "curl": {
-      "Package": "curl",
-      "Version": "5.2.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "411ca2c03b1ce5f548345d2fc2685f7a"
-    },
     "desc": {
       "Package": "desc",
       "Version": "1.4.3",
@@ -574,16 +564,6 @@
       "Repository": "CRAN",
       "Hash": "a555924add98c99d2f411e37e7d25e9f"
     },
-    "prettyunits": {
-      "Package": "prettyunits",
-      "Version": "1.2.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "6b01fc98b1e86c4f705ce9dcfd2f57c7"
-    },
     "processx": {
       "Package": "processx",
       "Version": "3.8.4",
@@ -648,28 +628,6 @@
         "R"
       ],
       "Hash": "5e3c5dc0b071b21fa128676560dbe94d"
-    },
-    "rcmdcheck": {
-      "Package": "rcmdcheck",
-      "Version": "1.4.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R6",
-        "callr",
-        "cli",
-        "curl",
-        "desc",
-        "digest",
-        "pkgbuild",
-        "prettyunits",
-        "rprojroot",
-        "sessioninfo",
-        "utils",
-        "withr",
-        "xopen"
-      ],
-      "Hash": "8f25ebe2ec38b1f2aef3b0d2ef76f6c4"
     },
     "rematch2": {
       "Package": "rematch2",
@@ -755,19 +713,6 @@
         "rlang"
       ],
       "Hash": "d53dbfddf695303ea4ad66f86e99b95d"
-    },
-    "sessioninfo": {
-      "Package": "sessioninfo",
-      "Version": "1.2.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "cli",
-        "tools",
-        "utils"
-      ],
-      "Hash": "3f9796a8d0a0e8c6eb49a4b029359d1f"
     },
     "shiny": {
       "Package": "shiny",
@@ -936,17 +881,6 @@
         "tools"
       ],
       "Hash": "36ab21660e2d095fef0d83f689e0477c"
-    },
-    "xopen": {
-      "Package": "xopen",
-      "Version": "1.0.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "processx"
-      ],
-      "Hash": "423df1e86d5533fcb73c6b02b4923b49"
     },
     "xtable": {
       "Package": "xtable",

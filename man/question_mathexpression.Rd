@@ -2,8 +2,9 @@
 % Please edit documentation in R/question_eval.R
 \name{question_mathexpression}
 \alias{question_mathexpression}
-\title{Quiz question that allows to provide an answer with a simple mathematical expression
-that is being evaluated and checked against `expected_result`.}
+\alias{question_mathexpression_probability}
+\alias{question_mathexpression_percentage}
+\title{Quiz questions accepting mathematical expressions}
 \usage{
 question_mathexpression(
   text,
@@ -31,6 +32,20 @@ question_mathexpression(
     "The result is expected to be \%f or smaller, but your answer is \%f.",
   placeholder = "Enter a mathematical expression or number ...",
   trim = TRUE,
+  ...
+)
+
+question_mathexpression_probability(
+  text,
+  expected_result,
+  placeholder = "Enter a mathematical expression that evaluates to a probability ...",
+  ...
+)
+
+question_mathexpression_percentage(
+  text,
+  expected_result,
+  placeholder = "Enter a mathematical expression that evaluates to a percentage ...",
   ...
 )
 }
@@ -91,6 +106,36 @@ parameters passed onto \code{\link[learnr:question]{question()}}. Answers with c
 Returns a learnr question of type \code{"learnr_text"}.
 }
 \description{
-Quiz question that allows to provide an answer with a simple mathematical expression
+Create a quiz question that allows to provide an answer with a simple mathematical expression
 that is being evaluated and checked against `expected_result`.
+}
+\details{
+By default, only summation, difference, multiplication, division and power operators are allowed, along with
+parentheses. This can be controlled via `allowed_chars`. The default behavior allows users to provide answers
+like `3 * 1.14 + 1/(2^3)` being evaluated and check against the correct result. At the same time, this prevents
+possible security issues as it is not possible to call any R functions besides the mentioned algebraic operators.
+
+When expecting the input to be a probability, you can use `question_mathexpression_probability`. This function
+additional checks for the entered result being in range \eqn{[0, 1]} and gives respective hints if not.
+The function `question_mathexpression_percentage()` also allows users to use the "%" character in the input.
+}
+\examples{
+question_mathexpression(
+    "What's the sum of the first 5 natural numbers?",
+    15
+)
+
+question_mathexpression_probability(
+    "What's the probability of getting two times \"head\" when flipping a fair coin twice?",
+    1/4
+)
+
+question_mathexpression_percentage(
+    "What's the probability of getting two times \"head\" when flipping a fair coin twice? Give the answer in per cent.",
+    25,
+    min_value = 0,
+    max_value = 100
+)
+
+
 }

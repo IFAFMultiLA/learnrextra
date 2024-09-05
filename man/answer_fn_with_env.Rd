@@ -2,9 +2,7 @@
 % Please edit documentation in R/question_eval.R
 \name{answer_fn_with_env}
 \alias{answer_fn_with_env}
-\title{Evaluate the users's submission to determine correctness and to return feedback using a function `fn` which
-expects as only argument the user's input as character string. Any atomic objects from `fn`'s environment are
-retained.}
+\title{Create an answer checking function that retains its environment}
 \usage{
 answer_fn_with_env(fn, label = NULL)
 }

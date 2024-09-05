@@ -1,3 +1,5 @@
+#' Create an answer checking function that retains its environment
+#'
 #' Evaluate the users's submission to determine correctness and to return feedback using a function `fn` which
 #' expects as only argument the user's input as character string. Any atomic objects from `fn`'s environment are
 #' retained.
@@ -22,8 +24,38 @@ answer_fn_with_env <- function(fn, label = NULL) {
     )
 }
 
-#' Quiz question that allows to provide an answer with a simple mathematical expression
+#' Quiz questions accepting mathematical expressions
+#'
+#' Create a quiz question that allows to provide an answer with a simple mathematical expression
 #' that is being evaluated and checked against `expected_result`.
+#'
+#' By default, only summation, difference, multiplication, division and power operators are allowed, along with
+#' parentheses. This can be controlled via `allowed_chars`. The default behavior allows users to provide answers
+#' like `3 * 1.14 + 1/(2^3)` being evaluated and check against the correct result. At the same time, this prevents
+#' possible security issues as it is not possible to call any R functions besides the mentioned algebraic operators.
+#'
+#' When expecting the input to be a probability, you can use `question_mathexpression_probability`. This function
+#' additional checks for the entered result being in range \eqn{[0, 1]} and gives respective hints if not.
+#' The function `question_mathexpression_percentage()` also allows users to use the "%" character in the input.
+#'
+#' @examples
+#' question_mathexpression(
+#'     "What's the sum of the first 5 natural numbers?",
+#'     15
+#' )
+#'
+#' question_mathexpression_probability(
+#'     "What's the probability of getting two times \"head\" when flipping a fair coin twice?",
+#'     1/4
+#' )
+#'
+#' question_mathexpression_percentage(
+#'     "What's the probability of getting two times \"head\" when flipping a fair coin twice? Give the answer in per cent.",
+#'     25,
+#'     min_value = 0,
+#'     max_value = 100
+#' )
+#'
 #'
 #' @inheritParams learnr::question_text
 #' @param expected_result Expected result (numeric).
@@ -159,12 +191,7 @@ question_mathexpression <- function(
     )
 }
 
-#' Quiz question that allows to provide an answer with a simple mathematical expression
-#' that is being evaluated and checked against `expected_result`. Expect a probability as answer.
-#'
-#' @inheritParams question_mathexpression
-#' @inherit question_mathexpression return
-#'
+#' @rdname question_mathexpression
 #' @export
 question_mathexpression_probability <- function(
         text,
@@ -175,12 +202,7 @@ question_mathexpression_probability <- function(
     question_mathexpression(text, expected_result, min_value = 0, max_value = 1, placeholder = placeholder, ...)
 }
 
-#' Quiz question that allows to provide an answer with a simple mathematical expression
-#' that is being evaluated and checked against `expected_result`. Expect a percentage as answer.
-#'
-#' @inheritParams question_mathexpression
-#' @inherit question_mathexpression return
-#'
+#' @rdname question_mathexpression
 #' @export
 question_mathexpression_percentage <- function(
         text,
@@ -191,8 +213,11 @@ question_mathexpression_percentage <- function(
     question_mathexpression(text, expected_result, rm_percentage_symbol = TRUE, placeholder = placeholder, ...)
 }
 
-#' Text-based quiz question that allows to check the answer using a custom answer function `answer_fn`.
-#' Contrary to `learnr::question_text`, all atomic objects in `answer_fn`'s environment are retained.
+#' Quiz questions with custom answer checking function that retains its environment
+#'
+#' Create a text-based quiz question that allows to check the answer using a custom answer checking
+#' function `answer_fn`. Contrary to `learnr::question_text`, all atomic objects in `answer_fn`'s environment
+#' are retained.
 #'
 #' @param answer_fn Function for checking the user's input; must provide one argument (user input).
 #' @inheritParams learnr::question_text
@@ -217,7 +242,9 @@ question_text_custom_answer_fn <- function(
     )
 }
 
-#' Helper function to inject variables of `fn`'s environment directly into the function body of `fn`
+#' Helper function to inject variables of `fn`'s environment into function body text
+#'
+#' This function is used to inject variables of `fn`'s environment directly into the function body of `fn`
 #' and return the function's code as text. Only atomic objects from `fn`'s environment are
 #' considered.
 #'

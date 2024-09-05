@@ -2,8 +2,7 @@
 % Please edit documentation in R/question_eval.R
 \name{question_text_custom_answer_fn}
 \alias{question_text_custom_answer_fn}
-\title{Text-based quiz question that allows to check the answer using a custom answer function `answer_fn`.
-Contrary to `learnr::question_text`, all atomic objects in `answer_fn`'s environment are retained.}
+\title{Quiz questions with custom answer checking function that retains its environment}
 \usage{
 question_text_custom_answer_fn(
   text,
@@ -32,6 +31,7 @@ parameters passed onto \code{\link[learnr:question]{question()}}. Answers with c
 Returns a learnr question of type \code{"learnr_text"}.
 }
 \description{
-Text-based quiz question that allows to check the answer using a custom answer function `answer_fn`.
-Contrary to `learnr::question_text`, all atomic objects in `answer_fn`'s environment are retained.
+Create a text-based quiz question that allows to check the answer using a custom answer checking
+function `answer_fn`. Contrary to `learnr::question_text`, all atomic objects in `answer_fn`'s environment
+are retained.
 }
