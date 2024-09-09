@@ -107,13 +107,7 @@ check_question_mathexpression_result <- function(
     expect_true(grepl(sprintf("expected_result <- %s", as.character(args$expected_result)),
                       res$answers[[1]]$value,
                       fixed = TRUE))
-    expect_true(grepl(gsub("\\",
-                           "\\\\",
-                           sprintf("allowed_chars <- \"%s\"", getval(args, "allowed_chars", "0123456789\\.\\+\\*/\\(\\)\\^-")),
-                           fixed = TRUE),
-                      res$answers[[1]]$value,
-                      fixed = TRUE))
-    expect_true(grepl(sprintf("allowed_max_length <- %s", as.character(getval(args, "allowed_max_length", 128))),
+    expect_true(grepl(sprintf("allowed_max_length <- %s", as.character(getval(args, "allowed_max_length", 256))),
                       res$answers[[1]]$value,
                       fixed = TRUE))
     expect_true(grepl(sprintf("tolerance <- %s", as.character(getval(args, "tolerance", 1e-4))),
@@ -154,8 +148,8 @@ check_question_mathexpression_result <- function(
                               getval(args, "incorrect_too_long", "The provided answer is too long.")),
                       res$answers[[1]]$value,
                       fixed = TRUE))
-    expect_true(grepl(sprintf("incorrect_invalid_chars <- \"%s\"",
-                              getval(args, "incorrect_invalid_chars", "The provided answer contains invalid characters. Only the following characters are possible: ")),
+    expect_true(grepl(sprintf("incorrect_invalid_symbols <- \"%s\"",
+                              getval(args, "incorrect_invalid_symbols", "The provided answer contains invalid operators or functions. Only the following operators and functions are possible: ")),
                       res$answers[[1]]$value,
                       fixed = TRUE))
     expect_true(grepl(sprintf("incorrect_cannot_evaluate <- \"%s\"",
@@ -178,8 +172,6 @@ check_question_mathexpression_result <- function(
     expect_equal(res$random_answer_order, getval(args, "random_answer_order", FALSE))
     expect_equal(res$allow_retry, getval(args, "allow_retry", FALSE))
     expect_equal(res$options$placeholder, getval(args, "placeholder", placeholder_default))
-    expect_equal(res$options$trim, getval(args, "trim", TRUE))
-
     answ_check_fn <- eval(parse(text = res$answers[[1]]$value), envir = rlang::base_env())
     answ <- answ_check_fn(as.character(args$expected_result))
     expect_type(answ, "list")
@@ -227,7 +219,7 @@ test_that("question_mathexpression() returns correct result list depending on pa
     list_of_args <- list(
         list(text = "foo1", expected_result = 3.14),
         list(text = "foo1b", expected_result = 3.14, placeholder = "foo"),
-        list(text = "foo2", expected_result = 3.14, allowed_chars = "134\\."),
+        list(text = "foo2", expected_result = 3.14, allowed_symbols = c("+", "-")),
         list(text = "foo3", expected_result = -3, allowed_max_length = 30),
         list(text = "foo4", expected_result = -3, tolerance = 0.1),
         list(text = "foo5", expected_result = 123, min_value = 123),
@@ -238,7 +230,7 @@ test_that("question_mathexpression() returns correct result list depending on pa
         list(text = "foo8", expected_result = 1e-3, correct_repeat_result = TRUE),
         list(text = "foo9", expected_result = 1e-3, correct_repeat_result = "yeah %f"),
         list(text = "foo10", expected_result = 1e-3, incorrect_too_long = "too long"),
-        list(text = "foo11", expected_result = 1e-3, incorrect_invalid_chars = "invalid chars"),
+        list(text = "foo11", expected_result = 1e-3, incorrect_invalid_symbols = "invalid symbols"),
         list(text = "foo12", expected_result = 1e-3, incorrect_cannot_evaluate = "invalid expr"),
         list(text = "foo13", expected_result = 1e-3, incorrect_out_of_range = "between %f and %f, but your answer is %f"),
         list(text = "foo14", expected_result = 1e-3, incorrect_out_of_range_min = ">= %f, but your answer is %f"),
@@ -280,6 +272,34 @@ test_that("question_mathexpression() correctly evaluates inputs", {
             input = list(str = "314/100", correct = TRUE)
         ),
         list(
+            args = list(text = "foo2a", expected_result = pi),
+            input = list(str = "pi", correct = TRUE)
+        ),
+        list(
+            args = list(text = "foo2b", expected_result = sin(0.5 * pi)),
+            input = list(str = "sin(0.5 * pi)", correct = TRUE)
+        ),
+        list(
+            args = list(text = "foo2c", expected_result = 2),
+            input = list(str = "log(exp(2))", correct = TRUE)
+        ),
+        list(
+            args = list(text = "foo2d", expected_result = pi*3^2),
+            input = list(str = "pi*3^2", correct = TRUE)
+        ),
+        list(
+            args = list(text = "foo2e", expected_result = 2),
+            input = list(str = "sqrt(2^2)", correct = TRUE)
+        ),
+        list(
+            args = list(text = "foo2f", expected_result = 120),
+            input = list(str = "factorial(5)", correct = TRUE)
+        ),
+        list(
+            args = list(text = "foo2g", expected_result = 100),
+            input = list(str = "choose(5, 3) * (1+sqrt(16)) * 2", correct = TRUE)
+        ),
+        list(
             args = list(text = "foo3", expected_result = 3.14),
             input = list(str = "314/200*2.0000001", correct = TRUE)   # tolerance
         ),
@@ -299,12 +319,12 @@ test_that("question_mathexpression() correctly evaluates inputs", {
         list(
             args = list(text = "foo6", expected_result = 0),
             input = list(str = "system('echo \"test\"')", correct = FALSE,
-                         failmsg_regexp = "^The provided answer contains invalid characters.")
+                         failmsg_regexp = "^The provided answer contains invalid operators or functions")
         ),
         list(
             args = list(text = "foo6b", expected_result = 3.14),
             input = list(str = "3,14", correct = FALSE,
-                         failmsg_regexp = "^The provided answer contains invalid characters.")
+                         failmsg_regexp = "^Your answer cannot be evaluated as mathematical expression.$")
         ),
         list(
             args = list(text = "foo7", expected_result = 0),
@@ -444,7 +464,7 @@ test_that("question_mathexpression_percentage() correctly evaluates inputs", {
         list(
             args = list(text = "foo6", expected_result = 0),
             input = list(str = "system('echo \"test\"')", correct = FALSE,
-                         failmsg_regexp = "^The provided answer contains invalid characters.")
+                         failmsg_regexp = "^The provided answer contains invalid operators or functions.")
         ),
         list(
             args = list(text = "foo7", expected_result = 0),

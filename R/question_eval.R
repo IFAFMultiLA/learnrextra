@@ -29,10 +29,11 @@ answer_fn_with_env <- function(fn, label = NULL) {
 #' Create a quiz question that allows to provide an answer with a simple mathematical expression
 #' that is being evaluated and checked against `expected_result`.
 #'
-#' By default, only summation, difference, multiplication, division and power operators are allowed, along with
-#' parentheses. This can be controlled via `allowed_chars`. The default behavior allows users to provide answers
-#' like `3 * 1.14 + 1/(2^3)` being evaluated and check against the correct result. At the same time, this prevents
-#' possible security issues as it is not possible to call any R functions besides the mentioned algebraic operators.
+#' By default, only basic arithmetic operators, square root, logarithms, exponentials, trigonometric and combinatoric
+#' functions are allowed. This can be controlled via `allowed_symbols`. The default behavior allows users to provide
+#' answers like `3 * 1.14 + 1/(2^3)` or `sin(0.5*pi)` being evaluated and checked against the correct result. At the
+#' same time, this prevents possible security issues as it is not possible to call any R functions besides those
+#' defined in `allowed_symbols`.
 #'
 #' When expecting the input to be a probability, you can use `question_mathexpression_probability`. This function
 #' additional checks for the entered result being in range \eqn{[0, 1]} and gives respective hints if not.
@@ -59,19 +60,19 @@ answer_fn_with_env <- function(fn, label = NULL) {
 #'
 #' @inheritParams learnr::question_text
 #' @param expected_result Expected result (numeric).
-#' @param allowed_chars Allowed characters in user input.
+#' @param allowed_symbols Allowed R symbols (operators, constants and functions) in user input.
 #' @param allowed_max_length Allowed max. number of characters in user input.
 #' @param tolerance Maximum absolute difference between user's result and expected result.
 #' @param min_value Optional minimum value for user input.
 #' @param max_value Optional maximum value for user input.
 #' @param handle_comma_in_input Options to handle commas in input (important for languages where comma is used for
-#'                              decimal point). `FALSE`: No special behavior (will trigger `incorrect_invalid_chars`
+#'                              decimal point). `FALSE`: No special behavior (will trigger `incorrect_cannot_evaluate`
 #'                              message); `TRUE`: Replace comma by decimal point; character string: message to display
 #'                              when input contains a comma.
 #' @param rm_percentage_symbol If TRUE, remove all "%" from user's input.
 #' @param correct_repeat_result Either logical or a printf format string; if TRUE or string, repeat the correct result.
 #' @param incorrect_too_long Message when the input is too long.
-#' @param incorrect_invalid_chars Message when the input contains invalid characters.
+#' @param incorrect_invalid_symbols Message when the input contains invalid operators, constants or functions.
 #' @param incorrect_cannot_evaluate Message when the input cannot be evaluated.
 #' @param incorrect_out_of_range Message when the evaluated input is outside the `[min_value, max_value]` range.
 #' @param incorrect_out_of_range_min Message when the evaluated input is smaller than `min_value`.
@@ -82,8 +83,11 @@ answer_fn_with_env <- function(fn, label = NULL) {
 question_mathexpression <- function(
         text,
         expected_result,
-        allowed_chars = "0123456789\\.\\+\\*/\\(\\)\\^-",
-        allowed_max_length = 128,
+        allowed_symbols = c("+", "-", "*", "/", "(", "^", "sqrt",
+                            "exp", "expm1", "log", "logb", "log10", "log2", "log1p",
+                            "cos", "sin", "tan", "acos", "asin", "atan", "atan2", "pi",
+                            "choose", "factorial"),
+        allowed_max_length = 256,
         tolerance = 1e-4,
         min_value = NULL,
         max_value = NULL,
@@ -93,14 +97,13 @@ question_mathexpression <- function(
         correct_repeat_result = FALSE,
         incorrect = "Incorrect",
         incorrect_too_long = "The provided answer is too long.",
-        incorrect_invalid_chars =
-            "The provided answer contains invalid characters. Only the following characters are possible: ",
+        incorrect_invalid_symbols =
+            "The provided answer contains invalid operators or functions. Only the following operators and functions are possible: ",
         incorrect_cannot_evaluate = "Your answer cannot be evaluated as mathematical expression.",
         incorrect_out_of_range = "The result is expected to be between %f and %f, but your answer is %f.",
         incorrect_out_of_range_min = "The result is expected to be %f or greater, but your answer is %f.",
         incorrect_out_of_range_max = "The result is expected to be %f or smaller, but your answer is %f.",
         placeholder = "Enter a mathematical expression or number ...",
-        trim = TRUE,
         ...
 ) {
     if (!is.null(min_value) && expected_result < min_value) {
@@ -114,9 +117,7 @@ question_mathexpression <- function(
     }
 
     answ <- answer_fn_with_env(function(input) {
-        if (trim) {
-            input <- trimws(input)
-        }
+        input <- trimws(input)
 
         if (isTRUE(handle_comma_in_input)) {
             input <- gsub(",", ".", input, fixed = TRUE)
@@ -135,12 +136,27 @@ question_mathexpression <- function(
             return(learnr::incorrect(incorrect_too_long))
         }
 
-        if (!is.null(allowed_chars) && grepl(paste0("[^ ", allowed_chars, "]"), input)) {
-            return(learnr::incorrect(paste0(incorrect_invalid_chars, gsub("\\", "", allowed_chars, fixed = TRUE))))
+        # parse the expression without evaluating it
+        expr <- try(parse(text = input), silent = TRUE)
+        if (inherits(expr, "try-error")) {
+            return(learnr::incorrect(incorrect_cannot_evaluate))
         }
 
-        result <- NULL
-        try({ result <- eval(parse(text = input), envir = new.env()) }, silent = TRUE)
+        # create restricted input evaluation environment
+        evalenv <- rlang::new_environment()
+
+        lapply(allowed_symbols, function(sym) {
+            # assign only the allowed symbols to the restricted environment
+            assign(sym, rlang::eval_bare(rlang::sym(sym)), envir = evalenv)
+        })
+
+        # evaluate the expression within the restricted environment
+        result <- try(eval(expr, envir = evalenv, enclos = emptyenv()), silent = TRUE)
+
+        # check the result
+        if (inherits(result, "try-error")) {
+            return(learnr::incorrect(paste0(incorrect_invalid_symbols, paste(allowed_symbols, collapse = ", "))))
+        }
 
         ret <- NULL
         if (is.null(result)) {
@@ -184,7 +200,6 @@ question_mathexpression <- function(
         text,
         answ,
         ...,
-        trim = trim,
         placeholder = placeholder,
         correct = NULL,
         incorrect = NULL
