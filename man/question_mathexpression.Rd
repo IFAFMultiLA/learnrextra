@@ -9,8 +9,10 @@
 question_mathexpression(
   text,
   expected_result,
-  allowed_chars = "0123456789\\\\.\\\\+\\\\*/\\\\(\\\\)\\\\^-",
-  allowed_max_length = 128,
+  allowed_symbols = c("+", "-", "*", "/", "(", "^", "sqrt", "exp", "expm1", "log",
+    "logb", "log10", "log2", "log1p", "cos", "sin", "tan", "acos", "asin", "atan",
+    "atan2", "pi", "choose", "factorial"),
+  allowed_max_length = 256,
   tolerance = 1e-04,
   min_value = NULL,
   max_value = NULL,
@@ -20,8 +22,8 @@ question_mathexpression(
   correct_repeat_result = FALSE,
   incorrect = "Incorrect",
   incorrect_too_long = "The provided answer is too long.",
-  incorrect_invalid_chars =
-    "The provided answer contains invalid characters. Only the following characters are possible: ",
+  incorrect_invalid_symbols =
+    "The provided answer contains invalid operators or functions. Only the following operators and functions are possible: ",
   incorrect_cannot_evaluate =
     "Your answer cannot be evaluated as mathematical expression.",
   incorrect_out_of_range =
@@ -31,7 +33,6 @@ question_mathexpression(
   incorrect_out_of_range_max =
     "The result is expected to be \%f or smaller, but your answer is \%f.",
   placeholder = "Enter a mathematical expression or number ...",
-  trim = TRUE,
   ...
 )
 
@@ -54,7 +55,7 @@ question_mathexpression_percentage(
 
 \item{expected_result}{Expected result (numeric).}
 
-\item{allowed_chars}{Allowed characters in user input.}
+\item{allowed_symbols}{Allowed R symbols (operators, constants and functions) in user input.}
 
 \item{allowed_max_length}{Allowed max. number of characters in user input.}
 
@@ -65,7 +66,7 @@ question_mathexpression_percentage(
 \item{max_value}{Optional maximum value for user input.}
 
 \item{handle_comma_in_input}{Options to handle commas in input (important for languages where comma is used for
-decimal point). \code{FALSE}: No special behavior (will trigger \code{incorrect_invalid_chars}
+decimal point). \code{FALSE}: No special behavior (will trigger \code{incorrect_cannot_evaluate}
 message); \code{TRUE}: Replace comma by decimal point; character string: message to display
 when input contains a comma.}
 
@@ -82,7 +83,7 @@ correct.}
 
 \item{incorrect_too_long}{Message when the input is too long.}
 
-\item{incorrect_invalid_chars}{Message when the input contains invalid characters.}
+\item{incorrect_invalid_symbols}{Message when the input contains invalid operators, constants or functions.}
 
 \item{incorrect_cannot_evaluate}{Message when the input cannot be evaluated.}
 
@@ -96,9 +97,6 @@ correct.}
 be entered into the control. Internet Explorer 8 and 9 do not support this
 option.}
 
-\item{trim}{Logical to determine if whitespace before and after the answer
-should be removed.  Defaults to \code{TRUE}.}
-
 \item{...}{Answers created with \code{\link[learnr:answer]{answer()}} or \code{\link[learnr:answer_fn]{answer_fn()}}, or extra
 parameters passed onto \code{\link[learnr:question]{question()}}. Answers with custom function checking}
 }
@@ -110,10 +108,11 @@ Create a quiz question that allows to provide an answer with a simple mathematic
 that is being evaluated and checked against \code{expected_result}.
 }
 \details{
-By default, only summation, difference, multiplication, division and power operators are allowed, along with
-parentheses. This can be controlled via \code{allowed_chars}. The default behavior allows users to provide answers
-like \code{3 * 1.14 + 1/(2^3)} being evaluated and check against the correct result. At the same time, this prevents
-possible security issues as it is not possible to call any R functions besides the mentioned algebraic operators.
+By default, only basic arithmetic operators, square root, logarithms, exponentials, trigonometric and combinatoric
+functions are allowed. This can be controlled via \code{allowed_symbols}. The default behavior allows users to provide
+answers like \code{3 * 1.14 + 1/(2^3)} or \code{sin(0.5*pi)} being evaluated and checked against the correct result. At the
+same time, this prevents possible security issues as it is not possible to call any R functions besides those
+defined in \code{allowed_symbols}.
 
 When expecting the input to be a probability, you can use \code{question_mathexpression_probability}. This function
 additional checks for the entered result being in range \eqn{[0, 1]} and gives respective hints if not.
