@@ -73,12 +73,17 @@ $(document).ready(function () {
     }, 0)
   }
 
-  function updateLocation (topicIndex) {
+  function updateLocation (topicIndex, scrollTop) {
     const baseUrl = window.location.href.replace(window.location.hash, '')
     window.location = `${baseUrl}#${topics[topicIndex].id}`
 
-    // scroll content to top
-    $('#learnr-tutorial-content').parent().scrollTop(0)
+    if (scrollTop === undefined) {
+      // scroll content to top
+      $('#learnr-tutorial-content').parent().scrollTop(0)
+    } else {
+      // scroll to defined position
+      $('#learnr-tutorial-content').parent().scrollTop(scrollTop)
+    }
 
     addRemainingSummaries(topicIndex - 1)
   }
@@ -830,6 +835,9 @@ $(document).ready(function () {
             }
 
             const cls = 'summaryContainer_' + hashCode($e.text())
+            $e.on('click', function () {
+              updateLocation(topicIndex, Math.max(e.offsetTop - 60, 0))
+            })
             sectionContainer = summariesContainer.find('.' + cls)
             if (sectionContainer.length === 0) {
               sectionContainer = $(`<div class="${cls}"></div>`)
