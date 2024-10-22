@@ -16,6 +16,13 @@ $(document).ready(function () {
   let scrollLastSectionToView = false
   let scrollLastSectionPosition = 0
 
+  // set unique ids for each content element to later be able to jump to these
+  const contentElemSelectors = ['h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'div.figure']
+  const combinedSelector = contentElemSelectors.map(x => '.section.level2 > ' + x).join(', ')
+  $(combinedSelector).each(function (i, e) {
+    $(e).prop('id', `mainContentElem-${i}`).addClass('mainContentElem')
+  })
+
   // Callbacks that are triggered when setCurrentTopic() is called.
   const setCurrentTopicNotifiers = (function () {
     let notifiers = []
@@ -73,15 +80,17 @@ $(document).ready(function () {
     }, 0)
   }
 
-  function updateLocation (topicIndex, scrollTop) {
+  function updateLocation (topicIndex, scrollToElemID) {
     const baseUrl = window.location.href.replace(window.location.hash, '')
     window.location = `${baseUrl}#${topics[topicIndex].id}`
 
-    if (scrollTop === undefined) {
+    if (scrollToElemID === undefined) {
       // scroll content to top
       $('#learnr-tutorial-content').parent().scrollTop(0)
     } else {
-      // scroll to defined position
+      // scroll to position the element
+      const e = $(`#${scrollToElemID}`)[0]
+      const scrollTop = Math.max(e.offsetTop - e.offsetHeight - 60, 0)
       $('#learnr-tutorial-content').parent().scrollTop(scrollTop)
     }
 
@@ -810,6 +819,8 @@ $(document).ready(function () {
 
     if (!addedSummaries.has(topicSummaryKey)) {
       const embeddedSummariesContainer = $(`.section.level2:eq(${topicIndex})  .summary:eq(${summaryIdx})`)
+      const nearestMainContentElem = embeddedSummariesContainer.prevAll('.mainContentElem').first() || embeddedSummariesContainer.nextAll('.mainContentElem').first()
+
       topicID = embeddedSummariesContainer.prop('id')
       const summaryElems = embeddedSummariesContainer.children().detach()
 
@@ -836,7 +847,7 @@ $(document).ready(function () {
 
             const cls = 'summaryContainer_' + hashCode($e.text())
             $e.on('click', function () {
-              updateLocation(topicIndex, Math.max(e.offsetTop - 60, 0))
+              updateLocation(topicIndex, nearestMainContentElem.length ? nearestMainContentElem.prop('id') : undefined)
             })
             sectionContainer = summariesContainer.find('.' + cls)
             if (sectionContainer.length === 0) {
