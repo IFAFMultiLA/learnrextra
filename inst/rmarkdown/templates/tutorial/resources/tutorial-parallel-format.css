@@ -117,6 +117,15 @@
     padding-inline-start: 1em;
 }
 
+#summarytext h4 {
+    cursor: pointer;
+    text-decoration: none;
+}
+
+#summarytext h4:hover {
+    text-decoration: underline;
+}
+
 .parallellayout.col.side h3 {
     margin-top: 0;
 }
