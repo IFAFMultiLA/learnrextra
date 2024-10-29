@@ -946,6 +946,11 @@ $(document).ready(function () {
   handleLocationHash()
   updateContentElemHeight($(window).height())
 
+  // enable all "run" buttons (somehow, learnr disables them by default and doesn't re-enable them)
+  setTimeout(function () {
+    $('.btn-tutorial-run').removeClass('disabled')
+  }, 5000)
+
   // initialize components within tutorial.onInit event
   tutorial.onInit(function () {
     // handle progress events
