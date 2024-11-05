@@ -6,22 +6,36 @@ $(document).ready(function () {
   let docProgressiveReveal = false
   let docAllowSkip = false
   const topics = []
-  const appConfig = _.defaults(sessdata.app_config, { summary: true, reset_button: true })
+  const appConfig = _.defaults(sessdata.app_config, { summary: true, reset_button: true, chatbot: true }) // TODO: set chatbot default to false
   // stupid javascript somehow requires "valueOf()" because `_.defaults(..., true)` returns a Boolean object which
   // behaves... strange
   const enableSummaryPanel = _.defaults(appConfig.summary, true).valueOf()
   const enableResetBtn = _.defaults(appConfig.reset_button, true).valueOf()
+  const enableChatbot = _.defaults(appConfig.reset_button, true).valueOf() // TODO: set default to false
   const addedSummaries = new Set() // stores keys of "<topicIndex>.<summaryIndex>" of already shown summaries
 
   let scrollLastSectionToView = false
   let scrollLastSectionPosition = 0
 
   // set unique ids for each content element to later be able to jump to these
-  const contentElemSelectors = ['h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'div.figure']
+  const contentElemSelectors = ['h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'div.figure', 'div.section']
   const combinedSelector = contentElemSelectors.map(x => '.section.level2 > ' + x).join(', ')
   $(combinedSelector).each(function (i, e) {
     $(e).prop('id', `mainContentElem-${i}`).addClass('mainContentElem')
   })
+
+  if (enableChatbot) {
+    $('#chatview').show()
+    $('#chatview > .header').on('click', function () {
+      const opened = $('#chatview').hasClass('opened')
+
+      if (opened) {
+        $('#chatview').removeClass('opened').addClass('closed')
+      } else {
+        $('#chatview').removeClass('closed').addClass('opened')
+      }
+    })
+  }
 
   // Callbacks that are triggered when setCurrentTopic() is called.
   const setCurrentTopicNotifiers = (function () {

@@ -296,3 +296,97 @@
 .shiny-input-container:not(.shiny-input-container-inline) {
   width: 100%;
 }
+
+#chatview {
+    display: none;
+    position: absolute;
+    right: 10%;
+    bottom: 0;
+    width: 300px;
+    z-index: 1000;
+    border: 2px solid rgb(47, 164, 231);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+#chatview > div {
+    width: 100%;
+}
+
+#chatview.closed {
+    height: 40px;
+}
+
+#chatview > .header {
+    cursor: pointer;
+    background: rgb(47, 164, 231);
+    color: white;
+    height: 38px;
+    overflow: hidden;
+}
+
+#chatview > .header > .title {
+    font-weight: bold;
+    padding: 10px 0 0 10px;
+}
+
+#chatview > .header > .showHide {
+    float: right;
+    width: 40px;
+    height: 38px;
+    font-size: 27px;
+    overflow: hidden;
+}
+
+#chatview > .messages {
+    clear: right;
+}
+
+#chatview.closed > .header > .showHide::before {
+    content: "▲";
+}
+
+#chatview.closed > .messages,
+#chatview.closed > .controls {
+    display: none;
+}
+
+#chatview.opened {
+    height: 500px;
+}
+
+#chatview.opened > .header > .showHide::before {
+    content: "▼";
+}
+
+#chatview.opened > .messages,
+#chatview.opened > .controls {
+    display: block;
+}
+
+#chatview.opened > .messages {
+    background: white;
+    height: 380px;
+    overflow-y: auto;
+}
+
+#chatview.opened > .controls {
+    background: white;
+    height: 80px;
+    position: relative;
+}
+
+#chatview.opened > .controls > textarea {
+    width: 287px;
+    height: 47px;
+    display: block;
+    border: 2px solid #eeeeee;
+    resize: none;
+    margin: 0 5px 0 5px;
+}
+
+#chatview.opened > .controls > button {
+    position: absolute;
+    margin-top: 5px;
+    right: 5px;
+}
