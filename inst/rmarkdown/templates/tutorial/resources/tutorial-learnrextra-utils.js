@@ -261,3 +261,13 @@ function messageToParentWindow(msgtype, data) {
     window.parent.postMessage({"msgtype": msgtype, "data": data}, apiserver_url.origin);
 }
 
+
+/**
+ * Newline to <br> for a string.
+ *
+ * Taken and adapted from https://stackoverflow.com/a/2919363.
+ */
+function nl2br(str) {
+    const breakTag = '<br>';
+    return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');
+}

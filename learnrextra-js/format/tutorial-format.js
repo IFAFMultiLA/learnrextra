@@ -1,4 +1,4 @@
-/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config,MathJax,postEvent,sess,tracking_session_id,sessdata,tracking_config */
+/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config,MathJax,postEvent,sess,tracking_session_id,sessdata,tracking_config,nl2br */
 
 $(document).ready(function () {
   let titleText = ''
@@ -24,6 +24,8 @@ $(document).ready(function () {
     $(e).prop('id', `mainContentElem-${i}`).addClass('mainContentElem')
   })
 
+  let chatState = 'ready'
+
   if (enableChatbot) {
     $('#chatview').show()
     $('#chatview > .header').on('click', function () {
@@ -33,6 +35,20 @@ $(document).ready(function () {
         $('#chatview').removeClass('opened').addClass('closed')
       } else {
         $('#chatview').removeClass('closed').addClass('opened')
+      }
+    })
+
+    $('#chatview > .controls > button').on('click', function () {
+      const textarea = $('#chatview > .controls > textarea')
+      const msg = textarea.val().trim()
+
+      if (msg !== '' && chatState === 'ready') {
+        $('#chatview > .messages').append(`<div class="msg user">${nl2br(msg)}</div>`)
+        const newMsgElem = $('#chatview > .messages > .msg.user:last')[0]
+        MathJax.Hub.Queue(['Typeset', MathJax.Hub, newMsgElem])
+        textarea.val('')
+        chatState = 'awaiting_response'
+        $('#chatview > .controls > button').attr('disabled', true)
       }
     })
   }
