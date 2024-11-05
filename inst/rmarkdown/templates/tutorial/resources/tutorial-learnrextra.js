@@ -818,6 +818,7 @@ $(window).on("load", async function() {
     $('#summarytitle').text(tr['summary_title']);
     $('#chatview .title').text(tr['chatview_title']);
     $('#chatview .controls button').text(tr['chatview_send']);
+    $('#chatview .messages .msg.system.initial').text(tr['chatview_initial_msg']);
 
     // load HTML templates for modals and other elements, substitude placeholders with translations and add to body
     try {

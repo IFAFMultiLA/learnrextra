@@ -368,6 +368,28 @@
     background: white;
     height: 380px;
     overflow-y: auto;
+    margin-left: 5px;
+    margin-right: 5px;
+    width: 287px;
+}
+
+#chatview.opened > .messages > .msg {
+    border-radius: 4px;
+    padding: 3px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    max-width: 90%;
+}
+
+#chatview.opened > .messages > .msg.system {
+    text-align: left;
+    background: #eeeeee;
+}
+
+#chatview.opened > .messages > .msg.user {
+    text-align: right;
+    background: #a2cee8;
+    margin-left: 10%;
 }
 
 #chatview.opened > .controls {
