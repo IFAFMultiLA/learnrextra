@@ -1,4 +1,50 @@
-/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config,MathJax,postEvent,sess,tracking_session_id,sessdata,tracking_config,nl2br */
+/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config,MathJax,postEvent,sess,tracking_session_id,
+   sessdata,tracking_config,nl2br,postChatbotMessage */
+
+function pushChatMessage (role, msg) {
+  $('#chatview > .messages').append(`<div class="msg ${role}">${nl2br(msg)}</div>`)
+  const newMsgElem = $('#chatview > .messages > .msg.user:last')[0]
+  MathJax.Hub.Queue(['Typeset', MathJax.Hub, newMsgElem])
+}
+
+function pushSystemChatMessage (msg) {
+  pushChatMessage('system', msg)
+  $('#chatview > .controls > button').attr('disabled', false)
+}
+
+function pushUserChatMessage (msg) {
+  $('#chatview > .controls > button').attr('disabled', true)
+  pushChatMessage('user', msg)
+}
+
+async function handleChatMessageSend () {
+  const canSend = $('#chatview > .controls > button').attr('disabled') !== 'disabled'
+  const textarea = $('#chatview > .controls > textarea')
+  const msg = textarea.val().trim()
+
+  if (msg !== '' && canSend) {
+    pushUserChatMessage(msg)
+    textarea.val('')
+
+    try {
+      await postChatbotMessage(sess, tracking_session_id, sessdata.user_code, msg)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Posting the chat message failed.')
+          } else {
+            return response.json()
+          }
+        })
+        .then(function (response) {
+          pushSystemChatMessage(response.message)
+          // TODO: highlight response.content_section
+        })
+    } catch (err) {
+      pushSystemChatMessage('Sorry, there is currently a problem with the learning assistant service.')
+      console.log('error communicating with the chat service:', err)
+    }
+  }
+}
 
 $(document).ready(function () {
   let titleText = ''
@@ -24,8 +70,6 @@ $(document).ready(function () {
     $(e).prop('id', `mainContentElem-${i}`).addClass('mainContentElem')
   })
 
-  let chatState = 'ready'
-
   if (enableChatbot) {
     $('#chatview').show()
     $('#chatview > .header').on('click', function () {
@@ -37,20 +81,7 @@ $(document).ready(function () {
         $('#chatview').removeClass('closed').addClass('opened')
       }
     })
-
-    $('#chatview > .controls > button').on('click', function () {
-      const textarea = $('#chatview > .controls > textarea')
-      const msg = textarea.val().trim()
-
-      if (msg !== '' && chatState === 'ready') {
-        $('#chatview > .messages').append(`<div class="msg user">${nl2br(msg)}</div>`)
-        const newMsgElem = $('#chatview > .messages > .msg.user:last')[0]
-        MathJax.Hub.Queue(['Typeset', MathJax.Hub, newMsgElem])
-        textarea.val('')
-        chatState = 'awaiting_response'
-        $('#chatview > .controls > button').attr('disabled', true)
-      }
-    })
+    $('#chatview > .controls > button').on('click', handleChatMessageSend)
   }
 
   // Callbacks that are triggered when setCurrentTopic() is called.
