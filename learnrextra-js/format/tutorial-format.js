@@ -17,6 +17,11 @@ function pushUserChatMessage (msg) {
   pushChatMessage('user', msg)
 }
 
+function stopChatPendingIndicator (intervalID) {
+  clearInterval(intervalID)
+  $('#chatview > .messages > .msg.system.pending').remove()
+}
+
 async function handleChatMessageSend () {
   const canSend = $('#chatview > .controls > button').attr('disabled') !== 'disabled'
   const textarea = $('#chatview > .controls > textarea')
@@ -25,6 +30,12 @@ async function handleChatMessageSend () {
   if (msg !== '' && canSend) {
     pushUserChatMessage(msg)
     textarea.val('')
+    $('#chatview > .messages').append('<div class="msg system pending">.</div>')
+    const pendingIntervalID = setInterval(function () {
+      const elem = $('#chatview > .messages > .msg.system.pending')
+      const n = (elem.text().length % 3) + 1
+      elem.text('.'.repeat(n))
+    }, 500)
 
     try {
       await postChatbotMessage(sess, tracking_session_id, sessdata.user_code, msg)
@@ -36,10 +47,12 @@ async function handleChatMessageSend () {
           }
         })
         .then(function (response) {
+          stopChatPendingIndicator(pendingIntervalID)
           pushSystemChatMessage(response.message)
           // TODO: highlight response.content_section
         })
     } catch (err) {
+      stopChatPendingIndicator(pendingIntervalID)
       pushSystemChatMessage('Sorry, there is currently a problem with the learning assistant service.')
       console.log('error communicating with the chat service:', err)
     }
