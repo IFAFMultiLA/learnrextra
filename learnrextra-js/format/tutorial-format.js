@@ -1,14 +1,27 @@
 /* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config,MathJax,postEvent,sess,tracking_session_id,
-   sessdata,tracking_config,nl2br,postChatbotMessage */
+   sessdata,tracking_config,nl2br,postChatbotMessage,tr */
 
-function pushChatMessage (role, msg) {
-  $('#chatview > .messages').append(`<div class="msg ${role}">${nl2br(msg)}</div>`)
+function pushChatMessage (role, msg, contentSection) {
+  let sectionRefHTML = ''
+  if (typeof contentSection === 'string') {
+    sectionRefHTML = `<div class="section_ref">${tr.chatview_section_reference}</div>`
+  }
+
+  const newElem = `<div class="msg ${role}">${nl2br(msg)}${sectionRefHTML}</div>`
+  $('#chatview > .messages').append(newElem)
+
+  if (typeof contentSection === 'string') {
+    $('#chatview > .messages > .msg:last > .section_ref').on('click', function () {
+      console.log('highlight section', contentSection)
+      // TODO
+    })
+  }
   const newMsgElem = $('#chatview > .messages > .msg.user:last')[0]
   MathJax.Hub.Queue(['Typeset', MathJax.Hub, newMsgElem])
 }
 
-function pushSystemChatMessage (msg) {
-  pushChatMessage('system', msg)
+function pushSystemChatMessage (msg, contentSection) {
+  pushChatMessage('system', msg, contentSection)
   $('#chatview > .controls > button').attr('disabled', false)
 }
 
@@ -48,8 +61,7 @@ async function handleChatMessageSend () {
         })
         .then(function (response) {
           stopChatPendingIndicator(pendingIntervalID)
-          pushSystemChatMessage(response.message)
-          // TODO: highlight response.content_section
+          pushSystemChatMessage(response.message, response.content_section)
         })
     } catch (err) {
       stopChatPendingIndicator(pendingIntervalID)

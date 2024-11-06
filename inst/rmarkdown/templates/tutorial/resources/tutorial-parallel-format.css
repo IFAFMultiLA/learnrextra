@@ -393,6 +393,17 @@
     margin-left: 10%;
 }
 
+#chatview.opened > .messages > .msg > .section_ref {
+    text-align: right;
+    font-size: 0.8em;
+    margin-top: 0.5em;
+    cursor: pointer;
+}
+
+#chatview.opened > .messages > .msg > .section_ref::before {
+    content: "⇒ ";
+}
+
 #chatview.opened > .controls {
     background: white;
     height: 80px;

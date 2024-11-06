@@ -169,7 +169,8 @@ function postChatbotMessage(sess, tracking_session_id, authtoken, msg) {
             sess: sess,
             tracking_session: tracking_session_id,
             language: config.language,
-            message: msg
+            message: msg,
+            simulate: true
         },
         authtoken
     );
