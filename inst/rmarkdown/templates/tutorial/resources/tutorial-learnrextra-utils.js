@@ -158,6 +158,25 @@ function postUserFeedback(sess, tracking_session_id, authtoken, content_section,
 
 
 /**
+ * Shortcut for posting a new chatbot message to the API.
+ */
+function postChatbotMessage(sess, tracking_session_id, authtoken, msg) {
+    if (replay || !tracking_config.chatbot) {
+        return null;
+    }
+
+    return postJSON('chatbot_message/', {
+            sess: sess,
+            tracking_session: tracking_session_id,
+            language: config.language,
+            message: msg // ,
+            // simulate: true
+        },
+        authtoken
+    );
+}
+
+/**
  * Detect device form factor (tablet, phone or desktop).
  *
  * Taken and adapted from https://abdessalam.dev/blog/detect-device-type-javascript/.
@@ -243,3 +262,13 @@ function messageToParentWindow(msgtype, data) {
     window.parent.postMessage({"msgtype": msgtype, "data": data}, apiserver_url.origin);
 }
 
+
+/**
+ * Newline to <br> for a string.
+ *
+ * Taken and adapted from https://stackoverflow.com/a/2919363.
+ */
+function nl2br(str) {
+    const breakTag = '<br>';
+    return (str + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');
+}

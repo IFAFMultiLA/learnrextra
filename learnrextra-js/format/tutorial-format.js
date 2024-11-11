@@ -1,4 +1,33 @@
-/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config,MathJax,postEvent,sess,tracking_session_id,sessdata,tracking_config */
+/* global _,$,tutorial,Shiny,i18next,bootbox,introJs,sessdata,config,MathJax,postEvent,sess,tracking_session_id,
+   sessdata,tracking_config,nl2br,postChatbotMessage,tr */
+
+function pushChatMessage (role, msg, contentSection) {
+  let sectionRefHTML = ''
+  if (typeof contentSection === 'string') {
+    sectionRefHTML = `<div class="section_ref">${tr.chatview_section_reference}</div>`
+  }
+
+  const newElem = `<div class="msg ${role}">${nl2br(msg)}${sectionRefHTML}</div>`
+  $('#chatview > .messages').append(newElem)
+
+  const newMsgElem = $('#chatview > .messages > .msg.user:last')[0]
+  MathJax.Hub.Queue(['Typeset', MathJax.Hub, newMsgElem])
+}
+
+function pushSystemChatMessage (msg, contentSection) {
+  pushChatMessage('system', msg, contentSection)
+  $('#chatview > .controls > button').attr('disabled', false)
+}
+
+function pushUserChatMessage (msg) {
+  $('#chatview > .controls > button').attr('disabled', true)
+  pushChatMessage('user', msg)
+}
+
+function stopChatPendingIndicator (intervalID) {
+  clearInterval(intervalID)
+  $('#chatview > .messages > .msg.system.pending').remove()
+}
 
 $(document).ready(function () {
   let titleText = ''
@@ -6,22 +35,98 @@ $(document).ready(function () {
   let docProgressiveReveal = false
   let docAllowSkip = false
   const topics = []
-  const appConfig = _.defaults(sessdata.app_config, { summary: true, reset_button: true })
+  const appConfig = _.defaults(sessdata.app_config, { summary: true, reset_button: true, chatbot: false })
   // stupid javascript somehow requires "valueOf()" because `_.defaults(..., true)` returns a Boolean object which
   // behaves... strange
   const enableSummaryPanel = _.defaults(appConfig.summary, true).valueOf()
   const enableResetBtn = _.defaults(appConfig.reset_button, true).valueOf()
+  const enableChatbot = _.defaults(appConfig.chatbot, false).valueOf()
   const addedSummaries = new Set() // stores keys of "<topicIndex>.<summaryIndex>" of already shown summaries
 
   let scrollLastSectionToView = false
   let scrollLastSectionPosition = 0
 
   // set unique ids for each content element to later be able to jump to these
-  const contentElemSelectors = ['h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'div.figure']
+  const contentElemSelectors = ['h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'div.figure', 'div.section']
+  const skipClasses = ['summary', 'tracking_consent_text', 'data_protection_text']
   const combinedSelector = contentElemSelectors.map(x => '.section.level2 > ' + x).join(', ')
+  let mainContentElemIndex = 0
   $(combinedSelector).each(function (i, e) {
-    $(e).prop('id', `mainContentElem-${i}`).addClass('mainContentElem')
+    const $e = $(e)
+    const anySkipCls = skipClasses.map(cls => $e.hasClass(cls))
+      .reduce((accumulator, currentValue) => accumulator + currentValue, 0)
+    if (anySkipCls === 0) {
+      $e.prop('id', `mainContentElem-${mainContentElemIndex}`).addClass('mainContentElem')
+      mainContentElemIndex++
+    }
   })
+
+  const handleChatMessageSend = async function () {
+    const canSend = $('#chatview > .controls > button').attr('disabled') !== 'disabled'
+    const textarea = $('#chatview > .controls > textarea')
+    const msg = textarea.val().trim()
+
+    if (msg !== '' && canSend) {
+      pushUserChatMessage(msg)
+      textarea.val('')
+      $('#chatview > .messages').append('<div class="msg system pending">.</div>')
+      const pendingIntervalID = setInterval(function () {
+        const elem = $('#chatview > .messages > .msg.system.pending')
+        const n = (elem.text().length % 3) + 1
+        elem.text('.'.repeat(n))
+      }, 500)
+
+      try {
+        await postChatbotMessage(sess, tracking_session_id, sessdata.user_code, msg)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Posting the chat message failed.')
+            } else {
+              return response.json()
+            }
+          })
+          .then(function (response) {
+            stopChatPendingIndicator(pendingIntervalID)
+            pushSystemChatMessage(response.message, response.content_section)
+
+            if (typeof response.content_section === 'string') {
+              $('#chatview > .messages > .msg:last > .section_ref').on('click', function () {
+                console.log('highlight section', response.content_section)
+                updateLocation(currentTopicIndex, response.content_section)
+                const sectionElem = $(`#${response.content_section}`)
+                sectionElem.css({ backgroundColor: 'white' })
+                  .animate({ backgroundColor: 'gold' },
+                    {
+                      complete: function () {
+                        sectionElem.animate({ backgroundColor: 'white' })
+                      }
+                    })
+              })
+            }
+          })
+      } catch (err) {
+        stopChatPendingIndicator(pendingIntervalID)
+        pushSystemChatMessage('Sorry, there is currently a problem with the learning assistant service.')
+        console.log('error communicating with the chat service:', err)
+      }
+    }
+  }
+
+  if (enableChatbot) {
+    $('#chatview').show()
+    $('#chatview > .header').on('click', function () {
+      const opened = $('#chatview').hasClass('opened')
+
+      if (opened) {
+        $('#chatview').removeClass('opened').addClass('closed')
+      } else {
+        $('#chatview').removeClass('closed').addClass('opened')
+      }
+    })
+    $('#chatview > .controls > button').on('click', handleChatMessageSend)
+  } else {
+    $('#chatview').hide()
+  }
 
   // Callbacks that are triggered when setCurrentTopic() is called.
   const setCurrentTopicNotifiers = (function () {
@@ -90,7 +195,7 @@ $(document).ready(function () {
     } else {
       // scroll to position the element
       const e = $(`#${scrollToElemID}`)[0]
-      const scrollTop = Math.max(e.offsetTop - e.offsetHeight - 60, 0)
+      const scrollTop = Math.max(e.offsetTop - e.offsetHeight - 120, 0)
       $('#learnr-tutorial-content').parent().scrollTop(scrollTop)
     }
 

@@ -28,7 +28,11 @@
         "registering_failed": "Failed to register.",
         "summary_title": "Summary",
         "summary_intro_title": "Working with the summary",
-        "summary_intro_text": "In panel will appear summary information that will help you to master the quizzes and exercises."
+        "summary_intro_text": "In panel will appear summary information that will help you to master the quizzes and exercises.",
+        "chatview_title": "Ask the learning assistant!",
+        "chatview_send": "Send",
+        "chatview_initial_msg": "Hi! I'm here to help you.",
+        "chatview_section_reference": "Go to explanation for this topic."
     },
     "de": {
         "authmodal_title": "Anmeldung erforderlich",
@@ -59,6 +63,10 @@
         "registering_failed": "Registrierung fehlgeschlagen.",
         "summary_title": "Zusammenfassung",
         "summary_intro_title": "Arbeiten mit der Zusammenfassung",
-        "summary_intro_text": "Auf dieser Seite werden Stück für Stück Zusammenfassungen der Lehrinhalte erscheinen, die Ihnen helfen werden die Übungen zu meistern."
+        "summary_intro_text": "Auf dieser Seite werden Stück für Stück Zusammenfassungen der Lehrinhalte erscheinen, die Ihnen helfen werden die Übungen zu meistern.",
+        "chatview_title": "Frag den Lernassistenten!",
+        "chatview_send": "Senden",
+        "chatview_initial_msg": "Hallo! Ich helfe dir gern.",
+        "chatview_section_reference": "Zur Erklärung für dieses Thema wechseln."
     }
 }
