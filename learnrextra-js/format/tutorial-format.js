@@ -10,12 +10,6 @@ function pushChatMessage (role, msg, contentSection) {
   const newElem = `<div class="msg ${role}">${nl2br(msg)}${sectionRefHTML}</div>`
   $('#chatview > .messages').append(newElem)
 
-  if (typeof contentSection === 'string') {
-    $('#chatview > .messages > .msg:last > .section_ref').on('click', function () {
-      console.log('highlight section', contentSection)
-      // TODO
-    })
-  }
   const newMsgElem = $('#chatview > .messages > .msg.user:last')[0]
   MathJax.Hub.Queue(['Typeset', MathJax.Hub, newMsgElem])
 }
@@ -35,54 +29,18 @@ function stopChatPendingIndicator (intervalID) {
   $('#chatview > .messages > .msg.system.pending').remove()
 }
 
-async function handleChatMessageSend () {
-  const canSend = $('#chatview > .controls > button').attr('disabled') !== 'disabled'
-  const textarea = $('#chatview > .controls > textarea')
-  const msg = textarea.val().trim()
-
-  if (msg !== '' && canSend) {
-    pushUserChatMessage(msg)
-    textarea.val('')
-    $('#chatview > .messages').append('<div class="msg system pending">.</div>')
-    const pendingIntervalID = setInterval(function () {
-      const elem = $('#chatview > .messages > .msg.system.pending')
-      const n = (elem.text().length % 3) + 1
-      elem.text('.'.repeat(n))
-    }, 500)
-
-    try {
-      await postChatbotMessage(sess, tracking_session_id, sessdata.user_code, msg)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Posting the chat message failed.')
-          } else {
-            return response.json()
-          }
-        })
-        .then(function (response) {
-          stopChatPendingIndicator(pendingIntervalID)
-          pushSystemChatMessage(response.message, response.content_section)
-        })
-    } catch (err) {
-      stopChatPendingIndicator(pendingIntervalID)
-      pushSystemChatMessage('Sorry, there is currently a problem with the learning assistant service.')
-      console.log('error communicating with the chat service:', err)
-    }
-  }
-}
-
 $(document).ready(function () {
   let titleText = ''
   let currentTopicIndex = -1
   let docProgressiveReveal = false
   let docAllowSkip = false
   const topics = []
-  const appConfig = _.defaults(sessdata.app_config, { summary: true, reset_button: true, chatbot: true }) // TODO: set chatbot default to false
+  const appConfig = _.defaults(sessdata.app_config, { summary: true, reset_button: true, chatbot: false })
   // stupid javascript somehow requires "valueOf()" because `_.defaults(..., true)` returns a Boolean object which
   // behaves... strange
   const enableSummaryPanel = _.defaults(appConfig.summary, true).valueOf()
   const enableResetBtn = _.defaults(appConfig.reset_button, true).valueOf()
-  const enableChatbot = _.defaults(appConfig.reset_button, true).valueOf() // TODO: set default to false
+  const enableChatbot = _.defaults(appConfig.chatbot, false).valueOf()
   const addedSummaries = new Set() // stores keys of "<topicIndex>.<summaryIndex>" of already shown summaries
 
   let scrollLastSectionToView = false
@@ -90,10 +48,69 @@ $(document).ready(function () {
 
   // set unique ids for each content element to later be able to jump to these
   const contentElemSelectors = ['h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'div.figure', 'div.section']
+  const skipClasses = ['summary', 'tracking_consent_text', 'data_protection_text']
   const combinedSelector = contentElemSelectors.map(x => '.section.level2 > ' + x).join(', ')
+  let mainContentElemIndex = 0
   $(combinedSelector).each(function (i, e) {
-    $(e).prop('id', `mainContentElem-${i}`).addClass('mainContentElem')
+    const $e = $(e)
+    const anySkipCls = skipClasses.map(cls => $e.hasClass(cls))
+      .reduce((accumulator, currentValue) => accumulator + currentValue, 0)
+    if (anySkipCls === 0) {
+      $e.prop('id', `mainContentElem-${mainContentElemIndex}`).addClass('mainContentElem')
+      mainContentElemIndex++
+    }
   })
+
+  const handleChatMessageSend = async function () {
+    const canSend = $('#chatview > .controls > button').attr('disabled') !== 'disabled'
+    const textarea = $('#chatview > .controls > textarea')
+    const msg = textarea.val().trim()
+
+    if (msg !== '' && canSend) {
+      pushUserChatMessage(msg)
+      textarea.val('')
+      $('#chatview > .messages').append('<div class="msg system pending">.</div>')
+      const pendingIntervalID = setInterval(function () {
+        const elem = $('#chatview > .messages > .msg.system.pending')
+        const n = (elem.text().length % 3) + 1
+        elem.text('.'.repeat(n))
+      }, 500)
+
+      try {
+        await postChatbotMessage(sess, tracking_session_id, sessdata.user_code, msg)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Posting the chat message failed.')
+            } else {
+              return response.json()
+            }
+          })
+          .then(function (response) {
+            stopChatPendingIndicator(pendingIntervalID)
+            pushSystemChatMessage(response.message, response.content_section)
+
+            if (typeof response.content_section === 'string') {
+              $('#chatview > .messages > .msg:last > .section_ref').on('click', function () {
+                console.log('highlight section', response.content_section)
+                updateLocation(currentTopicIndex, response.content_section)
+                const sectionElem = $(`#${response.content_section}`)
+                sectionElem.css({ backgroundColor: 'white' })
+                  .animate({ backgroundColor: 'gold' },
+                    {
+                      complete: function () {
+                        sectionElem.animate({ backgroundColor: 'white' })
+                      }
+                    })
+              })
+            }
+          })
+      } catch (err) {
+        stopChatPendingIndicator(pendingIntervalID)
+        pushSystemChatMessage('Sorry, there is currently a problem with the learning assistant service.')
+        console.log('error communicating with the chat service:', err)
+      }
+    }
+  }
 
   if (enableChatbot) {
     $('#chatview').show()
@@ -107,6 +124,8 @@ $(document).ready(function () {
       }
     })
     $('#chatview > .controls > button').on('click', handleChatMessageSend)
+  } else {
+    $('#chatview').hide()
   }
 
   // Callbacks that are triggered when setCurrentTopic() is called.
@@ -176,7 +195,7 @@ $(document).ready(function () {
     } else {
       // scroll to position the element
       const e = $(`#${scrollToElemID}`)[0]
-      const scrollTop = Math.max(e.offsetTop - e.offsetHeight - 60, 0)
+      const scrollTop = Math.max(e.offsetTop - e.offsetHeight - 120, 0)
       $('#learnr-tutorial-content').parent().scrollTop(scrollTop)
     }
 

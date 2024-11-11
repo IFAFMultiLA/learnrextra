@@ -31,6 +31,12 @@ append_html_dependencies <- function(html_dependencies, doc_config, introjs = FA
                 version = "1.1.0",
                 src = system.file("rmarkdown/templates/tutorial/resources", package = "learnrextra"),
                 script = "mus.min.js"
+            ),
+            htmltools::htmlDependency(
+                name = "jquery.color.plus-names",
+                version = "3.0.0",
+                src = system.file("rmarkdown/templates/tutorial/resources", package = "learnrextra"),
+                script = "jquery.color.plus-names.min.js"
             )
         ),
         html_dependencies
