@@ -47,8 +47,8 @@ $(document).ready(function () {
   let scrollLastSectionPosition = 0
 
   // set unique ids for each content element to later be able to jump to these
-  const contentElemSelectors = ['h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'div.figure', 'div.section']
-  const skipClasses = ['summary', 'tracking_consent_text', 'data_protection_text']
+  const contentElemSelectors = ['h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'table', 'div.figure', 'div.section']
+  const skipClasses = ['tracking_consent_text', 'data_protection_text']
   const combinedSelector = contentElemSelectors.map(x => '.section.level2 > ' + x).join(', ')
   let mainContentElemIndex = 0
   $(combinedSelector).each(function (i, e) {
