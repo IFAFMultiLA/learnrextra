@@ -92,7 +92,8 @@ $(document).ready(function () {
             if (typeof response.content_section === 'string') {
               $('#chatview > .messages > .msg:last > .section_ref').on('click', function () {
                 console.log('highlight section', response.content_section)
-                updateLocation(currentTopicIndex, response.content_section)
+                const topicIndex = $(`#${response.content_section}`).parent().prop('id')
+                updateLocation(topicIndex, response.content_section)
                 const sectionElem = $(`#${response.content_section}`)
                 sectionElem.css({ backgroundColor: 'white' })
                   .animate({ backgroundColor: 'gold' },
@@ -187,7 +188,8 @@ $(document).ready(function () {
 
   function updateLocation (topicIndex, scrollToElemID) {
     const baseUrl = window.location.href.replace(window.location.hash, '')
-    window.location = `${baseUrl}#${topics[topicIndex].id}`
+    const topicName = typeof topicIndex === 'string' ? topicIndex : topics[topicIndex].id
+    window.location = `${baseUrl}#${topicName}`
 
     if (scrollToElemID === undefined) {
       // scroll content to top
